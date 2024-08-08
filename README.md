@@ -19,7 +19,7 @@ This project implements a Bitcoin Layer 2 solution for minting and managing toke
 ### Installation
 
 1. Clone the repository:
-   git clone [https://github.com/numadlabs/coordinals-opensource.git](https://github.com/your-repo/coordinals-opensource.git)
+   git clone [https://github.com/AnduroProject/coordinals-minting-app](https://github.com/AnduroProject/coordinals-minting-app)
 
 2. Install dependencies:
    cd coordinals-opensource
