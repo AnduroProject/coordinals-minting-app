@@ -65,8 +65,7 @@ export async  function   getUnspentsLsit(
     if (!unspent.coinbase) unspents.push(unspent)
     if (
       unspent.coinbase &&
-      (isTxConfirmed(unspent.height, unspent.height, "sidechain") || unspent.unspent_type
-      )
+    unspent.confirmations >10 
     ) {
       unspents.push(unspent)
     }
