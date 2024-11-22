@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -23,7 +24,7 @@ import { useConnector } from "anduro-wallet-connector-react";
 
 const SingleToken = () => {
   const router = useRouter();
-  const { signAndSendTransaction, signTransaction, sign } =
+  const { signAndSendTransaction, signTransaction, sign, sendTransaction } =
     React.useContext<any>(useConnector);
 
   const {
@@ -104,21 +105,52 @@ const SingleToken = () => {
       // console.log("🚀 ~ handleSubmit ~ res:", res);
       // Call the mintToken function with the required data
       const transactionResult = await mintToken(data, MOCK_MENOMIC, FEERATE);
+      //console.log("🚀 ~ handleSubmit ~ res:", transactionResult);
 
-      if (transactionResult && transactionResult.error == false) {
-        setError(transactionResult.message || "An error occurred"); // Set the error state
-        toast.error(transactionResult.message || "An error occurred");
-        setIsLoading(false);
-      } else {
-        setError("");
-        setIsLoading(false);
-        // setTxUrl(`https://testnet.coordiscan.io/tx/${mintResponse.result}`);
-        setStep(1);
+      // if(transactionResult){
+      //   const response = await signTransaction({
+      //     hex: transactionResult,
+
+      // });   console.log("🚀 ~ response ~ res:", response);
+      if (transactionResult) {
+        //console.log(".signedHex,:",response.result.signedHex)
+
+        const result = await signAndSendTransaction({
+          hex: transactionResult,
+          transactionType: "normal",
+        }); console.log("🚀 ~ sendTransactionresult ~ res:", result);
+
+        if (result && result.error) {
+          setError(result.error)
+          toast.error(result.error)
+          setStep(0);
+
+        }else {
+          setError("")
+          setStep(1);
+          setIsLoading(false);
+
+
+        }
+
       }
-    } catch (error) {
-      console.log("🚀 ~ handleSubmit ~ error:", error);
-      setError(error.message || "An error occurred"); // Set the error state
-      toast.error(error.message || "An error occurred");
+      //}
+
+
+      // if (transactionResult && transactionResult.error == false) {
+      //   setError(transactionResult || "An error occurred"); // Set the error state
+      //   toast.error(transactionResult.message || "An error occurred");
+      //   setIsLoading(false);
+      // } else {
+      //   setError("");
+      //   setIsLoading(false);
+      //   // setTxUrl(`https://testnet.coordiscan.io/tx/${mintResponse.result}`);
+      //   setStep(1);
+      // }
+    } catch (error:any) {
+      console.log("🚀 ~ handleSubmit ~ error:", JSON.stringify(error));
+      setError(error.message); 
+     toast.error(error.message || "An error occurred");
       setIsLoading(false);
     }
   };
@@ -203,7 +235,7 @@ const SingleToken = () => {
                     type="submit"
                     isSelected={true}
                     isLoading={isLoading}
-                    // disabled={isLoading}
+                  // disabled={isLoading}
                   >
                     {isLoading ? "...loading" : "Continue"}
                   </ButtonLg>
@@ -250,7 +282,7 @@ const SingleToken = () => {
                   isLoading={isLoading}
                   disabled={isLoading}
                   onClick={() => triggerRefresh()}
-                  // onClick={() => router.reload()}
+                // onClick={() => router.reload()}
                 >
                   Create again
                 </ButtonLg>

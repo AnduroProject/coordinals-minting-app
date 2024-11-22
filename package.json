@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -35,7 +35,8 @@
     "sonner": "^1.4.41",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
-    "vuesax": "^4.0.1-alpha.25"
+    "vuesax": "^4.0.1-alpha.25",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@bitcoinerlab/secp256k1": "^1.0.5",

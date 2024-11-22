@@ -21,11 +21,15 @@ import {
 import { tokenData } from "@/types";
 import useFormState from "@/lib/store/useFormStore";
 import { toast } from "sonner";
+import { useConnector } from "anduro-wallet-connector-react";
 
 const stepperData = ["Upload", "Confirm"];
 
 const SingleCollectible = () => {
   const router = useRouter();
+  const {signTransaction,sendTransaction ,signAndSendTransaction} =
+  React.useContext<any>(useConnector);
+
   const {
     ticker,
     setTicker,
@@ -105,24 +109,51 @@ const SingleCollectible = () => {
     try {
       // Call the mintToken function with the required data
       const transactionResult = await mintToken(data, MOCK_MENOMIC, FEERATE);
-      console.log("🚀 ~ handleSubmit ~ mintResponse:", transactionResult);
-      if (transactionResult && transactionResult.error == false) {
-        setError(transactionResult.message || "An error occurred"); // Set the error state
-        toast.error(transactionResult.message || "An error occurred");
-        setIsLoading(false);
-      } else if (transactionResult) {
-        setError("");
-        setResponse(transactionResult);
-        setIsLoading(false);
-        setTxUrl(
-          `https://testnet.coordiscan.io/tx/${transactionResult.result}`,
-        );
-        setStep(1);
-      }
+      //console.log("handleSubmit collectible:", transactionResult);
 
-      setStep(1);
-    } catch (error) {
-      setError(error.message || "An error occurred"); // Set the error state
+      if(transactionResult){
+        const response = await signTransaction({
+          hex: transactionResult,
+        
+        });   console.log("🚀 ~ response ~ res:", response);
+        if(response){
+          //console.log("signedHex collectivle,:",response.result.signedHex)
+
+          const result = await sendTransaction({
+            hex: response.result.signedHex,
+            transactionType: "normal",
+          });   console.log("🚀 ~ sendTransactionresult ~ res:", result);
+          if (result && result.error) {
+            setError(result.error)
+            toast.error(result.error)
+            setStep(0);
+  
+          }else {
+            setError("")
+            setStep(1);
+            setIsLoading(false);
+  
+  
+          }
+        }
+      }
+      // if (transactionResult && transactionResult.error == false) {
+      //   setError(transactionResult.message || "An error occurred"); // Set the error state
+      //   toast.error(transactionResult.message || "An error occurred");
+      //   setIsLoading(false);
+      // } else if (transactionResult) {
+      //   setError("");
+      //   setResponse(transactionResult);
+      //   setIsLoading(false);
+      //   setTxUrl(
+      //     `https://testnet.coordiscan.io/tx/${transactionResult.result}`,
+      //   );
+      //   setStep(1);
+      // }
+
+      //setStep(1);
+    } catch (error:any) {
+      setError(error.message || "An error occurred"); 
       toast.error(error.message || "An error occurred");
       return setIsLoading(false);
     }

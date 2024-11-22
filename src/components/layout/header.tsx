@@ -24,7 +24,14 @@ export default function Header() {
 
   const handleDisconnectionAction = async () => {
     const result = await disconnect();
+    if (result.status === true) {
+      localStorage.removeItem("connectedAddress")
+      setWalletAddress("");
+    }
+
     console.log("*******Disconnect Result", result);
+    console.log("======walletAddress url",walletAddress)
+
   };
   React.useEffect(() => {
     console.log("Connector Network Information", networkState);
@@ -36,10 +43,10 @@ export default function Header() {
       try {
         if (window) {
           const walletAddress = localStorage.getItem("connectedAddress");
-          if (walletAddress) {
-            // if (walletState.connectionState == "disconnected") {
-            //   handleLogin();
-            // }
+           if (walletAddress) {
+            if (walletState.connectionState == "disconnected") {
+              handleLogin();
+            }
             setWalletAddress(walletAddress);
           }
         }
@@ -54,10 +61,14 @@ export default function Header() {
   const handleLogin = async () => {
     try {
       setIsConnecting(true);
+      console.log("======wallet url",WALLET_URL)
+
       const response = await connect({
-        chainId: 4,
+        chainId: 5,
         walletURL: WALLET_URL,
       });
+      console.log("======wallet url 22",WALLET_URL)
+      
       console.log("🚀 ~ handleLogin ~ response:", response);
       if (response.status == true) {
         console.log(
@@ -66,8 +77,9 @@ export default function Header() {
         );
 
         const walletAddress = response.result.accountPublicKey;
-
+        const mnemonic = response.result.mnemonic
         localStorage.setItem("connectedAddress", JSON.stringify(walletAddress));
+        localStorage.setItem("xpubkey", response.result.xpubKey);
         setWalletAddress(walletAddress);
 
         setIsConnecting(false);
@@ -85,7 +97,8 @@ export default function Header() {
   };
 
   const handleLogout = async () => {
-    setWalletAddress("");
+  
+    
     await handleDisconnectionAction();
     window.localStorage.removeItem("userProfile");
     router.push("/");

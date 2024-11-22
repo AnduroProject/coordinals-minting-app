@@ -1,6 +1,8 @@
 "use client";
 
 import axios from "axios";
+import { apiurl } from "../constants";
+import { error } from "console";
 
 enum COLLECTION_STATUS {
   PENDING = "PENDING",
@@ -55,5 +57,19 @@ export function sendTransactionHelper(transactionHex: string) {
     .post("/api/sendTransaction", { transactionHex })
     .then((response) => {
       return response.data.data;
+    });
+}
+export function wishlistAddress(params: any) {
+  console.log("=====wishlistAddress,",params)
+
+  return axios
+    .post("/api/wishlist",{params} )
+    .then((response) => {
+      console.log("=====wishlistAddress 222,")
+      console.log("=====wishlistAddress response",response)
+
+      return response.data.data;
+    }).catch((error) =>{
+console.log("=====catched,",error)
     });
 }

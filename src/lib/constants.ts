@@ -1,8 +1,12 @@
-export const rpcUrl = "http://seed2.coordinate.mara.technology",
+export const rpcUrl = "http://seed3.coordinate.mara.technology",
   rpcPort = 18332;
 
 export const maraUrl =
   "http://btc-testnet-wallet.mara.technology:9130/unspents/list?address=&xpub=";
+
+//export const apiurl= "http://192.168.1.112:4001/unspents/whitelist";
+export const apiurl= "http://btc-testnet-wallet.mara.technology:9130/unspents/whitelist";
+
 
 export const fileSizeLimit = 3145728; //3MB in binary
 
@@ -22,13 +26,13 @@ export const MOCK_MENOMIC = process.env.NEXT_PUBLIC_MOCK_MENOMIC ?? "";
 
 export const RECEIVER_ADDRESS = process.env.NEXT_PUBLIC_RECEIVER_ADDRESS ?? "";
 
-export const RPC_USERNAME = "coordinate";
-export const RPC_PASSWORD = "coordinate";
+export const RPC_USERNAME = "marachain";
+export const RPC_PASSWORD = "marachain";
 
-export const FEERATE = 1;
+export const FEERATE = 10;
 
 export const WALLET_URL =
-  "chrome-extension://khebhoaoppjeidmdkpdglmlhghnooijn/index.html";
+  "chrome-extension://oglkfphgdppbegloljiabbihkdmjlibd/index.html";
 
 export const exampleJson = [
   {

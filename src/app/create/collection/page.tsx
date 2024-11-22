@@ -25,8 +25,10 @@ import {
 import { mintToken } from "@/utils/mint";
 import CollectiblePreviewCard from "@/components/atom/cards/collectiblePreviewCard";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
+import { useConnector } from "anduro-wallet-connector-react";
 
-const stepperData = ["Details", "Upload", "Confirm"];
+const stepperData = ["Upload", "Confirm"];
 
 const CollectionDetail = () => {
   const router = useRouter();
@@ -44,10 +46,12 @@ const CollectionDetail = () => {
     setDescription,
     reset,
   } = useFormState();
+  const { signTransaction, sendTransaction, signAndSendTransaction } =
+    React.useContext<any>(useConnector);
   const [step, setStep] = useState<number>(0);
   const [isChecked, setIsChecked] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  const [fileData, setFileData] = useState<File | null>(null);
   const [files, setFiles] = useState<
     { base64: string; mimeType: string; fileName: string }[]
   >([]);
@@ -56,8 +60,12 @@ const CollectionDetail = () => {
   const [jsonMetaData, setJsonMetaData] = useState<File | null>(null);
 
   const [error, setError] = useState<string>("");
+  const [errorData, setErrorData] = useState<string[]>([]); 
   const [progress, setProgress] = useState({ value: 0, total: 0, message: "" });
   const [date, setDate] = React.useState<Date>();
+  const [excelData, setExcelData] = useState<any[]>([]);
+  const [Data, setData] = useState<any[]>([]);
+
 
   const handleCheckBox = () => {
     setIsChecked(!isChecked);
@@ -90,17 +98,20 @@ const CollectionDetail = () => {
 
   const handleDelete = () => {
     setImageBase64("");
-  };
+    setFileData(null);
+    setErrorData([]); 
+    setError("")
+    };
 
-  useEffect(() => {
-    if (jsonData && files && jsonData.length === files.length) {
-      const merged = jsonData.map((item, index) => ({
-        ...item,
-        ...files[index],
-      }));
-      setMergedArray(merged);
-    }
-  }, [jsonData, files]); // Dependencies array, re-run effect when jsonData or files change
+  // useEffect(() => {
+  //   if (jsonData && files && jsonData.length === files.length) {
+  //     const merged = jsonData.map((item, index) => ({
+  //       ...item,
+  //       ...files[index],
+  //     }));
+  //     setMergedArray(merged);
+  //   }
+  // }, [jsonData, files]); // Dependencies array, re-run effect when jsonData or files change
 
   // useEffect
 
@@ -223,22 +234,22 @@ const CollectionDetail = () => {
     return null;
   };
 
-  const createTokenData = (item: any, isChecked: boolean): tokenData => {
+  const createTokenData = (item: any): tokenData => {
+    const [sNo, assetType, headline, ticker, imageUrl, supply] = item;
+    console.log("___ITEM DATA", item)
     const opReturnValues = [
       {
-        image_data: item.base64,
-        mime: item.mimeType,
-        ...(isChecked ? { traits: item.attributes } : {}),
+        image_url: imageUrl,
       },
     ];
 
     return {
       address: RECEIVER_ADDRESS,
       opReturnValues,
-      assetType: ASSETTYPE.NFTONCHAIN,
-      headline: isChecked ? item.meta.name : item.fileName,
+      assetType: String(assetType) === "0" ? ASSETTYPE.TOKEN : ASSETTYPE.NFTOFFCHAIN,
+      headline: headline,
       ticker,
-      supply: 1,
+      supply: parseInt(supply),
     };
   };
 
@@ -248,13 +259,34 @@ const CollectionDetail = () => {
     total: number,
   ) => {
     try {
+      console.log("MINTING DATA", data)
       const mintResponse = await mintToken(data, MOCK_MENOMIC, FEERATE);
       console.log("🚀 ~ mintSingleToken ~ mintResponse:", mintResponse);
-      setProgress({
-        value: index + 1,
-        total,
-        message: `Minting ${index + 1}/${total}`,
-      });
+      if (mintResponse) {
+
+        const result = await signAndSendTransaction({
+          hex: mintResponse,
+          transactionType: "normal",
+        });
+
+        console.log("🚀 ~ sendTransactionresult ~ res:", result);
+        if (result && result.error) {
+          setError(result.error)
+          toast.error(result.error)
+          setStep(2)
+        } else {
+          setError("")
+          setIsLoading(false);
+        //  setStep(2)
+
+        }
+
+      }
+      // setProgress({
+      //   value: index + 1,
+      //   total,
+      //   message: `Minting ${index + 1}/${total}`,
+      // });
     } catch (error) {
       console.log("🚀 ~ mintSingleToken ~ error:", error);
       throw error;
@@ -265,40 +297,96 @@ const CollectionDetail = () => {
     setIsLoading(true);
     setError("");
 
-    if (!headline) {
-      setError("headline not provided.");
-      setIsLoading(false);
+
+    if (excelData.length === 0) {
+      setError("Please upload an Excel file!");
       return;
     }
-
-    const jsonValidationError = validateJsonInput(isChecked);
-    if (jsonValidationError) {
-      setError(jsonValidationError);
-      setIsLoading(false);
-      return;
-    }
-
-    const validationError = validateInput(isChecked);
-    if (validationError) {
-      setError(validationError);
-      setIsLoading(false);
-      return;
-    }
-
-    const itemsToMint = isChecked ? mergedArray : files;
-    setProgress({
-      value: 0,
-      total: itemsToMint.length,
-      message: "Initializing...",
+    const cleanedData = excelData.filter((row) => {
+      const excludedHeaders = ["S.No", "s.no", "S.NO", "S.no"];
+      return row.length > 0 && !excludedHeaders.includes(row[0]);
     });
+    setData(cleanedData)
 
+    console.log("Cleaned Data:", cleanedData);
+    const errors = []; // Array to store error messages
+    for (let i = 0; i < cleanedData.length; i++) {
+      const row = cleanedData[i];
+      const [sNo, assetType, headline, ticker, imageUrl, supply] = row;
+
+      const rowErrors = [];
+      console.log("asset Data:", typeof (assetType));
+
+      if (String(assetType) !== "0" && String(assetType) !== "1") {
+        rowErrors.push(
+          ` (S.No: ${sNo}): Asset Type must be either 0 or 1.`
+        );
+      }
+      if (!supply) {
+        rowErrors.push(` (S.No: ${sNo}): Supply cannot be empty.`);
+      }
+      if (supply === 0) {
+        rowErrors.push(` (S.No: ${sNo}): Supply cannot be 0.`);
+      }
+      if (parseInt(supply) >= 2100000000000000) {
+        rowErrors.push(
+          `(S.No: ${sNo}): Max supply is 2100000000000000.`
+        );
+      }
+
+      if (ticker && ticker.length > 7) {
+        rowErrors.push(
+          `(S.No: ${sNo}): Ticker must be no longer than 7 characters.`
+        );
+      }
+      if (!imageUrl) {
+        rowErrors.push(` (S.No: ${sNo}): ImageUrl cannot be empty.`);
+      }
+
+      if (!headline || headline.trim() === "") {
+        rowErrors.push(` (S.No: ${sNo}): Headline cannot be empty.`);
+      }
+
+
+      errors.push(...rowErrors);
+    }
+    if (errors.length > 0) {
+      console.error("Validation Errors:", errors);
+      setErrorData(errors);
+      setIsLoading(false);
+      return;
+    }
+    //setIsLoading(false);
+    setErrorData([]);
+
+    console.log("All rows are valid. Proceeding with further processing...");
+
+    // const jsonValidationError = validateJsonInput(isChecked);
+    // if (jsonValidationError) {
+    //   setError(jsonValidationError);
+    //   setIsLoading(false);
+    //   return;
+    // }
+
+    // const validationError = validateInput(isChecked);
+    // if (validationError) {
+    //   setError(validationError);
+    //   setIsLoading(false);
+    //   return;
+    // }
+
+    // setProgress({
+    //   value: 0,
+    //   total: cleanedData.length,
+    //   message: "Initializing minting...",
+    // });
     try {
-      for (let i = 0; i < itemsToMint.length; i++) {
-        const tokenData = createTokenData(itemsToMint[i], isChecked);
-        await mintSingleToken(tokenData, i, itemsToMint.length);
+      for (let i = 0; i < cleanedData.length; i++) {
+        const tokenData = createTokenData(cleanedData[i]);
+        await mintSingleToken(tokenData, i, cleanedData.length);
       }
       setStep(2);
-    } catch (error) {
+    } catch (error:any) {
       setError(error.message || "An error occurred");
       toast.error(error.message || "An error occurred");
     } finally {
@@ -310,6 +398,28 @@ const CollectionDetail = () => {
     reset();
     router.push("/create");
   };
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      console.log("__FILE", file)
+      setFileData(file)
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+
+        const firstSheetName = workbook.SheetNames[0];
+        const firstSheet = workbook.Sheets[firstSheetName];
+
+        const sheetData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        console.log("Parsed Excel Data:", sheetData);
+
+        setExcelData(sheetData);
+      };
+      reader.readAsArrayBuffer(file); // Read the file as binary
+    }
+  };
+
 
   const downloadJsonFile = () => {
     const jsonString = JSON.stringify(exampleJson, null, 2);
@@ -356,12 +466,42 @@ const CollectionDetail = () => {
                   Details
                 </p>
                 <div className="flex flex-col w-full gap-6">
-                  <Input
+                  <div className="flex flex-row rounded-xl border-neutral400 border w-[443px] gap-3 justify-center items-center py-3">
+                    <DocumentDownload size={24} color="#ffffff" />
+                    <button
+                      className="text-lg font-semibold text-neutral50"
+                      onClick={() => {
+                        const link = document.createElement("a");
+                        link.href = "/SAMPLEDATA.xlsx"; // Path to the file in the public folder
+                        link.download = "SAMPLE DATA.xlsx"; // Name of the downloaded file
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
+                    >
+                      Download sample .XLSX for correct formatting
+                    </button>
+                  </div>
+                  {fileData ? (
+                    <FileCard
+                      onDelete={handleDelete}
+                      fileName={fileData.name}
+                      fileSize={fileData.size}
+                    />
+                  ) : (
+                    <UploadFile
+                      text="Accepted file types: .xlsx, .xls"
+                      handleImageUpload={handleFileUpload}
+                      acceptedFileTypes=".xlsx, .xls"
+                    />
+                  )}
+
+                  {/* <Input
                     title="Name"
                     text="Collection name"
                     value={headline}
                     onChange={(e) => setHeadline(e.target.value)}
-                  />
+                  /> */}
                   {/* setHeadline */}
                   {/* <Input
                     title="Creater (optional)"
@@ -370,15 +510,15 @@ const CollectionDetail = () => {
                     onChange={(e) => setHeadline(e.target.value)}
                   /> */}
                   {/* add to height description height  */}
-                  <Input
+                  {/* <Input
                     title="Description"
                     text="Collection description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                  />
+                  /> */}
                 </div>
               </div>
-              <div className="flex flex-col w-full gap-8">
+              {/* <div className="flex flex-col w-full gap-8">
                 <p className="font-bold text-profileTitle text-neutral50">
                   Collection logo (Optional)
                 </p>
@@ -390,7 +530,14 @@ const CollectionDetail = () => {
                     handleImageUpload={handleImageUpload}
                   />
                 )}
-              </div>
+              </div> */}
+                {isLoading && (
+                <div>
+                  <progress value={progress.value} max={progress.total} />
+                  <p>{progress.message}</p>
+                  <p>{`${progress.value}/${progress.total} NFTs minted`}</p>
+                </div>
+              )}
               <div className="flex flex-row justify-between w-full gap-8">
                 <ButtonOutline
                   title="Back"
@@ -399,152 +546,30 @@ const CollectionDetail = () => {
                 <ButtonLg
                   title="Continue"
                   isSelected={true}
-                  onClick={() => setStep(1)}
+                  onClick={() => handleSubmit()}
+                //onClick={() => setStep(1)}
                 >
                   Continue
                 </ButtonLg>
               </div>
               {error && <div className="text-red-500 -mt-3">{error}</div>}
-            </div>
-          )}
-          {step == 1 && (
-            <div className="w-[592px] items-start flex flex-col gap-16">
-              <div className="flex flex-col w-full gap-4">
-                <p className="font-bold text-profileTitle text-neutral50">
-                  Upload your Collection
-                </p>
-                <p className="font-normal text-neutral200 text-lg2">
-                  The NFTs you want to include for this brand or project. Please
-                  name your files sequentially, like ‘1.png’, ‘2.jpg’, ‘3.webp’,
-                  etc., according to their order and file type.
-                </p>
-                {files.length !== 0 ? (
-                  <div className="flex flex-row w-full h-full gap-8 overflow-x-auto text-neutral00">
-                    {files.map((item, index) => (
-                      <div key={index} className="w-full h-full">
-                        <CollectiblePreviewCard
-                          image={item.base64}
-                          key={index}
-                          title={item.fileName}
-                          onDelete={() => handleDeleteImage(index)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <UploadFile
-                    text="Accepted file types: WEBP (recommended), JPEG, PNG, SVG, and GIF."
-                    handleImageUpload={handleCollectionImageUpload}
-                    multiple
-                  />
-                )}
-              </div>
-              <div className="flex flex-col w-full gap-8">
-                <div className="flex flex-row items-center justify-between">
-                  <p className="font-bold text-profileTitle text-neutral50">
-                    Include traits
-                  </p>
-                  <Toggle isChecked={isChecked} onChange={handleCheckBox} />
-                </div>
-                <p className="text-neutral100 text-lg2">
-                  Extra data linked to each NFT in this collection that
-                  describes or quantifies unique qualities.
-                </p>
-                <div className="flex flex-row rounded-xl border-neutral400 border w-[443px] gap-3 justify-center items-center py-3">
-                  <DocumentDownload size={24} color="#ffffff" />
-                  <button
-                    className="text-lg font-semibold text-neutral50"
-                    onClick={() => downloadJsonFile()}
-                  >
-                    Download sample .JSON for correct formatting
-                  </button>
-                </div>
-                <div className={isChecked ? `flex` : `hidden`}>
-                  {jsonData.length !== 0 && jsonMetaData ? (
-                    <FileCard
-                      onDelete={handleDelete}
-                      fileName={jsonMetaData.name}
-                      fileSize={jsonMetaData.size}
-                    />
-                  ) : (
-                    <UploadFile
-                      text="Accepted file types: .JSON"
-                      handleImageUpload={handleJsonUpload}
-                      acceptedFileTypes=".json"
-                    />
-                  )}
-                </div>
-              </div>
-              {isLoading && (
-                <div>
-                  <progress value={progress.value} max={progress.total} />
-                  <p>{progress.message}</p>
-                  <p>{`${progress.value}/${progress.total} NFTs minted`}</p>
+              {errorData.length > 0 && (
+                <div className="text-red-500 -mt-3">
+                  {errorData.map((err, idx) => (
+                    <div key={idx} >
+                      {err}
+                    </div>
+                  ))}
                 </div>
               )}
-              {/* <div className="text-red-500">{error}</div> */}
-              <div className="flex flex-row w-full gap-8">
-                <ButtonOutline title="Back" onClick={() => setStep(0)} />
-                <ButtonLg
-                  // type="submit"
-                  isSelected={true}
-                  onClick={() => handleSubmit()}
-                  isLoading={isLoading}
-                  // disabled={isLoading}
-                >
-                  {isLoading ? "...loading" : "Continue"}
-                </ButtonLg>
-              </div>
-              {error && <div className="text-red-500 -mt-5">{error}</div>}
+            
             </div>
           )}
+
           {/* launchpad step */}
 
           {step == 2 && (
             <div className="w-[800px] flex flex-col gap-16">
-              <div className="flex flex-row items-center justify-start w-full gap-8">
-                <img
-                  src={imageBase64}
-                  alt="background"
-                  width={0}
-                  height={160}
-                  sizes="100%"
-                  className="w-[280px] h-[280px] object-cover rounded-3xl"
-                />
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col gap-3">
-                    <p className="text-3xl font-bold text-neutral50">
-                      {headline}
-                    </p>
-                    <p className="text-xl font-medium text-neutral100">
-                      {ticker}
-                    </p>
-                  </div>
-                  {/* <p className="text-neutral100 text-lg2">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Proin ac ornare nisi. Aliquam eget semper risus, sed commodo
-                    elit. Curabitur sed congue magna. Donec ultrices dui nec
-                    ullamcorper aliquet. Nunc efficitur mauris id mi venenatis
-                    imperdiet. Integer mauris lectus, pretium eu nibh molestie,
-                    rutrum lobortis tortor. Duis sit amet sem fermentum,
-                    consequat est nec.
-                  </p> */}
-                </div>
-              </div>
-              <div className="relative flex flex-row w-full h-auto gap-8 overflow-x-auto">
-                {mergedArray.map((item, index) => (
-                  <div key={index} className="w-full h-full">
-                    <CollectiblePreviewCard
-                      image={item.base64}
-                      key={index}
-                      title={item.fileName}
-                      onDelete={() => console.log("")}
-                    />
-                  </div>
-                ))}
-                {/* todo ene gradient iig zasah */}
-                {/* <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-neutral600 via-transparent to-neutral600" /> */}
-              </div>
               <div className="flex flex-row gap-8">
                 <ButtonOutline
                   title="Go home"

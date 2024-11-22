@@ -1,6 +1,7 @@
 import axios from "axios";
 import { utxo } from "@/types";
 import {
+  apiurl,
   maraUrl,
   RPC_PASSWORD,
   RPC_USERNAME,
@@ -39,13 +40,16 @@ export async function getBlockHash(height: number) {
     id: "curltest",
     params: [height],
   };
+  console.log("===response getBlockHash")
+
 
   const response = await axios.post(`${rpcUrl}:${rpcPort}`, body, {
     auth: {
       username: RPC_USERNAME ?? "",
       password: RPC_PASSWORD ?? "",
     },
-  });
+  });  console.log("===response getBlockHash response")
+
 
   return response.data;
 }
@@ -118,6 +122,25 @@ export async function getUtxos(address: string) {
   utxos.sort((a, b) => b.value - a.value);
 
   return utxos;
+}
+
+export async function wishlist(params: any) {
+  const WHITELIST_ADDRESS = "unspents/whitelist"
+  try{
+    console.log("===response wishlist")
+    console.log("===response params",params)
+
+    const response = await axios.post(apiurl, params, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+return response.data;    
+
+  }catch (error) {
+      console.log("🚀 ~ wishlist ~ error:", error);
+    
+  }
 }
 
 export async function sendTransactionToRpc(transactionHex: string) {

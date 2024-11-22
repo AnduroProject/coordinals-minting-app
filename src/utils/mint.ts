@@ -16,12 +16,15 @@ import {
   fetchTransactionHex,
   fetchUtxos,
   sendTransactionHelper,
+  wishlistAddress,
 } from "@/lib/service/fetcher";
 import {
   checkUsedUtxo,
   getSavedUtxo,
   saveUsedUtxo,
 } from "./localStorageHelper";
+import {  apiurl, maraUrl } from "@/lib/constants";
+import { toast } from "sonner";
 
 export const convertDataToSha256Hex = (value: any) => {
   return convert.hash(Buffer.from(value, "utf8")).toString("hex");
@@ -38,42 +41,51 @@ export async function mintToken(
   mnemonics: string,
   feeRate: number,
 ) {
+  console.log("=====minting token====")
+  console.log("=====minting token data====",data)
+
   // Generating addresses from mnemonic
   const seed = bip39.mnemonicToSeedSync(mnemonics);
   const root = bip32.fromSeed(seed, coordinate.networks.testnet);
-
   const childNode = root.derivePath("m/84'/2222'/0'");
-
   const node = childNode.derive(0).derive(0);
   const destNode = childNode.derive(0).derive(2);
   const xpub = childNode.derive(0).neutered().toBase58();
 
+
+const walletxpub= localStorage.getItem("xpubkey") ||"";
+console.log("===walletxpub",walletxpub)
+const acc = bip32.fromBase58(walletxpub, coordinate.networks.testnet);
+const Node = acc.derive(0)
+const desti = acc.derive(2);
+
+
   // Fetch available UTXOs for the given address
-  let utxos: utxo[] = await fetchUtxos(xpub);
+  let utxos: utxo[] = await fetchUtxos(walletxpub);
   console.log("🚀 ~ utxos:", utxos);
   if (utxos.length == 0) {
     throw { message: "UTXO not found" };
   }
   let utxo = utxos[0];
 
-  // Check if the UTXO has been used recently and wait for a new one if necessary
-  if (checkUsedUtxo(utxo.txid)) {
-    console.log("mint waiting started");
-    const savedUtxoTxid = getSavedUtxo();
+  // // Check if the UTXO has been used recently and wait for a new one if necessary
+  // if (checkUsedUtxo(utxo.txid)) {
+  //   console.log("mint waiting started");
+  //   const savedUtxoTxid = getSavedUtxo();
 
-    while (utxo.txid === savedUtxoTxid) {
-      console.log("iteration started");
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Wait for 2 seconds
-      utxos = await fetchUtxos(xpub);
-      if (utxos.length > 0) {
-        utxo = utxos[0];
-      } else {
-        console.log("no utxo found");
-      }
-    }
+  //   while (utxo.txid === savedUtxoTxid) {
+  //     console.log("iteration started");
+  //     await new Promise((resolve) => setTimeout(resolve, 1500)); // Wait for 2 seconds
+  //     utxos = await fetchUtxos(walletxpub);
+  //     if (utxos.length > 0) {
+  //       utxo = utxos[0];
+  //     } else {
+  //       console.log("no utxo found");
+  //     }
+  //   }
 
-    console.log("mint waiting ended");
-  }
+  //   console.log("mint waiting ended");
+  // }
 
   let blockHash, txHex;
 
@@ -85,11 +97,19 @@ export async function mintToken(
       true,
       blockHash.result,
     );
+    //console.log("===hexResponse=",hexResponse)
+    
     txHex = hexResponse.result.hex;
+    console.log("===txHex=",txHex)
+
   } else {
     // Mempool UTXO
     let hexResponse = await fetchTransactionHex(utxo.txid, false, null);
+    console.log("===hexResponse  else=",hexResponse)
+
     txHex = hexResponse.result;
+    console.log("===txHex= else",txHex)
+
   }
   const opreturnData = JSON.stringify(data.opReturnValues);
 
@@ -97,6 +117,8 @@ export async function mintToken(
   const psbt = new coordinate.Psbt({
     network: coordinate.networks.testnet,
   });
+
+  console.log("===psbt=",psbt)
 
   // Set transaction version and asset-specific data
   psbt.setVersion(10);
@@ -114,15 +136,34 @@ export async function mintToken(
     index: utxo.vout,
     nonWitnessUtxo: Buffer.from(txHex, "hex"),
   });
+  let params = {
+    xpub: walletxpub || "",
+    address: "",
+    derivation_index: 0,
+    baseUrl: apiurl,
+  }
 
+  await wishlistAddress(params)
+  //const controllerAddress = "tc1qgqc937p0pjvskgnwn9flxm9dmcmcewfp25zkpm"
   const controllerAddress = coordinate.payments.p2wpkh({
-    pubkey: node.publicKey,
+    pubkey: Node.publicKey,
     network: coordinate.networks.testnet,
   }).address;
+
+  console.log("===controllerAddress=",controllerAddress)
+  let params2 = {
+    xpub: walletxpub || "",
+    address: "",
+    derivation_index: 2,
+    baseUrl: apiurl,
+  }
+ await wishlistAddress(params2)
+
   const toAddress = coordinate.payments.p2wpkh({
-    pubkey: destNode.publicKey,
+    pubkey: desti.publicKey,
     network: coordinate.networks.testnet,
   }).address;
+  console.log("===toAddress=",toAddress)
 
   if (!controllerAddress || !toAddress)
     throw new Error("Controller or change address does not exists.");
@@ -130,21 +171,42 @@ export async function mintToken(
   // Add outputs to the transaction
   psbt.addOutput({ address: controllerAddress, value: 10 ** 8 });
   psbt.addOutput({ address: toAddress, value: data.supply });
+  
 
-  // Calculate transaction size and required fee
-  const vbytes = await calculateSize(psbt, childNode, utxos);
+  //console.log("==psbt  mid22 tohex",psbt.toHex())
+
+
+ //  Calculate transaction size and required fee
+   const vbytes = await calculateSize(psbt, acc, utxos,data);
+   //const vbytes = 172;
+
+  console.log("====vBytes calc",vbytes)
+  console.log("====utxo.value",utxo.value)
 
   const requiredAmount = vbytes * feeRate;
+  console.log("====requiredAmount calc",requiredAmount)
 
   let inputs: utxo[] = [],
     changeAmount = utxo.value - requiredAmount;
+    console.log("====changeAmount calc",changeAmount)
 
-  // If the current UTXO is insufficient, prepare additional inputs
-  if (utxo.value < requiredAmount) {
-    let result = await prepareInputs(xpub, requiredAmount, feeRate);
-    inputs = result.inputs;
-    changeAmount = result.changeAmount;
-  }
+
+   // If the current UTXO is insufficient, prepare additional inputs
+  
+    if (utxo.value < requiredAmount) {
+      console.log("====less amnt")
+      let result = await prepareInputs(walletxpub, requiredAmount, feeRate);
+      if(result != undefined){
+        inputs = result.inputs;
+        changeAmount = result.changeAmount;
+        console.log("====inputs used",inputs)
+        console.log("====changeAmount",changeAmount)
+      }
+    
+  
+    }
+   
+  
 
   // Add additional inputs if necessary
   if (inputs.length !== 0) {
@@ -160,33 +222,40 @@ export async function mintToken(
     }
   }
 
-  // Add change output
+//Add change output
   psbt.addOutput({
-    address: toAddress,
+    address: controllerAddress,
     value: changeAmount,
   });
+  console.log("==psbt 22 hex",psbt.toHex())
+
 
   // Sign all inputs
-  for (let i = 0; i < psbt.inputCount; i++) {
-    const signer = childNode.derive(0).derive(utxos[i].derviation_index);
-    psbt.signInput(i, signer);
-  }
-  psbt.finalizeAllInputs();
+  // for (let i = 0; i < psbt.inputCount; i++) {
+  //   const signer = childNode.derive(0).derive(utxos[i].derviation_index);
+  //   psbt.signInput(i, signer);
+  // }
+  // psbt.finalizeAllInputs();
 
-  // Check if transaction size exceeds the limit
-  if ((psbt.extractTransaction(true).virtualSize() * 4) / 1000 > 3600) {
-    throw new Error("Maximum file size exceeded.");
-  }
+  // // Check if transaction size exceeds the limit
+  // if ((psbt.extractTransaction(true).virtualSize() * 4) / 1000 > 3600) {
+  //   throw new Error("Maximum file size exceeded.");
+  // }
 
-  // Broadcast the transaction
+  // //Broadcast the transaction
   try {
-    const response: rpcResponse = await sendTransactionHelper(
-      psbt.extractTransaction(true).toHex(),
-    );
-    console.log(response);
+    //const response: rpcResponse = await sendTransactionHelper(
+      // psbt.extractTransaction(true).toHex(),
+      psbt.toHex()
+
+    //);
+    // console.log(      psbt.extractTransaction(true).toHex(),"----extractTransaction------"
+    // );
+
+    //console.log(psbt.toHex());
     saveUsedUtxo(utxo.txid);
 
-    return response;
+    return psbt.toHex();
   } catch (error) {
     console.log(error);
   }
