@@ -3,6 +3,7 @@ import { inputSize } from "@/lib/constants";
 import { getUtxos } from "./libs";
 import { fetchUtxos } from "@/lib/service/fetcher";
 import { toast } from "sonner";
+import { getUnspentsLsit } from "./calculateSize";
 
 export async function prepareInputs(
   address: string,
@@ -10,42 +11,31 @@ export async function prepareInputs(
   feeRate: number,
 ) {
   const utxos: utxo[] = await fetchUtxos(address);
-  console.log(" all utxos",utxos)
 
-  //removing already added input, and subtracting the value
-  // const maxUtxo = utxos.shift();
-  // if (!maxUtxo) throw new Error("No utxo found.");
-  // requiredAmount -= maxUtxo.value;
+  const  unspent_list :utxo[]= await getUnspentsLsit(utxos)
+  unspent_list.sort((a, b) => b.value - a.value);
 
   const inputs: utxo[] = [];
   let totalAmount = 0,
     index = 0;
 
-    console.log("==total amnt initial",totalAmount)
-    console.log("==requiredAmountinitial",requiredAmount)
 
   while (totalAmount < requiredAmount) {
-    console.log("==utxo.lenth",utxos.length)
+    
 
-    if (index > utxos.length -1) {
+    if (index > unspent_list.length -1) {
       //throw new Error("Insufficient balance.");
       toast.error("Insufficient balance.")
       return
     }
-    
-    //toast.error("Insufficient balance.")
-    //throw new Error("Insufficient balance.");
-
-    inputs.push(utxos[index]);
-    console.log("==utxo.inputs",inputs)
-
-    totalAmount += utxos[index].value;
-    console.log("==utxo.totalAmount",totalAmount)
+   
+    inputs.push(unspent_list[index]);
+  
+    totalAmount += unspent_list[index].value;
 
     index++;
     requiredAmount += inputSize * feeRate;
-    console.log("==utxo.requiredAmount",requiredAmount)
-
+    
   }
   return {
     inputs: inputs,

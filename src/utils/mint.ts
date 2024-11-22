@@ -9,7 +9,7 @@ import * as bip39 from "bip39";
 import BIP32Factory from "bip32";
 const bip32 = BIP32Factory(ecc);
 
-import { calculateSize } from "./calculateSize";
+import { calculateSize, getUnspentsLsit } from "./calculateSize";
 import { prepareInputs } from "./prepareInputs";
 import {
   fetchBlockHash,
@@ -38,79 +38,46 @@ export const stringtoHex = (value: any) => {
 
 export async function mintToken(
   data: tokenData,
-  mnemonics: string,
   feeRate: number,
 ) {
   console.log("=====minting token====")
   console.log("=====minting token data====",data)
 
-  // Generating addresses from mnemonic
-  const seed = bip39.mnemonicToSeedSync(mnemonics);
-  const root = bip32.fromSeed(seed, coordinate.networks.testnet);
-  const childNode = root.derivePath("m/84'/2222'/0'");
-  const node = childNode.derive(0).derive(0);
-  const destNode = childNode.derive(0).derive(2);
-  const xpub = childNode.derive(0).neutered().toBase58();
-
 
 const walletxpub= localStorage.getItem("xpubkey") ||"";
 console.log("===walletxpub",walletxpub)
 const acc = bip32.fromBase58(walletxpub, coordinate.networks.testnet);
-const Node = acc.derive(0)
-const desti = acc.derive(2);
+const node = acc.derive(0)
+const destNode = acc.derive(2);
 
 
-  // Fetch available UTXOs for the given address
-  let utxos: utxo[] = await fetchUtxos(walletxpub);
-  console.log("🚀 ~ utxos:", utxos);
-  if (utxos.length == 0) {
-    throw { message: "UTXO not found" };
-  }
-  let utxo = utxos[0];
 
-  // // Check if the UTXO has been used recently and wait for a new one if necessary
-  // if (checkUsedUtxo(utxo.txid)) {
-  //   console.log("mint waiting started");
-  //   const savedUtxoTxid = getSavedUtxo();
-
-  //   while (utxo.txid === savedUtxoTxid) {
-  //     console.log("iteration started");
-  //     await new Promise((resolve) => setTimeout(resolve, 1500)); // Wait for 2 seconds
-  //     utxos = await fetchUtxos(walletxpub);
-  //     if (utxos.length > 0) {
-  //       utxo = utxos[0];
-  //     } else {
-  //       console.log("no utxo found");
-  //     }
-  //   }
-
-  //   console.log("mint waiting ended");
-  // }
+  
 
   let blockHash, txHex;
 
-  if (utxo.confirmations !== 0) {
-    // Confirmed UTXO
-    blockHash = await fetchBlockHash(utxo.height);
-    let hexResponse = await fetchTransactionHex(
-      utxo.txid,
-      true,
-      blockHash.result,
-    );
-    //console.log("===hexResponse=",hexResponse)
+  // if (utxo.confirmations !== 0) {
+  //   // Confirmed UTXO
+  //   blockHash = await fetchBlockHash(utxo.height);
+  //   let hexResponse = await fetchTransactionHex(
+  //     utxo.txid,
+  //     true,
+  //     blockHash.result,
+  //   );
+  //   //console.log("===hexResponse=",hexResponse)
     
-    txHex = hexResponse.result.hex;
-    console.log("===txHex=",txHex)
+  //   txHex = hexResponse.result.hex;
+  //   console.log("===txHex=",txHex)
 
-  } else {
-    // Mempool UTXO
-    let hexResponse = await fetchTransactionHex(utxo.txid, false, null);
-    console.log("===hexResponse  else=",hexResponse)
+  // } else {
+  //   // Mempool UTXO
+  //   let hexResponse = await fetchTransactionHex(utxo.txid, false, null);
+  //   console.log("===hexResponse  else=",hexResponse)
 
-    txHex = hexResponse.result;
-    console.log("===txHex= else",txHex)
+  //   txHex = hexResponse.result;
+  //   console.log("===txHex= else",txHex)
 
-  }
+  // }
   const opreturnData = JSON.stringify(data.opReturnValues);
 
   const payloadHex = convertDataToSha256Hex(opreturnData);
@@ -130,10 +97,37 @@ const desti = acc.derive(2);
 
   if (data.assetType === 0) psbt.setPrecisionType(8);
 
+
+  // Fetch available UTXOs for the given xpub
+  let utxos: utxo[] = await fetchUtxos(walletxpub);
+  console.log("🚀 ~ utxos:", utxos);
+  if (utxos.length == 0) {
+    throw { message: "UTXO not found" };
+  }
+
+    const  unspent_list :utxo[]= await getUnspentsLsit(utxos)
+    unspent_list.sort((a, b) => b.value - a.value);
+    console.log(" all unspent_list in mint",unspent_list)
+
+    // Select the UTXO with the highest value
+    let utxo_sort = unspent_list[0];
+    
+    console.log("🚀 ~ Selected UTXO with highest value:", utxo_sort);
+
+    blockHash = await fetchBlockHash(utxo_sort.height);
+    let hexResponse = await fetchTransactionHex(
+      utxo_sort.txid,
+      true,
+      blockHash.result,
+    );
+    
+    txHex = hexResponse.result.hex;
+    console.log("===txHex=",txHex)
+
   // Add input UTXO to the transaction
   psbt.addInput({
-    hash: utxo.txid,
-    index: utxo.vout,
+    hash: utxo_sort.txid,
+    index: utxo_sort.vout,
     nonWitnessUtxo: Buffer.from(txHex, "hex"),
   });
   let params = {
@@ -144,9 +138,8 @@ const desti = acc.derive(2);
   }
 
   await wishlistAddress(params)
-  //const controllerAddress = "tc1qgqc937p0pjvskgnwn9flxm9dmcmcewfp25zkpm"
   const controllerAddress = coordinate.payments.p2wpkh({
-    pubkey: Node.publicKey,
+    pubkey: node.publicKey,
     network: coordinate.networks.testnet,
   }).address;
 
@@ -160,7 +153,7 @@ const desti = acc.derive(2);
  await wishlistAddress(params2)
 
   const toAddress = coordinate.payments.p2wpkh({
-    pubkey: desti.publicKey,
+    pubkey: destNode.publicKey,
     network: coordinate.networks.testnet,
   }).address;
   console.log("===toAddress=",toAddress)
@@ -173,27 +166,19 @@ const desti = acc.derive(2);
   psbt.addOutput({ address: toAddress, value: data.supply });
   
 
-  //console.log("==psbt  mid22 tohex",psbt.toHex())
 
 
  //  Calculate transaction size and required fee
    const vbytes = await calculateSize(psbt, acc, utxos,data);
-   //const vbytes = 172;
-
-  console.log("====vBytes calc",vbytes)
-  console.log("====utxo.value",utxo.value)
-
   const requiredAmount = vbytes * feeRate;
-  console.log("====requiredAmount calc",requiredAmount)
 
   let inputs: utxo[] = [],
-    changeAmount = utxo.value - requiredAmount;
-    console.log("====changeAmount calc",changeAmount)
+    changeAmount = utxo_sort.value - requiredAmount;
 
 
    // If the current UTXO is insufficient, prepare additional inputs
   
-    if (utxo.value < requiredAmount) {
+    if (utxo_sort.value < requiredAmount) {
       console.log("====less amnt")
       let result = await prepareInputs(walletxpub, requiredAmount, feeRate);
       if(result != undefined){
@@ -202,12 +187,9 @@ const desti = acc.derive(2);
         console.log("====inputs used",inputs)
         console.log("====changeAmount",changeAmount)
       }
-    
-  
     }
    
-  
-
+ 
   // Add additional inputs if necessary
   if (inputs.length !== 0) {
     for (let i = 0; i < inputs.length; i++) {
@@ -230,30 +212,9 @@ const desti = acc.derive(2);
   console.log("==psbt 22 hex",psbt.toHex())
 
 
-  // Sign all inputs
-  // for (let i = 0; i < psbt.inputCount; i++) {
-  //   const signer = childNode.derive(0).derive(utxos[i].derviation_index);
-  //   psbt.signInput(i, signer);
-  // }
-  // psbt.finalizeAllInputs();
-
-  // // Check if transaction size exceeds the limit
-  // if ((psbt.extractTransaction(true).virtualSize() * 4) / 1000 > 3600) {
-  //   throw new Error("Maximum file size exceeded.");
-  // }
-
-  // //Broadcast the transaction
   try {
-    //const response: rpcResponse = await sendTransactionHelper(
-      // psbt.extractTransaction(true).toHex(),
-      psbt.toHex()
 
-    //);
-    // console.log(      psbt.extractTransaction(true).toHex(),"----extractTransaction------"
-    // );
-
-    //console.log(psbt.toHex());
-    saveUsedUtxo(utxo.txid);
+    saveUsedUtxo(utxo_sort.txid);
 
     return psbt.toHex();
   } catch (error) {

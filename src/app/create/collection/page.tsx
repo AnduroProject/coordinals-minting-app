@@ -260,7 +260,7 @@ const CollectionDetail = () => {
   ) => {
     try {
       console.log("MINTING DATA", data)
-      const mintResponse = await mintToken(data, MOCK_MENOMIC, FEERATE);
+      const mintResponse = await mintToken(data, FEERATE);
       console.log("🚀 ~ mintSingleToken ~ mintResponse:", mintResponse);
       if (mintResponse) {
 
@@ -273,7 +273,7 @@ const CollectionDetail = () => {
         if (result && result.error) {
           setError(result.error)
           toast.error(result.error)
-          setStep(2)
+          setStep(1)
         } else {
           setError("")
           setIsLoading(false);
@@ -282,11 +282,11 @@ const CollectionDetail = () => {
         }
 
       }
-      // setProgress({
-      //   value: index + 1,
-      //   total,
-      //   message: `Minting ${index + 1}/${total}`,
-      // });
+      setProgress({
+        value: index + 1,
+        total,
+        message: `Minting ${index + 1}/${total}`,
+      });
     } catch (error) {
       console.log("🚀 ~ mintSingleToken ~ error:", error);
       throw error;
@@ -375,17 +375,17 @@ const CollectionDetail = () => {
     //   return;
     // }
 
-    // setProgress({
-    //   value: 0,
-    //   total: cleanedData.length,
-    //   message: "Initializing minting...",
-    // });
+    setProgress({
+      value: 0,
+      total: cleanedData.length,
+      message: "Initializing minting...",
+    });
     try {
       for (let i = 0; i < cleanedData.length; i++) {
         const tokenData = createTokenData(cleanedData[i]);
         await mintSingleToken(tokenData, i, cleanedData.length);
       }
-      setStep(2);
+      setStep(1);
     } catch (error:any) {
       setError(error.message || "An error occurred");
       toast.error(error.message || "An error occurred");
@@ -451,7 +451,7 @@ const CollectionDetail = () => {
         <div className="flex flex-col items-center gap-16 z-50">
           <Banner
             title={
-              step == 0 || step == 3
+              step == 0 
                 ? "Create collection"
                 : "Your Collection is successfully created!"
             }
@@ -568,7 +568,7 @@ const CollectionDetail = () => {
 
           {/* launchpad step */}
 
-          {step == 2 && (
+          {step == 1 && (
             <div className="w-[800px] flex flex-col gap-16">
               <div className="flex flex-row gap-8">
                 <ButtonOutline

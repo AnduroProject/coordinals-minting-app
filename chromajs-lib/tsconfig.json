@@ -13,6 +13,7 @@
     "esModuleInterop": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true
+    
   },
   "include": [
       "ts_src/**/*.ts"

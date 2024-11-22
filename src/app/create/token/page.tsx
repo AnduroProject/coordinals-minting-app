@@ -102,27 +102,25 @@ const SingleToken = () => {
       return;
     }
     try {
-      // console.log("🚀 ~ handleSubmit ~ res:", res);
+      
       // Call the mintToken function with the required data
-      const transactionResult = await mintToken(data, MOCK_MENOMIC, FEERATE);
+      const transactionResult = await mintToken(data, FEERATE);
       //console.log("🚀 ~ handleSubmit ~ res:", transactionResult);
 
-      // if(transactionResult){
-      //   const response = await signTransaction({
-      //     hex: transactionResult,
-
-      // });   console.log("🚀 ~ response ~ res:", response);
+    
       if (transactionResult) {
-        //console.log(".signedHex,:",response.result.signedHex)
-
         const result = await signAndSendTransaction({
           hex: transactionResult,
           transactionType: "normal",
         }); console.log("🚀 ~ sendTransactionresult ~ res:", result);
 
         if (result && result.error) {
-          setError(result.error)
-          toast.error(result.error)
+          const errorMessage = typeof result.error === "string" 
+            ? result.error.result 
+            : "An error occurred";
+          
+          setError(errorMessage);
+          toast.error(errorMessage);
           setStep(0);
 
         }else {

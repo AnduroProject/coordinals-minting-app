@@ -65,11 +65,9 @@ export function wishlistAddress(params: any) {
   return axios
     .post("/api/wishlist",{params} )
     .then((response) => {
-      console.log("=====wishlistAddress 222,")
-      console.log("=====wishlistAddress response",response)
-
+     
       return response.data.data;
     }).catch((error) =>{
-console.log("=====catched,",error)
+ console.log("=====catched,",error)
     });
 }

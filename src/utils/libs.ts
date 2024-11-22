@@ -127,9 +127,6 @@ export async function getUtxos(address: string) {
 export async function wishlist(params: any) {
   const WHITELIST_ADDRESS = "unspents/whitelist"
   try{
-    console.log("===response wishlist")
-    console.log("===response params",params)
-
     const response = await axios.post(apiurl, params, {
       headers: {
         'Content-Type': 'application/json',

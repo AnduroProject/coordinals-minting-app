@@ -26,6 +26,8 @@ export type utxo = {
   height: number;
   derviation_index: number;
   confirmations: number;
+  unspent_type:number
+
 };
 
 export type rpcResponse = {

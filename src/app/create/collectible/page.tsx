@@ -27,8 +27,8 @@ const stepperData = ["Upload", "Confirm"];
 
 const SingleCollectible = () => {
   const router = useRouter();
-  const {signTransaction,sendTransaction ,signAndSendTransaction} =
-  React.useContext<any>(useConnector);
+  const { signTransaction, sendTransaction, signAndSendTransaction } =
+    React.useContext<any>(useConnector);
 
   const {
     ticker,
@@ -108,35 +108,31 @@ const SingleCollectible = () => {
     }
     try {
       // Call the mintToken function with the required data
-      const transactionResult = await mintToken(data, MOCK_MENOMIC, FEERATE);
-      //console.log("handleSubmit collectible:", transactionResult);
-
-      if(transactionResult){
-        const response = await signTransaction({
+      const transactionResult = await mintToken(data, FEERATE);
+      console.log("🚀 ~ transactionResult:", transactionResult);
+      if (transactionResult) {
+        const result = await signAndSendTransaction({
           hex: transactionResult,
-        
-        });   console.log("🚀 ~ response ~ res:", response);
-        if(response){
-          //console.log("signedHex collectivle,:",response.result.signedHex)
+          transactionType: "normal",
 
-          const result = await sendTransaction({
-            hex: response.result.signedHex,
-            transactionType: "normal",
-          });   console.log("🚀 ~ sendTransactionresult ~ res:", result);
-          if (result && result.error) {
-            setError(result.error)
-            toast.error(result.error)
-            setStep(0);
-  
-          }else {
-            setError("")
-            setStep(1);
-            setIsLoading(false);
-  
-  
-          }
+        }); console.log("🚀 ~ signAndSendTransaction  ~ res:", result);
+
+        if (result && result.error) {
+          const errorMessage = typeof result.error === "string" 
+            ? result.error.result 
+            : "An error occurred";
+          setError(errorMessage)
+          toast.error(errorMessage)
+          setStep(0);
+
+        } else {
+          setError("")
+          setStep(1);
+          setIsLoading(false);
+
         }
       }
+
       // if (transactionResult && transactionResult.error == false) {
       //   setError(transactionResult.message || "An error occurred"); // Set the error state
       //   toast.error(transactionResult.message || "An error occurred");
@@ -152,8 +148,8 @@ const SingleCollectible = () => {
       // }
 
       //setStep(1);
-    } catch (error:any) {
-      setError(error.message || "An error occurred"); 
+    } catch (error: any) {
+      setError(error.message || "An error occurred");
       toast.error(error.message || "An error occurred");
       return setIsLoading(false);
     }

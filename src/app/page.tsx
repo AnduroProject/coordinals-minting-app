@@ -35,13 +35,13 @@ const Create = () => {
   };
 
   const data = [
-    {
-      id: 1,
-      icon: Gallery,
-      title: "Collection",
-      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      pageUrl: "/create/collection",
-    },
+    // {
+    //   id: 1,
+    //   icon: Gallery,
+    //   title: "Collection",
+    //   text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    //   pageUrl: "/create/collection",
+    // },
     {
       id: 2,
       icon: Stop,

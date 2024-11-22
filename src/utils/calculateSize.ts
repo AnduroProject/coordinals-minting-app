@@ -31,10 +31,7 @@ export async function calculateSize(
 ) {
   let transactionSize = 11
   // segwit address input size
-  let inputSize = 68
-
-  console.log("====calculateSize",data)
-  console.log("====calculateSize 22",data.opReturnValues)
+  let inputSize = 72
 
     transactionSize += inputSize * psbt.data.inputs.length
     for (let index = 0; index < psbt.data.outputs.length; index++) {
@@ -45,9 +42,7 @@ export async function calculateSize(
       transactionSize += 2 // default size for asset type
       transactionSize += Buffer.from(data.headline, "utf8").byteLength
       transactionSize += Buffer.from(data.ticker, "utf8").byteLength
-   
-      // transactionSize += Buffer.from(transactionData.payload, "hex").byteLength
-      if(data.assetType === 0 || data.assetType === 1){
+         if(data.assetType === 0 || data.assetType === 1){
         transactionSize += Buffer.from(data.opReturnValues[0].image_url
           , "utf8").byteLength
       }else {
@@ -56,8 +51,32 @@ export async function calculateSize(
         
       }
 
-
   console.log("====outputSize",transactionSize)
-
   return transactionSize;
+}
+export async  function   getUnspentsLsit(
+   utxos:utxo[],
+   
+) {
+  const unspents: utxo[] = []
+  //const blockHeight: number = (await getMinedBlockCount(networkInfo.chromaBookApi)).height
+  for (let i = 0; i < utxos.length; i++) {
+    const unspent = utxos[i]
+    if (!unspent.coinbase) unspents.push(unspent)
+    if (
+      unspent.coinbase &&
+      (isTxConfirmed(unspent.height, unspent.height, "sidechain") || unspent.unspent_type
+      )
+    ) {
+      unspents.push(unspent)
+    }
+  }
+  return unspents
+}
+
+
+export const isTxConfirmed = (txHeight: number, blockHeight: number, networkType: string) => {
+  let coinbaseMaximumConfimation = 100
+  if (networkType === "sidechain") coinbaseMaximumConfimation = 10
+  return blockHeight - txHeight > coinbaseMaximumConfimation && txHeight !== 0
 }
