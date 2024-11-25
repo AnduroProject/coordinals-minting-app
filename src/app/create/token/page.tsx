@@ -172,20 +172,20 @@ const SingleToken = () => {
                   <div className="w-full gap-6 flex flex-col">
                     <Input
                       title="Name"
-                      text="Collectible name"
+                      text="Token name"
                       value={headline}
                       onChange={(e) => setHeadline(e.target.value)}
                     />
                     <Input
                       title="Ticker"
-                      text="Collectible ticker"
+                      text="Token ticker"
                       value={ticker}
                       onChange={(e) => setTicker(e.target.value)}
                     />
                     {/* NaN erro */}
                     <Input
                       title="Supply"
-                      text="Collectible supply"
+                      text="Token supply"
                       value={supply}
                       onChange={(e) => {
                         const value = e.target.value;
@@ -195,7 +195,7 @@ const SingleToken = () => {
                     />
                     <Input
                       title="Token logo image url"
-                      text="Collectible logo image"
+                      text="Token logo image"
                       value={imageUrl}
                       onChange={(e) => setImageUrl(e.target.value)}
                     />
