@@ -51,7 +51,10 @@ export default function Header() {
 
     if (walletState.connectionState == "disconnected" && walletconnection === "true") {
       console.log("=====1111")
-      handleDisconnectionAction()
+      setWalletAddress("");
+      localStorage.removeItem("isWalletConnected")
+      setIsConnecting(false)
+
     } else if (walletState.connectionState == "connected") {
       setWalletAddress(walletState.accountPublicKey);
     }
@@ -61,7 +64,7 @@ export default function Header() {
     try {
       //setIsConnecting(true);
       console.log("======wallet url", WALLET_URL)
-
+      const result = await disconnect();
       const response = await connect({
         chainId: 5,
         walletURL: WALLET_URL,
