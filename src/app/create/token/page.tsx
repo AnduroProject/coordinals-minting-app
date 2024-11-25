@@ -24,7 +24,6 @@ import { useConnector } from "anduro-wallet-connector-react";
 
 const SingleToken = () => {
   const router = useRouter();
-  const walletconnection = localStorage.getItem("isWalletConnected")
   const { walletState } =
     useContext<any>(useConnector);
   const { signAndSendTransaction, signTransaction, sign, sendTransaction } =
@@ -170,7 +169,6 @@ const SingleToken = () => {
   return (
     <Layout>
       <div className="flex flex-col w-full h-full pb-[148px]">
-        <Header />
         <div className="flex flex-col items-center gap-16 z-50">
           <Banner
             title="Create token"

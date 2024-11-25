@@ -168,7 +168,6 @@ const SingleCollectible = () => {
   return (
     <Layout>
       <div className="flex flex-col w-full h-full bg-background items-center pb-[148px]">
-        <Header />
         <div className="w-full flex flex-col items-center gap-16 z-50">
           <Banner
             title={

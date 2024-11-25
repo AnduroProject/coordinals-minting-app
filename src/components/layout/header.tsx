@@ -26,7 +26,6 @@ export default function Header() {
   const handleDisconnectionAction = async () => {
     const result = await disconnect();
     console.log("*******Disconnect Result", result);
-
     if (result.status === true) {
       setWalletAddress("");
       localStorage.removeItem("isWalletConnected")
@@ -35,14 +34,16 @@ export default function Header() {
       toast.success(`Wallet  disconnected`);
 
     }
-
     console.log("*******Disconnect Result 222", result);
-
   };
+
+  React.useEffect(() => {
+    console.log("jeyakumar test");
+  },[]);
+
   React.useEffect(() => {
     console.log("Connector Network Information", networkState);
     console.log("Connector Wallet Information", walletState);
-    //setIsWalletConnected(localStorage.getItem("isWalletConnected") || "false")
     console.log("======walletAddress url", walletAddress)
     console.log("======isWalletConnected ", isWalletConnected)
     const walletconnection = localStorage.getItem("isWalletConnected")
@@ -51,36 +52,10 @@ export default function Header() {
     if (walletState.connectionState == "disconnected" && walletconnection === "true") {
       console.log("=====1111")
       handleDisconnectionAction()
+    } else if (walletState.connectionState == "connected") {
+      setWalletAddress(walletState.accountPublicKey);
     }
   }, [walletState, networkState]);
-
-  // useEffect(() => {
-  //   const connectWalletOnLoad = async () => {
-  //     try {
-  //       if (window) {
-  //         console.log("walletState ", walletState);
-
-  //         const walletAddress = localStorage.getItem("connectedAddress");
-  //          if (walletAddress) {
-  //           console.log("walletState 222", walletState.connectionState);
-
-  //           if (walletState.connectionState == "disconnected") {
-  //             handleLogin();
-  //           }
-  //           if (walletState.connectionState == "connecting") {
-  //             handleDisconnectionAction();
-  //           }
-
-  //           setWalletAddress(walletAddress);
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-
-  //   connectWalletOnLoad();
-  // }, [walletState]);
 
   const handleLogin = async () => {
     try {
@@ -126,51 +101,52 @@ export default function Header() {
   };
 
   const handleLogout = async () => {
-
-
     await handleDisconnectionAction();
     window.localStorage.removeItem("userProfile");
     router.push("/");
   };
 
   return (
-    <div className="h-[72px] w-full flex justify-center bg-neutral500 bg-opacity-[50%] mt-5 rounded-3xl">
-      <div className="flex flex-row justify-between items-center max-w-[1216px] w-full">
-        <div className="flex flex-row justify-between items-center w-full pl-6 pr-4 h-full">
-          <Link href={"/"}>
-            <Image src={"/Logo.svg"} alt="coordinals" width={222} height={40} />
-          </Link>
-          <div className="flex flex-row overflow-hidden items-center gap-4">
-            <div className="flex flex-row gap-2 text-neutral00">
-              {routesData.map((item, index) => (
-                <HeaderItem
-                  key={index}
-                  title={item.title}
-                  handleNav={() => router.push(item.pageUrl)}
-                />
-              ))}
+    <div className="md:container xl:container">
+      <div className="h-[72px] w-full flex justify-center bg-neutral500 bg-opacity-[50%] mt-5 rounded-3xl">
+        <div className="flex flex-row justify-between items-center max-w-[1216px] w-full">
+          <div className="flex flex-row justify-between items-center w-full pl-6 pr-4 h-full">
+            <Link href={"/"}>
+              <Image src={"/Logo.svg"} alt="coordinals" width={222} height={40} />
+            </Link>
+            <div className="flex flex-row overflow-hidden items-center gap-4">
+              <div className="flex flex-row gap-2 text-neutral00">
+                {routesData.map((item, index) => (
+                  <HeaderItem
+                    key={index}
+                    title={item.title}
+                    handleNav={() => router.push(item.pageUrl)}
+                  />
+                ))}
+              </div>
+              {walletAddress === "" ? (
+                <Button
+                  variant={"outline"}
+                  size={"lg"}
+                  onClick={() => handleLogin()}
+                  disabled={isConnecting}
+                >
+                  {isConnecting ? "Loading..." : "Connect Wallet"}
+                </Button>
+              ) : (
+                <Button
+                  variant={"outline"}
+                  size={"lg"}
+                  onClick={() => handleLogout()}
+                >
+                  Disconnect
+                </Button>
+              )}
             </div>
-            {walletAddress === "" ? (
-              <Button
-                variant={"outline"}
-                size={"lg"}
-                onClick={() => handleLogin()}
-                disabled={isConnecting}
-              >
-                {isConnecting ? "Loading..." : "Connect Wallet"}
-              </Button>
-            ) : (
-              <Button
-                variant={"outline"}
-                size={"lg"}
-                onClick={() => handleLogout()}
-              >
-                Disconnect
-              </Button>
-            )}
           </div>
         </div>
       </div>
     </div>
+
   );
 }
