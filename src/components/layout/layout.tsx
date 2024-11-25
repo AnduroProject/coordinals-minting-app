@@ -13,7 +13,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {}, []);
   return (
     <main className={bai_Jamjuree.className}>
-      <div className="flex flex-col w-full h-full bg-background min-h-screen items-center pb-[112px]">
+      <div className="flex flex-col w-full h-full bg-background min-h-screen items-center">
         <div className="w-full max-w-[1216px]">{children}</div>
       </div>
     </main>
