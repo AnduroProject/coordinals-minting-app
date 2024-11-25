@@ -24,7 +24,6 @@ import { useConnector } from "anduro-wallet-connector-react";
 
 const SingleToken = () => {
   const router = useRouter();
-  const walletconnection = localStorage.getItem("isWalletConnected")
   const { walletState } =
     useContext<any>(useConnector);
   const { signAndSendTransaction, signTransaction, sign, sendTransaction } =
@@ -128,29 +127,15 @@ const SingleToken = () => {
           setError(errorMessage);
           toast.error(errorMessage);
           setStep(0);
+          setIsLoading(false);
 
         } else {
           setError("")
           setStep(1);
           setIsLoading(false);
-
-
         }
 
       }
-      //}
-
-
-      // if (transactionResult && transactionResult.error == false) {
-      //   setError(transactionResult || "An error occurred"); // Set the error state
-      //   toast.error(transactionResult.message || "An error occurred");
-      //   setIsLoading(false);
-      // } else {
-      //   setError("");
-      //   setIsLoading(false);
-      //   // setTxUrl(`https://testnet.coordiscan.io/tx/${mintResponse.result}`);
-      //   setStep(1);
-      // }
     } catch (error: any) {
       console.log("🚀 ~ handleSubmit ~ error:", JSON.stringify(error));
       setError(error.message);
@@ -170,7 +155,6 @@ const SingleToken = () => {
   return (
     <Layout>
       <div className="flex flex-col w-full h-full pb-[148px]">
-        <Header />
         <div className="flex flex-col items-center gap-16 z-50">
           <Banner
             title="Create token"
@@ -188,20 +172,20 @@ const SingleToken = () => {
                   <div className="w-full gap-6 flex flex-col">
                     <Input
                       title="Name"
-                      text="Collectible name"
+                      text="Token name"
                       value={headline}
                       onChange={(e) => setHeadline(e.target.value)}
                     />
                     <Input
                       title="Ticker"
-                      text="Collectible ticker"
+                      text="Token ticker"
                       value={ticker}
                       onChange={(e) => setTicker(e.target.value)}
                     />
                     {/* NaN erro */}
                     <Input
                       title="Supply"
-                      text="Collectible supply"
+                      text="Token supply"
                       value={supply}
                       onChange={(e) => {
                         const value = e.target.value;
@@ -211,7 +195,7 @@ const SingleToken = () => {
                     />
                     <Input
                       title="Token logo image url"
-                      text="Collectible logo image"
+                      text="Token logo image"
                       value={imageUrl}
                       onChange={(e) => setImageUrl(e.target.value)}
                     />

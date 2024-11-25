@@ -35,13 +35,6 @@ const Create = () => {
   };
 
   const data = [
-    // {
-    //   id: 1,
-    //   icon: Gallery,
-    //   title: "Collection",
-    //   text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    //   pageUrl: "/create/collection",
-    // },
     {
       id: 2,
       icon: Stop,
@@ -61,7 +54,6 @@ const Create = () => {
   return (
     <Layout>
       <div className="flex h-full w-full flex-col justify-start bg-background bg-opacity-[70%] items-center pb-[148px]">
-        <Header />
         <div className="flex flex-col items-center w-full gap-12 mt-[42.5px] z-50">
           <div className="relative w-full h-40 flex justify-center max-w-[1216px] bg-opacity-[70%]">
             <Image

@@ -35,13 +35,6 @@ const Create = () => {
   };
 
   const data = [
-    // {
-    //   id: 1,
-    //   icon: Gallery,
-    //   title: "Collection",
-    //   text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    //   pageUrl: "/create/collection",
-    // },
     {
       id: 2,
       icon: Stop,
@@ -60,8 +53,7 @@ const Create = () => {
 
   return (
     <Layout>
-      <div className="flex h-full w-full flex-col justify-start items-center pb-[148px]">
-        <Header />
+      <div className="flex h-full w-full flex-col justify-start items-center pb-20">
         <div className="flex flex-col items-center w-full gap-12 mt-[42.5px] z-50">
           <div className="relative w-full h-40 flex justify-center max-w-[1216px]">
             <Image
@@ -96,7 +88,7 @@ const Create = () => {
               />
             ))}
           </div>
-          <ButtonLg isSelected={selectedOption !== null} onClick={handleNav}>
+          <ButtonLg type="button" isSelected={selectedOption !== null} onClick={handleNav}>
             Continue
           </ButtonLg>
         </div>

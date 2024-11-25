@@ -93,6 +93,8 @@ export async function mintToken(
     txHex = hexResponse.result.hex;
     console.log("===txHex=", txHex)
 
+  } else {
+    throw { message: "UTXO not have enough confirmation" };
   }
 
 
