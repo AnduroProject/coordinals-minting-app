@@ -88,7 +88,7 @@ const Create = () => {
               />
             ))}
           </div>
-          <ButtonLg isSelected={selectedOption !== null} onClick={handleNav}>
+          <ButtonLg type="button" isSelected={selectedOption !== null} onClick={handleNav}>
             Continue
           </ButtonLg>
         </div>
