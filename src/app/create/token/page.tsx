@@ -133,24 +133,9 @@ const SingleToken = () => {
           setError("")
           setStep(1);
           setIsLoading(false);
-
-
         }
 
       }
-      //}
-
-
-      // if (transactionResult && transactionResult.error == false) {
-      //   setError(transactionResult || "An error occurred"); // Set the error state
-      //   toast.error(transactionResult.message || "An error occurred");
-      //   setIsLoading(false);
-      // } else {
-      //   setError("");
-      //   setIsLoading(false);
-      //   // setTxUrl(`https://testnet.coordiscan.io/tx/${mintResponse.result}`);
-      //   setStep(1);
-      // }
     } catch (error: any) {
       console.log("🚀 ~ handleSubmit ~ error:", JSON.stringify(error));
       setError(error.message);
