@@ -37,9 +37,6 @@ export default function Header() {
     console.log("*******Disconnect Result 222", result);
   };
 
-  React.useEffect(() => {
-    console.log("jeyakumar test");
-  },[]);
 
   React.useEffect(() => {
     console.log("Connector Network Information", networkState);
