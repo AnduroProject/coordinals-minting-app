@@ -12,30 +12,22 @@ export async function prepareInputs(
 ) {
   const utxos: utxo[] = await fetchUtxos(address);
 
-  const  unspent_list :utxo[]= await getUnspentsLsit(utxos)
-  unspent_list.sort((a, b) => b.value - a.value);
-
   const inputs: utxo[] = [];
   let totalAmount = 0,
     index = 0;
 
-
   while (totalAmount < requiredAmount) {
-    
 
-    if (index > unspent_list.length -1) {
+    if (index > utxos.length -1) {
       //throw new Error("Insufficient balance.");
       toast.error("Insufficient balance.")
       return
     }
-   
-    inputs.push(unspent_list[index]);
-  
-    totalAmount += unspent_list[index].value;
 
+    inputs.push(utxos[index]);
+    totalAmount += utxos[index].value;
     index++;
     requiredAmount += inputSize * feeRate;
-    
   }
   return {
     inputs: inputs,
