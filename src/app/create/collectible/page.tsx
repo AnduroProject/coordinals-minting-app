@@ -74,13 +74,13 @@ const SingleCollectible = () => {
     event.preventDefault();
     setIsLoading(true);
     if (!imageBase64) {
-      setError("Image not provided.");
+      setError("Image is not provided.");
       setIsLoading(false);
       return;
     }
 
     if (!headline) {
-      setError("headline not provided.");
+      setError("headline is not provided.");
       setIsLoading(false);
       return;
     }
@@ -120,7 +120,7 @@ const SingleCollectible = () => {
         if (result && result.error) {
           const errorMessage = typeof result.error === "string" 
             ? result.error.result 
-            : "An error occurred";
+            : result.error.result  ||"An error occurred";
           setError(errorMessage)
           toast.error(errorMessage)
           setStep(0);
@@ -162,7 +162,7 @@ const SingleCollectible = () => {
   const triggerRefresh = () => {
     setStep(0);
     reset();
-    router.push("/create");
+    router.push("/create/collectible");
   };
 
   return (

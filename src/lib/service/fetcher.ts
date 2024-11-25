@@ -59,15 +59,4 @@ export function sendTransactionHelper(transactionHex: string) {
       return response.data.data;
     });
 }
-export function wishlistAddress(params: any) {
-  console.log("=====wishlistAddress,",params)
 
-  return axios
-    .post("/api/wishlist",{params} )
-    .then((response) => {
-     
-      return response.data.data;
-    }).catch((error) =>{
- console.log("=====catched,",error)
-    });
-}

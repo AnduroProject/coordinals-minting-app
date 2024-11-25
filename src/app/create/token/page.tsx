@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Banner from "@/components/section/banner";
 import Header from "@/components/layout/header";
 import Input from "@/components/ui/input";
@@ -24,9 +24,11 @@ import { useConnector } from "anduro-wallet-connector-react";
 
 const SingleToken = () => {
   const router = useRouter();
+  const walletconnection = localStorage.getItem("isWalletConnected")
+  const { walletState } =
+    useContext<any>(useConnector);
   const { signAndSendTransaction, signTransaction, sign, sendTransaction } =
     React.useContext<any>(useConnector);
-
   const {
     ticker,
     setTicker,
@@ -45,6 +47,10 @@ const SingleToken = () => {
   const [step, setStep] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [connect, setConnect] = useState<boolean>(false);
+
+
+
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     setError("");
@@ -102,12 +108,12 @@ const SingleToken = () => {
       return;
     }
     try {
-      
+
       // Call the mintToken function with the required data
       const transactionResult = await mintToken(data, FEERATE);
       //console.log("🚀 ~ handleSubmit ~ res:", transactionResult);
 
-    
+
       if (transactionResult) {
         const result = await signAndSendTransaction({
           hex: transactionResult,
@@ -115,15 +121,15 @@ const SingleToken = () => {
         }); console.log("🚀 ~ sendTransactionresult ~ res:", result);
 
         if (result && result.error) {
-          const errorMessage = typeof result.error === "string" 
-            ? result.error.result 
-            : "An error occurred";
-          
+          const errorMessage = typeof result.error === "string"
+            ? result.error.result
+            : result.error.result || "An error occurred";
+
           setError(errorMessage);
           toast.error(errorMessage);
           setStep(0);
 
-        }else {
+        } else {
           setError("")
           setStep(1);
           setIsLoading(false);
@@ -145,18 +151,18 @@ const SingleToken = () => {
       //   // setTxUrl(`https://testnet.coordiscan.io/tx/${mintResponse.result}`);
       //   setStep(1);
       // }
-    } catch (error:any) {
+    } catch (error: any) {
       console.log("🚀 ~ handleSubmit ~ error:", JSON.stringify(error));
-      setError(error.message); 
-     toast.error(error.message || "An error occurred");
+      setError(error.message);
+      toast.error(error.message || "An error occurred");
       setIsLoading(false);
     }
   };
 
   const triggerRefresh = () => {
     setStep(0);
-    reset();
-    router.push("/create");
+    //reset();
+    router.push("/create/token");
   };
 
   const stepperData = ["Upload", "Confirm"];
@@ -269,6 +275,7 @@ const SingleToken = () => {
                   </p>
                 </div>
               </div>
+
               <div className="flex flex-row gap-8">
                 <ButtonOutline
                   title="Go home"
@@ -285,6 +292,7 @@ const SingleToken = () => {
                   Create again
                 </ButtonLg>
               </div>
+
             </div>
           )}
         </div>

@@ -25,25 +25,33 @@ export default function Header() {
 
   const handleDisconnectionAction = async () => {
     const result = await disconnect();
+    console.log("*******Disconnect Result", result);
+
     if (result.status === true) {
-      localStorage.removeItem("connectedAddress")
       setWalletAddress("");
       localStorage.removeItem("isWalletConnected")
-      setIsWalletConnected("false")
+
       setIsConnecting(false)
       toast.success(`Wallet  disconnected`);
 
     }
 
-    console.log("*******Disconnect Result", result);
-    console.log("======walletAddress url",walletAddress)
+    console.log("*******Disconnect Result 222", result);
 
   };
   React.useEffect(() => {
     console.log("Connector Network Information", networkState);
     console.log("Connector Wallet Information", walletState);
-    setIsWalletConnected(localStorage.getItem("isWalletConnected") || "false")
+    //setIsWalletConnected(localStorage.getItem("isWalletConnected") || "false")
+    console.log("======walletAddress url", walletAddress)
+    console.log("======isWalletConnected ", isWalletConnected)
+    const walletconnection = localStorage.getItem("isWalletConnected")
+    console.log("======walletconnection ", walletconnection)
 
+    if (walletState.connectionState == "disconnected" && walletconnection === "true") {
+      console.log("=====1111")
+      handleDisconnectionAction()
+    }
   }, [walletState, networkState]);
 
   // useEffect(() => {
@@ -62,7 +70,7 @@ export default function Header() {
   //           if (walletState.connectionState == "connecting") {
   //             handleDisconnectionAction();
   //           }
-          
+
   //           setWalletAddress(walletAddress);
   //         }
   //       }
@@ -77,14 +85,14 @@ export default function Header() {
   const handleLogin = async () => {
     try {
       //setIsConnecting(true);
-      console.log("======wallet url",WALLET_URL)
+      console.log("======wallet url", WALLET_URL)
 
       const response = await connect({
         chainId: 5,
         walletURL: WALLET_URL,
       });
-      console.log("======wallet url 22",WALLET_URL)
-      
+      console.log("======wallet url 22", WALLET_URL)
+
       console.log("🚀 ~ handleLogin ~ response:", response);
       if (response.status == true) {
         console.log(
@@ -97,7 +105,6 @@ export default function Header() {
         localStorage.setItem("xpubkey", response.result.xpubKey);
         localStorage.setItem("isWalletConnected", "true")
 
-        setIsWalletConnected("true")
 
         setWalletAddress(walletAddress);
 
@@ -113,13 +120,14 @@ export default function Header() {
     } catch (error) {
       toast.error(`Error when connecting wallet`);
       setIsConnecting(false);
+      setWalletAddress("");
       console.log(error);
     }
   };
 
   const handleLogout = async () => {
-  
-    
+
+
     await handleDisconnectionAction();
     window.localStorage.removeItem("userProfile");
     router.push("/");
@@ -142,7 +150,7 @@ export default function Header() {
                 />
               ))}
             </div>
-            {isWalletConnected === "false" ?  (
+            {walletAddress === "" ? (
               <Button
                 variant={"outline"}
                 size={"lg"}

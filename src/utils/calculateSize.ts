@@ -74,8 +74,3 @@ export async  function   getUnspentsLsit(
 }
 
 
-export const isTxConfirmed = (txHeight: number, blockHeight: number, networkType: string) => {
-  let coinbaseMaximumConfimation = 100
-  if (networkType === "sidechain") coinbaseMaximumConfimation = 10
-  return blockHeight - txHeight > coinbaseMaximumConfimation && txHeight !== 0
-}

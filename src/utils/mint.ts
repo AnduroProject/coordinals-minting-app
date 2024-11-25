@@ -16,7 +16,6 @@ import {
   fetchTransactionHex,
   fetchUtxos,
   sendTransactionHelper,
-  wishlistAddress,
 } from "@/lib/service/fetcher";
 import {
   checkUsedUtxo,
@@ -49,35 +48,9 @@ console.log("===walletxpub",walletxpub)
 const acc = bip32.fromBase58(walletxpub, coordinate.networks.testnet);
 const node = acc.derive(0)
 const destNode = acc.derive(2);
-
-
-
-  
-
   let blockHash, txHex;
 
-  // if (utxo.confirmations !== 0) {
-  //   // Confirmed UTXO
-  //   blockHash = await fetchBlockHash(utxo.height);
-  //   let hexResponse = await fetchTransactionHex(
-  //     utxo.txid,
-  //     true,
-  //     blockHash.result,
-  //   );
-  //   //console.log("===hexResponse=",hexResponse)
-    
-  //   txHex = hexResponse.result.hex;
-  //   console.log("===txHex=",txHex)
 
-  // } else {
-  //   // Mempool UTXO
-  //   let hexResponse = await fetchTransactionHex(utxo.txid, false, null);
-  //   console.log("===hexResponse  else=",hexResponse)
-
-  //   txHex = hexResponse.result;
-  //   console.log("===txHex= else",txHex)
-
-  // }
   const opreturnData = JSON.stringify(data.opReturnValues);
 
   const payloadHex = convertDataToSha256Hex(opreturnData);
@@ -130,27 +103,14 @@ const destNode = acc.derive(2);
     index: utxo_sort.vout,
     nonWitnessUtxo: Buffer.from(txHex, "hex"),
   });
-  let params = {
-    xpub: walletxpub || "",
-    address: "",
-    derivation_index: 0,
-    baseUrl: apiurl,
-  }
-
-  await wishlistAddress(params)
+  
   const controllerAddress = coordinate.payments.p2wpkh({
     pubkey: node.publicKey,
     network: coordinate.networks.testnet,
   }).address;
 
   console.log("===controllerAddress=",controllerAddress)
-  let params2 = {
-    xpub: walletxpub || "",
-    address: "",
-    derivation_index: 2,
-    baseUrl: apiurl,
-  }
- await wishlistAddress(params2)
+  
 
   const toAddress = coordinate.payments.p2wpkh({
     pubkey: destNode.publicKey,
@@ -179,13 +139,11 @@ const destNode = acc.derive(2);
    // If the current UTXO is insufficient, prepare additional inputs
   
     if (utxo_sort.value < requiredAmount) {
-      console.log("====less amnt")
       let result = await prepareInputs(walletxpub, requiredAmount, feeRate);
       if(result != undefined){
         inputs = result.inputs;
         changeAmount = result.changeAmount;
-        console.log("====inputs used",inputs)
-        console.log("====changeAmount",changeAmount)
+      
       }
     }
    
@@ -209,7 +167,6 @@ const destNode = acc.derive(2);
     address: controllerAddress,
     value: changeAmount,
   });
-  console.log("==psbt 22 hex",psbt.toHex())
 
 
   try {
