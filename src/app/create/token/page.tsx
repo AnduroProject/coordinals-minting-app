@@ -127,6 +127,7 @@ const SingleToken = () => {
           setError(errorMessage);
           toast.error(errorMessage);
           setStep(0);
+          setIsLoading(false);
 
         } else {
           setError("")
