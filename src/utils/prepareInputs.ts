@@ -6,21 +6,30 @@ import { toast } from "sonner";
 import { getUnspentsLsit } from "./calculateSize";
 
 export async function prepareInputs(
-  address: string,
+  utxos :utxo[],
   requiredAmount: number,
   feeRate: number,
+
 ) {
-  const utxos: utxo[] = await fetchUtxos(address);
+  //const utxos: utxo[] = await fetchUtxos(address);
+
+//removing already added input, and subtracting the value
+// const maxUtxo = utxos.shift();
+// if (!maxUtxo) throw new Error("No utxo found.");
+// requiredAmount -= maxUtxo.value;
 
   const inputs: utxo[] = [];
   let totalAmount = 0,
     index = 0;
+    console.log("====requiredAmount in prepare",requiredAmount)
 
   while (totalAmount < requiredAmount) {
 
     if (index > utxos.length -1) {
-      //throw new Error("Insufficient balance.");
-      toast.error("Insufficient balance.")
+      console.log("====index",index)
+
+      throw new Error("Insufficient balance.");
+      //toast.error("Insufficient balance.")
       return
     }
 
@@ -28,6 +37,8 @@ export async function prepareInputs(
     totalAmount += utxos[index].value;
     index++;
     requiredAmount += inputSize * feeRate;
+    console.log("====requiredAmount final in prepare",requiredAmount)
+
   }
   return {
     inputs: inputs,

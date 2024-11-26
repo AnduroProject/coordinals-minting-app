@@ -1,7 +1,7 @@
 import { BIP32Interface } from "bip32";
 import * as coordinate from "chromajs-lib";
 import { Psbt } from "chromajs-lib";
-import { outputSize } from "@/lib/constants";
+import { inputSize, outputSize } from "@/lib/constants";
 import { tokenData, utxo } from "@/types";
 
 // export async function calculateSize(
@@ -25,20 +25,19 @@ import { tokenData, utxo } from "@/types";
 
 export async function calculateSize(
   psbt: Psbt,
-  acc: BIP32Interface,
-  inputs: utxo[],
   data: tokenData,
 ) {
   let transactionSize = 11
   // segwit address input size
-  let inputSize = 72
 
     transactionSize += inputSize * psbt.data.inputs.length
+    console.log("====psbt.data.inputs.length",psbt.data.inputs.length)
+    console.log("====psbt.data.outputs.length",psbt.data.outputs.length)
+
     for (let index = 0; index < psbt.data.outputs.length; index++) {
       transactionSize += 31
       
     }  
-    
       transactionSize += 2 // default size for asset type
       transactionSize += Buffer.from(data.headline, "utf8").byteLength
       transactionSize += Buffer.from(data.ticker, "utf8").byteLength
@@ -50,10 +49,15 @@ export async function calculateSize(
           , "base64").byteLength
         
       }
-
   console.log("====outputSize",transactionSize)
   return transactionSize;
 }
+
+export const convertToSAT = (value: number): number => {
+  return Math.round(value * 10 ** 8)
+}
+
+
 export async  function   getUnspentsLsit(
    utxos:utxo[],
    

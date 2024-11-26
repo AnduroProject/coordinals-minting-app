@@ -9,7 +9,7 @@ import * as bip39 from "bip39";
 import BIP32Factory from "bip32";
 const bip32 = BIP32Factory(ecc);
 
-import { calculateSize, getUnspentsLsit } from "./calculateSize";
+import { calculateSize, convertToSAT, getUnspentsLsit } from "./calculateSize";
 import { prepareInputs } from "./prepareInputs";
 import {
   fetchBlockHash,
@@ -71,47 +71,40 @@ export async function mintToken(
 
 
   // Fetch available UTXOs for the given xpub
-  let utxos: utxo[] = await fetchUtxos(walletxpub);
-  utxos.sort((a, b) => b.value - a.value);
+  let unspents: utxo[] = await fetchUtxos(walletxpub);
+  console.log("🚀 ~ utxos: 111", unspents);
 
+  unspents.sort((a, b) => b.value - a.value);
+  const utxos: utxo[] = []
+  for (let i = 0; i < unspents.length; i++) {
+    const unspent = unspents[i]
+    if (!unspent.coinbase) utxos.push(unspent)
+    if (
+      unspent.coinbase &&
+      unspent.confirmations > 10
+    ) {
+      utxos.push(unspent)
+    }
+  }
   console.log("🚀 ~ utxos:", utxos);
-  if (utxos.length == 0) {
+
+  if (utxos.length === 0) {
+    console.log("====222")
     throw { message: "UTXO not found" };
-  } let utxo = utxos[0];
-
-
-  if (utxo.confirmations !== 0) {
-    // Confirmed UTXO
-    blockHash = await fetchBlockHash(utxo.height);
-    let hexResponse = await fetchTransactionHex(
-      utxo.txid,
-      true,
-      blockHash.result,
-    );
-    console.log("===hexResponse=", hexResponse)
-
-    txHex = hexResponse.result.hex;
-    console.log("===txHex=", txHex)
-
-  } else {
-    throw { message: "UTXO not have enough confirmation" };
   }
 
 
-  // Add input UTXO to the transaction
-  psbt.addInput({
-    hash: utxo.txid,
-    index: utxo.vout,
-    nonWitnessUtxo: Buffer.from(txHex, "hex"),
-  });
-
+  // Calculate the required amount for the transaction
+  let requiredAmount = 0;
+  let selectedUtxos: utxo[] = [];
+  let totalInputValue = 0;
+  let changeAmount = 0
   const controllerAddress = coordinate.payments.p2wpkh({
     pubkey: node.publicKey,
     network: coordinate.networks.testnet,
   }).address;
 
   console.log("===controllerAddress=", controllerAddress)
-
 
   const toAddress = coordinate.payments.p2wpkh({
     pubkey: destNode.publicKey,
@@ -122,57 +115,54 @@ export async function mintToken(
   if (!controllerAddress || !toAddress)
     throw new Error("Controller or change address does not exists.");
 
-  // Add outputs to the transaction
+  // Add outputs
   psbt.addOutput({ address: controllerAddress, value: 10 ** 8 });
   psbt.addOutput({ address: toAddress, value: data.supply });
 
+  for (let i = 0; i < utxos.length; i++) {
+    const currentUtxo = utxos[i];
+    console.log("====current utxo", currentUtxo)
+    selectedUtxos.push(currentUtxo);
+    totalInputValue += currentUtxo.value;
+    console.log("Intermediate Selected UTXOs:", [...selectedUtxos]); 
+
+    // Add the UTXO
+    blockHash = await fetchBlockHash(currentUtxo.height);
+    const txHex = await fetchTransactionHex(currentUtxo.txid, true, blockHash.result);
+    psbt.addInput({
+      hash: currentUtxo.txid,
+      index: currentUtxo.vout,
+      nonWitnessUtxo: Buffer.from(txHex.result.hex, "hex"),
+    });
 
 
+    // calculate the size and fee
+    const vbytes = await calculateSize(psbt, data);
+    requiredAmount = vbytes * feeRate;
+    console.log("===requiredAmount=", requiredAmount);
+    console.log("===totalInputValue=", totalInputValue);
 
-  //  Calculate transaction size and required fee
-  const vbytes = await calculateSize(psbt, acc, utxos, data);
-  const requiredAmount = vbytes * feeRate;
-
-  let inputs: utxo[] = [],
-    changeAmount = utxo.value - requiredAmount;
+    changeAmount = totalInputValue - requiredAmount;
+    console.log("Change Amount:", changeAmount);
 
 
-  // If the current UTXO is insufficient, prepare additional inputs
+  
+    if (totalInputValue >= requiredAmount && changeAmount >= convertToSAT(0.00002)) {
+      psbt.addOutput({ address: toAddress || "", value: changeAmount });
+      break; 
+    }
 
-  if (utxo.value < requiredAmount) {
-    let result = await prepareInputs(walletxpub, requiredAmount, feeRate);
-    if (result != undefined) {
-      inputs = result.inputs;
-      changeAmount = result.changeAmount;
-
+    // If no  UTXOs are available 
+    if (i === utxos.length - 1 && changeAmount < convertToSAT(0.00002)) {
+      throw { message: "Insufficient funds: You don't have enough funds" };
     }
   }
 
-
-  // Add additional inputs if necessary
-  if (inputs.length !== 0) {
-    for (let i = 0; i < inputs.length; i++) {
-      let hash = await fetchBlockHash(inputs[i].height);
-      let hex = await fetchTransactionHex(inputs[i].txid, true, hash.result);
-
-      psbt.addInput({
-        hash: inputs[i].txid,
-        index: inputs[i].vout,
-        nonWitnessUtxo: Buffer.from(hex.result.hex, "hex"),
-      });
-    }
-  }
-
-  //Add change output
-  psbt.addOutput({
-    address: controllerAddress,
-    value: changeAmount,
-  });
-
-
+  console.log("Selected UTXOs:", selectedUtxos);
+  console.log("Change Amount:", changeAmount);
   try {
 
-    saveUsedUtxo(utxo.txid);
+    //saveUsedUtxo(utxos.txid);
 
     return psbt.toHex();
   } catch (error) {
