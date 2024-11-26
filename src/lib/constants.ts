@@ -12,7 +12,7 @@ export const fileSizeLimit = 3145728; //3MB in binary
 
 //native segwit
 export const outputSize = 31,
-  inputSize = 68;
+  inputSize = 72;
 
 export const ASSETTYPE = {
   TOKEN: 0,

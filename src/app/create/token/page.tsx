@@ -24,9 +24,8 @@ import { useConnector } from "anduro-wallet-connector-react";
 
 const SingleToken = () => {
   const router = useRouter();
-  const { walletState } =
-    useContext<any>(useConnector);
-  const { signAndSendTransaction, signTransaction, sign, sendTransaction } =
+
+  const { signAndSendTransaction, walletState} =
     React.useContext<any>(useConnector);
   const {
     ticker,
@@ -49,7 +48,14 @@ const SingleToken = () => {
   const [connect, setConnect] = useState<boolean>(false);
 
 
-
+  React.useEffect(() => {
+    if (walletState.connectionState == "disconnected") {
+      setError("Wallet is not connected.");
+    }
+    else{
+      setError("");
+    }
+  }, [walletState]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     setError("");
@@ -121,7 +127,7 @@ const SingleToken = () => {
 
         if (result && result.error) {
           const errorMessage = typeof result.error === "string"
-            ? result.error.result
+            ? result.error
             : result.error.result || "An error occurred";
 
           setError(errorMessage);
@@ -214,6 +220,8 @@ const SingleToken = () => {
                     />
                   )}
                 </div> */}
+                 {
+                  walletState.connectionState == "connected" ?
                 <div className="flex flex-row gap-8 justify-between w-full">
                   <ButtonOutline
                     title="Back"
@@ -227,7 +235,7 @@ const SingleToken = () => {
                   >
                     {isLoading ? "...loading" : "Continue"}
                   </ButtonLg>
-                </div>
+                </div>:null}
               </div>
               {error && <div className="text-red-500">{error}</div>}
             </form>

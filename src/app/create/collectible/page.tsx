@@ -27,7 +27,7 @@ const stepperData = ["Upload", "Confirm"];
 
 const SingleCollectible = () => {
   const router = useRouter();
-  const { signTransaction, sendTransaction, signAndSendTransaction } =
+  const { signTransaction, walletState, signAndSendTransaction } =
     React.useContext<any>(useConnector);
 
   const {
@@ -53,6 +53,12 @@ const SingleCollectible = () => {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      const maxSizeInBytes = 1024 * 512
+      if (file.size > maxSizeInBytes) {
+        setError("Image size should not exceed 512 kB.");
+        setIsLoading(false);
+        return;
+      }
       const reader = new FileReader();
 
       reader.onloadend = () => {
@@ -69,6 +75,15 @@ const SingleCollectible = () => {
       reader.readAsDataURL(file);
     }
   };
+
+  React.useEffect(() => {
+    if (walletState.connectionState == "disconnected") {
+      setError("Wallet is not connected.");
+    }
+    else{
+      setError("");
+    }
+  }, [walletState]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -119,7 +134,7 @@ const SingleCollectible = () => {
 
         if (result && result.error) {
           const errorMessage = typeof result.error === "string" 
-            ? result.error.result 
+            ? result.error 
             : result.error.result  ||"An error occurred";
           setError(errorMessage)
           toast.error(errorMessage)
@@ -218,6 +233,8 @@ const SingleCollectible = () => {
                     {/* <TextArea title="Description" text="Collectible description" /> */}
                   </div>
                 </div>
+                {
+                  walletState.connectionState == "connected" ?
                 <div className="w-full flex flex-row gap-8">
                   <ButtonOutline
                     title="Back"
@@ -231,7 +248,7 @@ const SingleCollectible = () => {
                   >
                     {isLoading ? "...loading" : "Continue"}
                   </ButtonLg>
-                </div>
+                </div>: null}
               </div>
               <div className="text-red-500">{error}</div>
             </form>

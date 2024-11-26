@@ -34,7 +34,6 @@ export default function Header() {
       toast.success(`Wallet  disconnected`);
 
     }
-    console.log("*******Disconnect Result 222", result);
   };
 
 
@@ -47,7 +46,6 @@ export default function Header() {
     console.log("======walletconnection ", walletconnection)
 
     if (walletState.connectionState == "disconnected" && walletconnection === "true") {
-      console.log("=====1111")
       setWalletAddress("");
       localStorage.removeItem("isWalletConnected")
       setIsConnecting(false)
