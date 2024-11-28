@@ -3,7 +3,7 @@ import * as coordinate from "chromajs-lib";
 import { Psbt } from "chromajs-lib";
 import { inputSize, outputSize } from "@/lib/constants";
 import { tokenData, utxo } from "@/types";
-
+import * as chroma from "chromajs-lib"
 // export async function calculateSize(
 //   psbt: Psbt,
 //   acc: BIP32Interface,
@@ -25,16 +25,18 @@ import { tokenData, utxo } from "@/types";
 
 export async function calculateSize(
   psbt: Psbt,
+  outputs: Array<{ address: string; value: number }>,
   data: tokenData,
+  
 ) {
   let transactionSize = 11
   // segwit address input size
 
     transactionSize += inputSize * psbt.data.inputs.length
     console.log("====psbt.data.inputs.length",psbt.data.inputs.length)
-    console.log("====psbt.data.outputs.length",psbt.data.outputs.length)
+    console.log("====psbt.data.outputs.length",outputs.length)
 
-    for (let index = 0; index < psbt.data.outputs.length; index++) {
+    for (let index = 0; index < outputs.length; index++) {
       transactionSize += 31
       
     }  
@@ -57,24 +59,24 @@ export const convertToSAT = (value: number): number => {
   return Math.round(value * 10 ** 8)
 }
 
-
-export async  function   getUnspentsLsit(
-   utxos:utxo[],
-   
-) {
-  const unspents: utxo[] = []
-  //const blockHeight: number = (await getMinedBlockCount(networkInfo.chromaBookApi)).height
-  for (let i = 0; i < utxos.length; i++) {
-    const unspent = utxos[i]
-    if (!unspent.coinbase) unspents.push(unspent)
-    if (
-      unspent.coinbase &&
-    unspent.confirmations >10 
-    ) {
-      unspents.push(unspent)
-    }
-  }
-  return unspents
+export const getChainInstance = (networkType: any) => {
+return chroma
+  
 }
+
+
+
+export const getNetwork = (networkMode: string, networkType: string) => {
+  console.log("network mode -network type",networkMode,networkType)
+  if (networkMode === "test") {
+    return chroma.networks.testnet
+  }
+  if (networkMode === "main") {
+    return chroma.networks.bitcoin
+  }
+  return chroma.networks.regtest
+}
+
+
 
 

@@ -17,7 +17,7 @@ const routesData = [
 ];
 export default function Header() {
   const router = useRouter();
-  const { networkState, walletState, connect, disconnect } =
+  const { networkState, walletState, connect, disconnect, networkInfo } =
     useContext<any>(useConnector);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [walletAddress, setWalletAddress] = useState<string>("");
@@ -35,21 +35,29 @@ export default function Header() {
 
     }
   };
+  const handleNetworkInfo = async () => {
+    const result = await networkInfo()
+    console.log("*******INITIALIZE RESULT", result)
 
+    if (result.status === true) {
+      localStorage.setItem("isWalletConnected", "true")
+      setIsWalletConnected("true")
+    } else {
+      localStorage.removeItem("isWalletConnected")
+      setIsWalletConnected("false")
+    }
+  }
 
   React.useEffect(() => {
     console.log("Connector Network Information", networkState);
     console.log("Connector Wallet Information", walletState);
-    console.log("======walletAddress url", walletAddress)
-    console.log("======isWalletConnected ", isWalletConnected)
     const walletconnection = localStorage.getItem("isWalletConnected")
     console.log("======walletconnection ", walletconnection)
 
     if (walletState.connectionState == "disconnected" && walletconnection === "true") {
       setWalletAddress("");
       localStorage.removeItem("isWalletConnected")
-      setIsConnecting(false)
-
+      handleNetworkInfo()
     } else if (walletState.connectionState == "connected") {
       setWalletAddress(walletState.accountPublicKey);
     }
@@ -59,7 +67,7 @@ export default function Header() {
     try {
       //setIsConnecting(true);
       console.log("======wallet url", WALLET_URL)
-      const result = await disconnect();
+      //const result = await disconnect();
       const response = await connect({
         chainId: 5,
         walletURL: WALLET_URL,
@@ -100,7 +108,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     await handleDisconnectionAction();
-    window.localStorage.removeItem("userProfile");
+    //  window.localStorage.removeItem("userProfile");
     router.push("/");
   };
 

@@ -24,11 +24,12 @@ export type utxo = {
   value: number;
   coinbase: boolean;
   height: number;
-  derviation_index: number;
+  derivation_index: number;
   confirmations: number;
   unspent_type:number
 
 };
+
 
 export type rpcResponse = {
   result: string;
