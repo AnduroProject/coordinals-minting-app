@@ -1,6 +1,6 @@
 import * as coordinate from "chromajs-lib";
 
-import { PsbtOutput, rpcResponse, tokenData, utxo } from "@/types";
+import { rpcResponse, tokenData, utxo } from "@/types";
 
 const schnorr = require("bip-schnorr");
 const convert = schnorr.convert;
@@ -112,9 +112,7 @@ export async function mintToken(
   if (!controllerAddress || !toAddress)
     throw new Error("Controller or change address does not exists.");
 
-
-
-  outputs.push({ address: controllerAddress, value: 10 ** 8 }); 
+  outputs.push({ address: controllerAddress, value: 10 ** 8 });
   outputs.push({ address: toAddress, value: data.supply });
 
   outputs.forEach(output => {
@@ -133,8 +131,6 @@ export async function mintToken(
     console.log("Intermediate Selected UTXOs:", [...selectedUtxos]);
 
     // Add the input to the PSBT
-    //blockHash = await fetchBlockHash(currentUtxo.height);
-    //  const txHex = await fetchTransactionHex(currentUtxo.txid, true, blockHash.result);
     const network = getNetwork("test", "sidechain");
     console.log("====network", network);
     console.log("==== chroma.address", chroma.address);
@@ -143,13 +139,21 @@ export async function mintToken(
     psbt.addInput({
       hash: currentUtxo.txid,
       index: currentUtxo.vout,
+
+    });
+    const testNode = acc.derive(currentUtxo.derivation_index);
+    const address = coordinate.payments.p2wpkh({
+      pubkey: testNode.publicKey,
+      network: coordinate.networks.testnet,
+    }).address;
+    console.log("===testNode addresss=", toAddress)
+
+    psbt.updateInput(i, {
       witnessUtxo: {
-        script: chroma.address.toOutputScript(toAddress, network),
+        script: chroma.address.toOutputScript(address|| "", network),
         value: currentUtxo.value,
       },
-      derivationIndex: currentUtxo.derivation_index,
     });
-    console.log("===psbt input", psbt);
 
     // Calculate the size and fee
     const vbytes = await calculateSize(psbt, outputs, data);
@@ -159,7 +163,6 @@ export async function mintToken(
 
 
     if (totalInputValue >= requiredAmount) {
-
       changeAmount = totalInputValue - requiredAmount;
       console.log("Change Amount:", changeAmount);
 
@@ -171,15 +174,14 @@ export async function mintToken(
         const updatedRequiredAmount = updatedVbytes * feeRate;
 
         changeAmount = totalInputValue - updatedRequiredAmount;
-
         if (changeAmount > convertToSAT(0.00001)) {
-          psbt.addOutput({ address: controllerAddress || "", value: changeAmount });
+          psbt.addOutput({ address: toAddress || "", value: changeAmount });
         }
         else {
           console.log("Change output is too small; skipping it.");
         }
       }
-      break; // Stop processing more UTXOs as we have enough
+      break;
     }
 
     if (i === utxos.length - 1 && totalInputValue < requiredAmount) {
@@ -192,9 +194,7 @@ export async function mintToken(
 
 
   try {
-
     //saveUsedUtxo(utxos.txid);
-
     return psbt.toHex();
   } catch (error) {
     console.log(error);

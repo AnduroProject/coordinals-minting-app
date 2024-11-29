@@ -3,7 +3,6 @@ import { inputSize } from "@/lib/constants";
 import { getUtxos } from "./libs";
 import { fetchUtxos } from "@/lib/service/fetcher";
 import { toast } from "sonner";
-import { getUnspentsLsit } from "./calculateSize";
 
 export async function prepareInputs(
   utxos :utxo[],

@@ -5,13 +5,10 @@ import { Network } from './networks';
 import { Transaction } from './transaction';
 export interface TransactionInput {
     
-   hash: string | Buffer
+  hash: string | Buffer
   index: number
   sequence?: number
-  nonWitnessUtxo?: Buffer
-  witnessUtxo?: WitnessUtxo
-  derivationIndex?: number
-  value?: number
+ 
 }
 export interface PsbtTxInput extends TransactionInput {
     hash: Buffer;
