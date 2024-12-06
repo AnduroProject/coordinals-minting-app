@@ -6,8 +6,13 @@ export const maraUrl =
 
 //export const apiurl= "http://192.168.1.112:4001/unspents/whitelist";
 export const apiurl= "http://btc-testnet-wallet.mara.technology:9130/unspents/whitelist";
+  
+export const alysBaseURL = "http://testnet.alyscan.io/api/v2/tokens";
+export const appBaseUrl = "http://localhost:3000";
 
+export const contractAddress= "0xBdB3dbeC70B4Bcb4A0E8FA9AF18980Af38FA826e"
 
+export const chromaBookApi = "http://btcalys.xyz:8545"
 export const fileSizeLimit = 3145728; //3MB in binary
 
 //native segwit

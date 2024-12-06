@@ -2,11 +2,13 @@ import axios from "axios";
 import { utxo } from "@/types";
 import {
   apiurl,
+  alysBaseURL,
   maraUrl,
   RPC_PASSWORD,
   RPC_USERNAME,
   rpcPort,
   rpcUrl,
+  appBaseUrl,
 } from "@/lib/constants";
 
 export async function getBlockCount() {
@@ -48,7 +50,7 @@ export async function getBlockHash(height: number) {
       username: RPC_USERNAME ?? "",
       password: RPC_PASSWORD ?? "",
     },
-  });  console.log("===response getBlockHash response")
+  }); console.log("===response getBlockHash response")
 
 
   return response.data;
@@ -124,19 +126,35 @@ export async function getUtxos(address: string) {
   return utxos;
 }
 
+
+
+export async function fetchTokenInstances(tokenAddress: string) {
+   try {
+    const url = `${alysBaseURL}/${tokenAddress}/instances`;
+    console.log("__URL", url)
+    const response = await axios.get(url);
+    console.log("====response",response)
+    return response.data;
+  } catch (error:any) {
+    console.error("Error fetching token instances:", error.response?.data);
+    return error;
+  }
+}
+
+
 export async function wishlist(params: any) {
   const WHITELIST_ADDRESS = "unspents/whitelist"
-  try{
+  try {
     const response = await axios.post(apiurl, params, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-return response.data;    
+    return response.data;
 
-  }catch (error) {
-      console.log("🚀 ~ wishlist ~ error:", error);
-    
+  } catch (error) {
+    console.log("🚀 ~ wishlist ~ error:", error);
+
   }
 }
 

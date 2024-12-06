@@ -3,6 +3,7 @@
 import axios from "axios";
 import { apiurl } from "../constants";
 import { error } from "console";
+import path from "path";
 
 enum COLLECTION_STATUS {
   PENDING = "PENDING",
@@ -59,4 +60,29 @@ export function sendTransactionHelper(transactionHex: string) {
       return response.data.data;
     });
 }
+
+export function saveJsonData(jsonData: any,tokenId:number) {
+  console.log("tokenId== save=========",tokenId)
+
+  return axios.post("/api/metaData", { jsonData, tokenId })
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("Error saving JSON:", error);
+      throw error;
+    });
+}
+
+export function nftInstance(tokenAddress: string) {
+  console.log("nftInstance===========",tokenAddress)
+  if (!tokenAddress) {
+    throw new Error("tokenAddress is missing");
+  }
+  return axios.post("/api/instance", { tokenAddress })
+  .then((response) =>  response.data.data)
+    .catch((error) => {
+      console.error("Error in getting instances:", error);
+      throw error;
+    }); 
+}
+
 

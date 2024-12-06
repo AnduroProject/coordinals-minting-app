@@ -1,6 +1,7 @@
 import * as coordinate from "chromajs-lib";
 
 import { rpcResponse, tokenData, utxo } from "@/types";
+import { deriveKeyFromMnemonic } from "@chainsafe/bls-keygen"
 
 const schnorr = require("bip-schnorr");
 const convert = schnorr.convert;
@@ -24,6 +25,7 @@ import {
 } from "./localStorageHelper";
 import { apiurl, maraUrl } from "@/lib/constants";
 import { toast } from "sonner";
+import { ethers } from "ethers";
 
 export const convertDataToSha256Hex = (value: any) => {
   return convert.hash(Buffer.from(value, "utf8")).toString("hex");
@@ -34,6 +36,35 @@ export const stringtoHex = (value: any) => {
   const hexString = buffer.toString("hex");
   return hexString;
 };
+export const getAlysAddress = (mnemonic: string, baseURL: string) => {
+  console.log("came 1", mnemonic)
+  console.log("came 2", baseURL)
+
+  let path = getDerivationPath("alys")
+  const masterSecretKey = deriveKeyFromMnemonic(mnemonic, path)
+  const privateKey = Buffer.from(masterSecretKey).toString("hex")
+  console.log("privateKey : ", privateKey)
+  const provider = getProvider(baseURL)
+  const signer = new ethers.Wallet(privateKey, provider)
+  return {
+    address: signer.address,    xPrivateKey: privateKey,
+  }
+}
+const getDerivationPath = (networkType: string) => {
+  // let path = "m/84'/0'/0'" // mainnet
+  let path = "m/84'/1'/0'"
+  if (networkType === "sidechain") {
+    path = "m/84'/2222'/0'"
+  } else if (networkType === "alys") {
+    path = "m/12381/3600/0/0"
+  }
+  return path
+}
+export function getProvider(apiUrl: any) {
+  console.log("provider api url",apiUrl)
+  return new ethers.JsonRpcProvider(apiUrl)
+}
+
 
 export async function mintToken(
   data: tokenData,

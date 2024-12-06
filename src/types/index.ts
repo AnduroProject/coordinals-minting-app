@@ -6,6 +6,12 @@ export type tokenData = {
   ticker: string;
   supply: number;
 };
+export type alysAssetData = {
+  headline: string;
+  ticker: string;
+  imageUrl: any;
+
+};
 
 export type collectionData = {
   address: string;
