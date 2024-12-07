@@ -20,6 +20,7 @@ import {
   contractAddress,
   chromaBookApi,
   appBaseUrl,
+  privateKey,
 } from "@/lib/constants";
 import { alysAssetData, tokenData } from "@/types";
 import useFormState from "@/lib/store/useFormStore";
@@ -36,7 +37,7 @@ const SingleCollectible = () => {
   const router = useRouter();
   const [networkType, setnetworkType] =
     React.useState<string>("coordinate")
-  const { signTransaction, walletState, signAndSendTransaction } =
+  const {walletState, signAndSendTransaction,mintAlysAsset } =
     React.useContext<any>(useConnector);
 
   const {
@@ -145,35 +146,28 @@ const SingleCollectible = () => {
       imageUrl,
 
     };
-
-
-
-
     try {
 
       // Call the mintToken function with the required data
       if (networkType === "alys") {
-        
-          console.log("====contractAddress", contractAddress)
 
-          const contractInstance = await nftInstance(contractAddress);
-          console.log("====contractInstance", contractInstance)
+        console.log("====contractAddress", contractAddress)
 
-          let tokenId = 0; 
-          if (contractInstance != null && Array.isArray(contractInstance.items) && contractInstance.items.length > 0) {
-            tokenId = parseInt(contractInstance.items[0].id, 10);
-          }
-          mintId = tokenId + 1;
-          console.log("====tokenId", tokenId)
-          console.log("====mintId", mintId)
-        const response = await saveJsonData(alysData, mintId ||0);
+        const contractInstance = await nftInstance(contractAddress);
+        console.log("====contractInstance", contractInstance)
+
+        let tokenId = 0;
+        if (contractInstance != null && Array.isArray(contractInstance.items) && contractInstance.items.length > 0) {
+          tokenId = parseInt(contractInstance.items[0].id, 10);
+        }
+        mintId = tokenId + 1;
+        console.log("====tokenId", tokenId)
+        console.log("====mintId", mintId)
+        const response = await saveJsonData(alysData, mintId || 0);
         console.log("response====", response.message);
-        const mnemonic = "avoid grid pear siege razor insane viable awake man rotate alarm before"
-        const providerEndpoint = chromaBookApi
-        const provider = getProvider(providerEndpoint)
+        const provider = getProvider(chromaBookApi)
         console.log("---provider", provider)
-        const alys = getAlysAddress(mnemonic, providerEndpoint)
-        const signer = new ethers.Wallet(alys.xPrivateKey, provider)
+        const signer = new ethers.Wallet(privateKey, provider)
         const nonces = await provider.getTransactionCount(signer.address, "pending")
         console.log("----nonces", nonces)
         const contract = new ethers.Contract(contractAddress, nftAbi, signer);
@@ -181,7 +175,9 @@ const SingleCollectible = () => {
 
         const gasPrice = (await provider.getFeeData()).gasPrice
         console.log("----gasPrice", gasPrice)
-        console.log("----alys.address", alys.address)
+        const alysaddress = localStorage.getItem("address") || "";
+
+        console.log("----alys.address", alysaddress)
 
         if (!gasPrice) {
           return
@@ -190,7 +186,7 @@ const SingleCollectible = () => {
         const estimateTxFee = gasPrice * BigInt(30000);
         console.log("----estimateTxFee", estimateTxFee)
         const gethex = await contract.safeMint.populateTransaction(
-          "0x1ab4267E6F8581A34e45a7fDFACcF1f072964eBe",
+          alysaddress,
           mintId,
           appBaseUrl + 'api/metaUri/' + mintId,
 
@@ -200,30 +196,43 @@ const SingleCollectible = () => {
           })
         try {
           console.log("gethex ..----------.", gethex)
-          const signedTxn = await signer.sendTransaction(gethex);
-          console.log("signedTxn ..----------.", signedTxn)
-          const receipt = await signedTxn.wait();
+          const inputData =
+            [
+              gethex.data, gethex.gasPrice?.toString(), gethex.nonce, gethex.to
 
-          if (receipt) {
-            console.log("Transaction is successful!!!" + '\n'
-             + "Transaction Hash:", (await signedTxn).hash + '\n' 
-             + "Block Number: " + receipt.blockNumber + '\n')
-            setError("")
-            setStep(1);
-            setIsLoading(false);
-          } else {
-            console.log("Error submitting transaction")
+            ];      
+          const abiTypes = ["string" , "string", "uint256", "string"];
+          try {
+            const txHex = ethers.AbiCoder.defaultAbiCoder().encode(abiTypes, inputData);
+            console.log("encoded :", txHex);
+            const result = await mintAlysAsset({
+              hex: txHex,
+         
+            }); 
+            console.log("🚀 ~ mintAlysAsset ~ res:", result);
+            console.log(" tx hash ..----------.", result.result.hash)
 
+            if (result) {
+              setError("")
+              setStep(1);
+              setIsLoading(false);
+            } else {
+              setError(error)
+              toast.error(error)
+              setStep(0);
+              setIsLoading(false);
+  
+            }
+          } catch (error) {
+            console.error("Error decoding data:", error);
           }
         }
-        catch (error:any) {
+        catch (error: any) {
           console.log("ERRor", error)
           setStep(0);
           setIsLoading(false);
           setError(error)
         }
-      
-
       }
       else {
 
@@ -375,7 +384,7 @@ const SingleCollectible = () => {
               <div className="w-full flex flex-row items-center gap-8 justify-start">
                 <img
                   src={imageBase64}
-                  alt="background"
+                  //alt="background"
                   width={0}
                   height={160}
                   sizes="100%"

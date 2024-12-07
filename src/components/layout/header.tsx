@@ -69,7 +69,7 @@ export default function Header() {
       console.log("======wallet url", WALLET_URL)
       //const result = await disconnect();
       const response = await connect({
-        chainId: 5,
+        chainId: 6,
         walletURL: WALLET_URL,
       });
       console.log("======wallet url 22", WALLET_URL)
@@ -85,10 +85,9 @@ export default function Header() {
         localStorage.setItem("connectedAddress", JSON.stringify(walletAddress));
         localStorage.setItem("xpubkey", response.result.xpubKey);
         localStorage.setItem("isWalletConnected", "true")
-
+        
 
         setWalletAddress(walletAddress);
-
         setIsConnecting(true);
         toast.success(`Successfully connected`);
         // }
