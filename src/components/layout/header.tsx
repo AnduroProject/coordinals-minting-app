@@ -172,8 +172,7 @@ export default function Header() {
               <Image src={"/Logo.svg"} alt="coordinals" width={160} height={40} />
             </Link>
            <h4 className="my-3">Connect chains</h4>
-           <p className="text-sm mb-3">Connecting your network is like "logging in to Web3. Select your network from the options to get started.</p>
-           <Link className="text-sm text-neutral700" href={"/"}>I don't have a network</Link>
+           <p className="text-sm mb-3">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,.</p>
           </div> 
          </div>
          <div className="col-span-8">
