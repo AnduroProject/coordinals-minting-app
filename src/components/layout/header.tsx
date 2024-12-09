@@ -188,13 +188,13 @@ export default function Header() {
           </div> 
          </div>
          <div className="col-span-8">
-          <div className="border-b border-neutral100 flex flex-row justify-between items-center px-2">
+          <div className="border-b border-neutral100 flex flex-row justify-between items-center p-2">
            <h3 className="font-semibold text-lg text-white">Available Chains</h3>
-           <button className="bg-transparent border-none text-2xl text-white">&times;</button>
+           <button className="bg-transparent border-none text-2xl text-white" onClick={() => setIsOpenNetworkPopup(false)}>&times;</button>
           </div>
           <div className="grid grid-cols-12 gap-2 mt-4 px-2">
            <div className="col-span-6" onClick={() => setChainId(5)}>
-            <div className="border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
+            <div className="relative border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
              <div className="p-1.5 px-0 rounded-lg">
               <Image
                 src={"/cbtc.svg"}
@@ -205,11 +205,11 @@ export default function Header() {
                 className="object-cover w-5 h-5"
               />
              </div>
-             <p className="pl-2 text-base text-white">Coordinate</p>
+             <p className="pl-2 text-base text-white">Coordinate <span className="absolute top-0 right-0 text-2xl p-1.5 hidden">&#10003;</span></p>
             </div>
            </div>
            <div className="col-span-6" onClick={() => setChainId(6)}>
-            <div className="border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
+            <div className="relative border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
              <div className="p-1.5 px-0 rounded-lg">
               <Image
                 src={"/alys.svg"}
@@ -220,7 +220,7 @@ export default function Header() {
                 className="object-cover w-5 h-5 rounded-full"
               />
              </div>
-             <p className="pl-2 text-base text-white">Alys</p>
+             <p className="pl-2 text-base text-white">Alys <span className="absolute top-0 right-0 text-2xl p-1.5 hidden">&#10003;</span></p>
             </div>
            </div>
           </div>
