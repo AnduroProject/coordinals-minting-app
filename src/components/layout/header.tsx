@@ -182,7 +182,7 @@ export default function Header() {
           </div>
           <div className="grid grid-cols-12 gap-2 mt-4 px-2">
            <div className="col-span-6" onClick={() => handleLogin(5)}>
-            <div className="border border-neutral100 p-2 rounded-lg flex flex-row items-center">
+            <div className="border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
              <div className="border border-neutral100 p-1.5 rounded-lg">
               <Image
                 src={"/cbtc.svg"}
@@ -197,7 +197,7 @@ export default function Header() {
             </div>
            </div>
            <div className="col-span-6" onClick={() => handleLogin(6)}>
-            <div className="border border-neutral100 p-2 rounded-lg flex flex-row items-center">
+            <div className="border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
              <div className="border border-neutral100 p-1.5 rounded-lg">
               <Image
                 src={"/alys.svg"}
@@ -211,6 +211,9 @@ export default function Header() {
              <p className="pl-2 text-base">Alys</p>
             </div>
            </div>
+          </div>
+          <div className="text-center mt-9">
+           <Button className="bg-neutral100 border border-border-neutral100 hover:bg-transparent">Connect</Button>
           </div>
          </div> 
         </div>
