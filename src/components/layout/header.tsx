@@ -22,6 +22,7 @@ export default function Header() {
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [isWalletConnected, setIsWalletConnected] = React.useState<string>("false")
+  const [isOpenNetworkPopup , setIsOpenNetworkPopup] = React.useState<boolean>(false)
 
   const handleDisconnectionAction = async () => {
     const result = await disconnect();
@@ -63,13 +64,23 @@ export default function Header() {
     }
   }, [walletState, networkState]);
 
-  const handleLogin = async () => {
+  const openNetworkPopup = async () => {
     try {
-      //setIsConnecting(true);
+      setIsOpenNetworkPopup(true)    
+    } catch (error) {
+      toast.error(`Error when connecting wallet`);
+      setIsConnecting(false);
+      setWalletAddress("");
+      console.log(error);
+    }
+  };
+
+  const handleLogin = async (chainId: number) => {
+    setIsOpenNetworkPopup(false)
+    try {
       console.log("======wallet url", WALLET_URL)
-      //const result = await disconnect();
       const response = await connect({
-        chainId: 6,
+        chainId: chainId,
         walletURL: WALLET_URL,
       });
       console.log("======wallet url 22", WALLET_URL)
@@ -133,7 +144,7 @@ export default function Header() {
                 <Button
                   variant={"outline"}
                   size={"lg"}
-                  onClick={() => handleLogin()}
+                  onClick={() => openNetworkPopup()}
                   disabled={isConnecting}
                 >
                   {isConnecting ? "Loading..." : "Connect Wallet"}
@@ -151,7 +162,63 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      <div className={`"fixed top-0 left-0 w-full h-full bg-overlayRgb flex justify-center items-center z-50" ${!isOpenNetworkPopup ? "hidden" : ""}`}>
+       <div className="bg-white rounded-lg max-w-2xl w-full relative">
+        <div className="grid grid-cols-12">
+         <div className="col-span-4">
+          <div className="p-5 bg-neutral100 rounded-l-lg">
+           <Link href={"/"}>
+              <Image src={"/Logo.svg"} alt="coordinals" width={160} height={40} />
+            </Link>
+           <h4 className="my-3">Connect chains</h4>
+           <p className="text-sm mb-3">Connecting your network is like "logging in to Web3. Select your network from the options to get started.</p>
+           <Link className="text-sm text-neutral700" href={"/"}>I don't have a network</Link>
+          </div> 
+         </div>
+         <div className="col-span-8">
+          <div className="border-b border-gray-400 flex flex-row justify-between items-center px-2">
+           <h5>Available Chains</h5>
+           <button className="bg-transparent border-none text-2xl">&times;</button>
+          </div>
+          <div className="grid grid-cols-12 gap-2 mt-4 px-2">
+           <div className="col-span-6" onClick={() => handleLogin(5)}>
+            <div className="border border-gray-400 p-2 rounded-lg flex flex-row items-center">
+             <div className="border border-gray-400 p-1.5 rounded-lg">
+              <Image
+                src={"/cbtc.svg"}
+                alt="background"
+                width={20}
+                height={20}
+                sizes="100%"
+                className="object-cover w-5 h-5"
+              />
+             </div>
+             <p className="pl-2 text-base">Coordinate</p>
+            </div>
+           </div>
+           <div className="col-span-6" onClick={() => handleLogin(6)}>
+            <div className="border border-gray-400 p-2 rounded-lg flex flex-row items-center">
+             <div className="border border-gray-400 p-1.5 rounded-lg">
+              <Image
+                src={"/alys.svg"}
+                alt="background"
+                width={20}
+                height={20}
+                sizes="100%"
+                className="object-cover w-5 h-5 rounded-full"
+              />
+             </div>
+             <p className="pl-2 text-base">Alys</p>
+            </div>
+           </div>
+          </div>
+         </div> 
+        </div>
+      </div>
+     </div>
     </div>
+    
 
   );
 }
