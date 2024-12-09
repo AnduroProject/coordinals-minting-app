@@ -23,6 +23,7 @@ export default function Header() {
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [isWalletConnected, setIsWalletConnected] = React.useState<string>("false")
   const [isOpenNetworkPopup , setIsOpenNetworkPopup] = React.useState<boolean>(false)
+  const [chainId, setChainId] = React.useState<number>(0)
 
   const handleDisconnectionAction = async () => {
     const result = await disconnect();
@@ -75,44 +76,46 @@ export default function Header() {
     }
   };
 
-  const handleLogin = async (chainId: number) => {
-    setIsOpenNetworkPopup(false)
+  const handleLogin = async () => {
     try {
-      console.log("======wallet url", WALLET_URL)
-      const response = await connect({
-        chainId: chainId,
-        walletURL: WALLET_URL,
-      });
-      console.log("======wallet url 22", WALLET_URL)
-
-      console.log("🚀 ~ handleLogin ~ response:", response);
-      if (response.status == true) {
-        console.log(
-          "🚀 ~ handleLogin ~ response.result.accountPublicKey:",
-          response.result.accountPublicKey,
-        );
-
-        const walletAddress = response.result.accountPublicKey;
-        localStorage.setItem("connectedAddress", JSON.stringify(walletAddress));
-        localStorage.setItem("xpubkey", response.result.xpubKey);
-        localStorage.setItem("isWalletConnected", "true")
-        
-
-        setWalletAddress(walletAddress);
-        setIsConnecting(true);
-        toast.success(`Successfully connected`);
-        // }
-      } else {
-        setIsConnecting(false);
-        toast.error(`Canceled`);
-        setWalletAddress("");
-
-      }
+        if (chainId > 0) {
+          setIsOpenNetworkPopup(false)
+          console.log("======wallet url", WALLET_URL, chainId)
+          const response = await connect({
+            chainId: chainId,
+            walletURL: WALLET_URL,
+          });
+          console.log("======wallet url 22", WALLET_URL)
+    
+          console.log("🚀 ~ handleLogin ~ response:", response);
+          if (response.status == true) {
+            console.log(
+              "🚀 ~ handleLogin ~ response.result.accountPublicKey:",
+              response.result.accountPublicKey,
+            );
+    
+            const walletAddress = response.result.accountPublicKey;
+            localStorage.setItem("connectedAddress", JSON.stringify(walletAddress));
+            localStorage.setItem("xpubkey", response.result.xpubKey);
+            localStorage.setItem("isWalletConnected", "true")
+            
+    
+            setWalletAddress(walletAddress);
+            setIsConnecting(true);
+            toast.success(`Successfully connected`);
+            // }
+          } else {
+            setIsConnecting(false);
+            toast.error(`Canceled`);
+            setWalletAddress("");
+    
+          }
+        }
     } catch (error) {
-      toast.error(`Error when connecting wallet`);
-      setIsConnecting(false);
-      setWalletAddress("");
-      console.log(error);
+        toast.error(`Error when connecting wallet`);
+        setIsConnecting(false);
+        setWalletAddress("");
+        console.log(error);
     }
   };
 
@@ -181,7 +184,7 @@ export default function Header() {
            <button className="bg-transparent border-none text-2xl">&times;</button>
           </div>
           <div className="grid grid-cols-12 gap-2 mt-4 px-2">
-           <div className="col-span-6" onClick={() => handleLogin(5)}>
+           <div className="col-span-6" onClick={() => setChainId(5)}>
             <div className="border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
              <div className="border border-neutral100 p-1.5 rounded-lg">
               <Image
@@ -196,7 +199,7 @@ export default function Header() {
              <p className="pl-2 text-base">Coordinate</p>
             </div>
            </div>
-           <div className="col-span-6" onClick={() => handleLogin(6)}>
+           <div className="col-span-6" onClick={() => setChainId(6)}>
             <div className="border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
              <div className="border border-neutral100 p-1.5 rounded-lg">
               <Image
@@ -213,7 +216,7 @@ export default function Header() {
            </div>
           </div>
           <div className="text-center mt-9">
-           <Button className="bg-neutral100 border border-border-neutral100 hover:bg-transparent">Connect</Button>
+           <Button className="bg-neutral100 border border-border-neutral100 hover:bg-transparent" onClick={() => handleLogin()}>Connect</Button>
           </div>
          </div> 
         </div>
