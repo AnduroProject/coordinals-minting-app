@@ -163,7 +163,7 @@ export default function Header() {
         </div>
       </div>
 
-      <div className={`"fixed top-0 left-0 w-full h-full bg-overlayRgb flex justify-center items-center z-50" ${!isOpenNetworkPopup ? "hidden" : ""}`}>
+      <div className={`fixed top-0 left-0 w-full h-full bg-overlayRgb flex justify-center items-center z-[99999] ${!isOpenNetworkPopup ? "hidden" : ""}`}>
        <div className="bg-white rounded-lg max-w-2xl w-full relative">
         <div className="grid grid-cols-12">
          <div className="col-span-4">
@@ -176,14 +176,14 @@ export default function Header() {
           </div> 
          </div>
          <div className="col-span-8">
-          <div className="border-b border-gray-400 flex flex-row justify-between items-center px-2">
-           <h5>Available Chains</h5>
+          <div className="border-b border-neutral100 flex flex-row justify-between items-center px-2">
+           <h3 className="font-semibold text-lg">Available Chains</h3>
            <button className="bg-transparent border-none text-2xl">&times;</button>
           </div>
           <div className="grid grid-cols-12 gap-2 mt-4 px-2">
            <div className="col-span-6" onClick={() => handleLogin(5)}>
-            <div className="border border-gray-400 p-2 rounded-lg flex flex-row items-center">
-             <div className="border border-gray-400 p-1.5 rounded-lg">
+            <div className="border border-neutral100 p-2 rounded-lg flex flex-row items-center">
+             <div className="border border-neutral100 p-1.5 rounded-lg">
               <Image
                 src={"/cbtc.svg"}
                 alt="background"
@@ -197,8 +197,8 @@ export default function Header() {
             </div>
            </div>
            <div className="col-span-6" onClick={() => handleLogin(6)}>
-            <div className="border border-gray-400 p-2 rounded-lg flex flex-row items-center">
-             <div className="border border-gray-400 p-1.5 rounded-lg">
+            <div className="border border-neutral100 p-2 rounded-lg flex flex-row items-center">
+             <div className="border border-neutral100 p-1.5 rounded-lg">
               <Image
                 src={"/alys.svg"}
                 alt="background"
