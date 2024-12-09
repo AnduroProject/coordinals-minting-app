@@ -188,11 +188,11 @@ export default function Header() {
           </div> 
          </div>
          <div className="col-span-8">
-          <div className="border-b border-neutral100 flex flex-row justify-between items-center p-2">
+          <div className="border-b border-neutral100 flex flex-row justify-between items-center p-2 px-3">
            <h3 className="font-semibold text-lg text-white">Available Chains</h3>
            <button className="bg-transparent border-none text-2xl text-white" onClick={() => setIsOpenNetworkPopup(false)}>&times;</button>
           </div>
-          <div className="grid grid-cols-12 gap-2 mt-4 px-2">
+          <div className="grid grid-cols-12 gap-2 mt-4 px-3">
            <div className="col-span-6" onClick={() => setChainId(5)}>
             <div className="relative border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
              <div className="p-1.5 px-0 rounded-lg">
@@ -224,7 +224,7 @@ export default function Header() {
             </div>
            </div>
           </div>
-          <div className="text-center mt-9">
+          <div className="text-center mt-8">
            <Button className="bg-neutral100 border border-border-neutral100 hover:bg-transparent hover:text-white" onClick={() => handleLogin()}>Connect</Button>
           </div>
          </div> 
