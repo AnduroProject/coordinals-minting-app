@@ -17,7 +17,6 @@ import {
   FEERATE,
   RECEIVER_ADDRESS,
   MOCK_MENOMIC,
-  chromaBookApi,
   appBaseUrl,
   privateKey,
   nftContractAddress,
@@ -37,7 +36,7 @@ const stepperData = ["Upload", "Confirm"];
 const SingleCollectible = () => {
   const router = useRouter();
   const [networkType, setnetworkType] =
-    React.useState<string>("coordinate")
+    React.useState<string>("")
   const {walletState, signAndSendTransaction,mintAlysAsset } =
     React.useContext<any>(useConnector);
 
@@ -114,7 +113,15 @@ const SingleCollectible = () => {
     else {
       setError("");
     }
-  }, [walletState, networkType]);
+    const chainId = localStorage.getItem("chainId")
+
+    if(chainId === "5"){
+      setnetworkType("Coordiante")
+    }else if (chainId === "6"){
+      setnetworkType("Alys")
+
+    }
+  }, [walletState]);
 
   React.useEffect(() => {
     console.log("network type.", networkType);
@@ -325,13 +332,16 @@ const SingleCollectible = () => {
               <div className="w-[592px] items-start flex flex-col gap-16">
                 <div className="flex flex-col gap-8 w-full">
                   <p className="text-profileTitle text-neutral50 font-bold">
-                    Details (Optional)
+                    Details 
                   </p>
                   <div className="input_padd">
-                    <select className="px-5 py-3.5 bg-background border rounded-xl border-neutral50 text-lg2 placeholder-neutral200 text-neutral-50 w-full" onChange={(event) => setnetworkType(event.target.value)}>
+                  <p className="text-profileTitle text-neutral20 font-bold">
+                    {networkType} 
+                  </p>
+                    {/* <select className="px-5 py-3.5 bg-background border rounded-xl border-neutral50 text-lg2 placeholder-neutral200 text-neutral-50 w-full" onChange={(event) => setnetworkType(event.target.value)}>
                       <option value="coordinate">Coordinate</option>
                       <option value="alys">Alys</option>
-                    </select>
+                    </select> */}
                   </div>
                   <div className="flex flex-col gap-6 w-full">
                     <Input
@@ -404,6 +414,8 @@ const SingleCollectible = () => {
                     )}
                   </div>
                 } */}
+                {
+                  walletState.connectionState == "connected" ?
                 <div className="w-full flex flex-row gap-8">
                   <ButtonOutline
                     title="Back"
@@ -417,7 +429,7 @@ const SingleCollectible = () => {
                   >
                     {isLoading ? "...loading" : "Continue"}
                   </ButtonLg>
-                </div>
+                </div> : null}
               </div>
               <div className="text-red-500">{error}</div>
             </form>

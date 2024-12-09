@@ -17,7 +17,6 @@ import {
   RECEIVER_ADDRESS,
   MOCK_MENOMIC,
   tokenContractAddress,
-  chromaBookApi,
   privateKey,
 } from "@/lib/constants";
 import Image from "next/image";

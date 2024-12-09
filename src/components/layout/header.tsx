@@ -24,6 +24,7 @@ export default function Header() {
   const [isWalletConnected, setIsWalletConnected] = React.useState<string>("false")
   const [isOpenNetworkPopup , setIsOpenNetworkPopup] = React.useState<boolean>(false)
   const [chainId, setChainId] = React.useState<number>(0)
+  const [error, setError] = useState<string>("");
 
   const handleDisconnectionAction = async () => {
     const result = await disconnect();
@@ -31,6 +32,8 @@ export default function Header() {
     if (result.status === true) {
       setWalletAddress("");
       localStorage.removeItem("isWalletConnected")
+      localStorage.removeItem("chainId")
+      setChainId(0)
 
       setIsConnecting(false)
       toast.success(`Wallet  disconnected`);
@@ -43,9 +46,12 @@ export default function Header() {
 
     if (result.status === true) {
       localStorage.setItem("isWalletConnected", "true")
+      localStorage.setItem("chainId", chainId.toString())
       setIsWalletConnected("true")
     } else {
       localStorage.removeItem("isWalletConnected")
+      localStorage.removeItem("chainId")
+
       setIsWalletConnected("false")
     }
   }
@@ -79,7 +85,7 @@ export default function Header() {
   const handleLogin = async () => {
     try {
         if (chainId > 0) {
-          setIsOpenNetworkPopup(false)
+        //  setError("")
           console.log("======wallet url", WALLET_URL, chainId)
           const response = await connect({
             chainId: chainId,
@@ -89,6 +95,8 @@ export default function Header() {
     
           console.log("🚀 ~ handleLogin ~ response:", response);
           if (response.status == true) {
+            setIsOpenNetworkPopup(false)
+
             console.log(
               "🚀 ~ handleLogin ~ response.result.accountPublicKey:",
               response.result.accountPublicKey,
@@ -98,7 +106,8 @@ export default function Header() {
             localStorage.setItem("connectedAddress", JSON.stringify(walletAddress));
             localStorage.setItem("xpubkey", response.result.xpubKey);
             localStorage.setItem("isWalletConnected", "true")
-            
+            localStorage.setItem("chainId", chainId.toString())
+
     
             setWalletAddress(walletAddress);
             setIsConnecting(true);
@@ -110,6 +119,9 @@ export default function Header() {
             setWalletAddress("");
     
           }
+        }
+        else{
+          setError("Please select one of the chain before connect")
         }
     } catch (error) {
         toast.error(`Error when connecting wallet`);
@@ -181,7 +193,9 @@ export default function Header() {
          <div className="col-span-8">
           <div className="border-b border-neutral100 flex flex-row justify-between items-center px-2">
            <h3 className="font-semibold text-lg">Available Chains</h3>
-           <button className="bg-transparent border-none text-2xl">&times;</button>
+           <button className="bg-transparent border-none text-2xl" 
+            onClick={() => setIsOpenNetworkPopup(false)    
+              }>&times;</button>
           </div>
           <div className="grid grid-cols-12 gap-2 mt-4 px-2">
            <div className="col-span-6" onClick={() => setChainId(5)}>
@@ -218,6 +232,7 @@ export default function Header() {
           <div className="text-center mt-9">
            <Button className="bg-neutral100 border border-border-neutral100 hover:bg-transparent" onClick={() => handleLogin()}>Connect</Button>
           </div>
+          {error && chainId === 0 && <div className="text-red-500">{error}</div>}
          </div> 
         </div>
       </div>
