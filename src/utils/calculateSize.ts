@@ -43,14 +43,14 @@ export async function calculateSize(
       transactionSize += 2 // default size for asset type
       transactionSize += Buffer.from(data.headline, "utf8").byteLength
       transactionSize += Buffer.from(data.ticker, "utf8").byteLength
-         if(data.assetType === 0 || data.assetType === 1){
+        //  if(data.assetType === 0 || data.assetType === 1){
         transactionSize += Buffer.from(data.opReturnValues[0].image_url
           , "utf8").byteLength
-      }else {
-        transactionSize += Buffer.from(data.opReturnValues[0].image_data
-          , "base64").byteLength
+      // }else {
+      //   transactionSize += Buffer.from(data.opReturnValues[0].image_data
+      //     , "base64").byteLength
         
-      }
+      // }
   console.log("====outputSize",transactionSize)
   return transactionSize;
 }

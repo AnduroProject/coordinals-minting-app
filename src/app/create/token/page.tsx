@@ -9,23 +9,29 @@ import ButtonLg from "@/components/ui/buttonLg";
 import { useRouter } from "next/navigation";
 import ButtonOutline from "@/components/ui/buttonOutline";
 import { tokenData } from "@/types";
-import { mintToken } from "@/utils/mint";
+import { getContractInfo, getProvider, mintToken } from "@/utils/mint";
 import Layout from "@/components/layout/layout";
 import {
   ASSETTYPE,
   FEERATE,
   RECEIVER_ADDRESS,
   MOCK_MENOMIC,
+  tokenContractAddress,
+  chromaBookApi,
+  privateKey,
 } from "@/lib/constants";
 import Image from "next/image";
 import useFormState from "@/lib/store/useFormStore";
 import { toast } from "sonner";
 import { useConnector } from "anduro-wallet-connector-react";
+import { ethers, Transaction } from "ethers"
+import { tokenAbi } from "@/utils/tokenAbi";
+import { CloseCircle } from "iconsax-react";
 
 const SingleToken = () => {
   const router = useRouter();
 
-  const { signAndSendTransaction, walletState} =
+  const { signAndSendTransaction, walletState, signAlysTransaction } =
     React.useContext<any>(useConnector);
   const {
     ticker,
@@ -46,33 +52,51 @@ const SingleToken = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [connect, setConnect] = useState<boolean>(false);
-
+  const [networkType, setnetworkType] =
+    React.useState<string>("coordinate")
+  const [showImage, setShowImage] = React.useState(false)
+  const [errorMessage, setErrorMessage] = useState('');
 
   React.useEffect(() => {
     if (walletState.connectionState == "disconnected") {
       setError("Wallet is not connected.");
     }
-    else{
+    else {
       setError("");
     }
   }, [walletState]);
 
+
+  const handleDelete = (): void => {
+    setImageUrl("")
+    setShowImage(false)
+    setErrorMessage('');
+  }
+
+  const handleImageError = () => {
+    setShowImage(false);
+    setErrorMessage('Please provide a valid image URL.');
+  };
+  const handleImageLoad = () => {
+    setShowImage(true);
+    setErrorMessage(''); 
+  };
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     setError("");
     event.preventDefault();
     setIsLoading(true);
 
-    if (!imageUrl) {
-      setIsLoading(false);
-      setError("Image not provided.");
-      return;
-    }
+    // if (!imageUrl) {
+    //   setIsLoading(false);
+    //   setError("Image not provided.");
+    //   return;
+    // }
 
-    if (!headline) {
-      setError("headline not provided.");
-      setIsLoading(false);
-      return;
-    }
+    // if (!headline) {
+    //   setError("headline not provided.");
+    //   setIsLoading(false);
+    //   return;
+    // }
 
     const opReturnValues = [
       {
@@ -107,40 +131,101 @@ const SingleToken = () => {
       return;
     }
 
-    if (data.ticker.length > 7) {
-      setIsLoading(false);
-      setError("Invalid ticker. Need to be no longer than 7 character long");
-      return;
-    }
+    // if (data.ticker.length > 7) {
+    //   setIsLoading(false);
+    //   setError("Invalid ticker. Need to be no longer than 7 character long");
+    //   return;
+    // }
     try {
+      if (networkType === "alys") {
 
-      // Call the mintToken function with the required data
-      const transactionResult = await mintToken(data, FEERATE);
-      //console.log("🚀 ~ handleSubmit ~ res:", transactionResult);
+        console.log("====contractAddress", tokenContractAddress)
+        const alysaddress = localStorage.getItem("address") || "";
+        const contractData = await getContractInfo(alysaddress, tokenContractAddress, tokenAbi)
 
+        // const provider = getProvider(chromaBookApi)
+        // console.log("---provider", provider)
+        // const signer = new ethers.Wallet(privateKey, provider)
+        // const nonces = await provider.getTransactionCount(alysaddress, "pending")
+        // console.log("----nonces", nonces)
+        // const contract = new ethers.Contract(tokenContractAddress, tokenAbi, signer);
+        // console.log("----contract", contract)
 
-      if (transactionResult) {
-        const result = await signAndSendTransaction({
-          hex: transactionResult,
-          transactionType: "normal",
-        }); console.log("🚀 ~ sendTransactionresult ~ res:", result);
+        // const gasPrice = (await provider.getFeeData()).gasPrice
+        // console.log("----gasPrice", gasPrice)
 
-        if (result && result.error) {
-          const errorMessage = typeof result.error === "string"
-            ? result.error
-            : result.error.result || "An error occurred";
+        console.log("----alys.contractData", contractData)
 
-          setError(errorMessage);
-          toast.error(errorMessage);
-          setStep(0);
-          setIsLoading(false);
-
-        } else {
-          setError("")
-          setStep(1);
-          setIsLoading(false);
+        if (!contractData.gasPrice) {
+          return
         }
+        const gethex = await contractData.contract.transfer.populateTransaction(
+          alysaddress,
+          tokenContractAddress,
+          {
+            chainId: "212121",
+            gasPrice: contractData.gasPrice,
+            nonce: contractData.nonces,
+          },
+        )
+        const newtx = new Transaction()
+        newtx.to = alysaddress
+        newtx.data = gethex.data
+        newtx.value = ethers.parseEther(supply.toString())
+        console.log(
+          "populatetransaction 2 ..----------alys token hex----------.",
+          newtx.unsignedSerialized,
+        )
+        try {
+          const result = await signAlysTransaction({
+            hex: newtx.unsignedSerialized,
 
+          });
+          console.log("🚀 ~ signAlysTransaction ~ res:", result);
+          console.log(" tx hash ..----------.", result.result.txid)
+
+          if (result) {
+            setError("")
+            setStep(1);
+            setIsLoading(false);
+          } else {
+            setError(error)
+            toast.error(error)
+            setStep(0);
+            setIsLoading(false);
+
+          }
+        } catch (error) {
+          console.error("Error decoding data:", error);
+        }
+      }
+      else {
+        // Call the mintToken function with the required data
+        const transactionResult = await mintToken(data, FEERATE);
+        //console.log("🚀 ~ handleSubmit ~ res:", transactionResult);
+        if (transactionResult) {
+          const result = await signAndSendTransaction({
+            hex: transactionResult,
+            transactionType: "normal",
+          }); console.log("🚀 ~ sendTransactionresult ~ res:", result);
+
+          if (result && result.error) {
+            const errorMessage = typeof result.error === "string"
+              ? result.error
+              : result.error.result || "An error occurred";
+
+            setError(errorMessage);
+            toast.error(errorMessage);
+            setStep(0);
+            setIsLoading(false);
+
+          } else {
+            setError("")
+            setStep(1);
+            setIsLoading(false);
+          }
+
+        }
       }
     } catch (error: any) {
       console.log("🚀 ~ handleSubmit ~ error:", JSON.stringify(error));
@@ -175,8 +260,14 @@ const SingleToken = () => {
                   <p className="text-profileTitle text-neutral50 font-bold">
                     Details
                   </p>
+                  <div className="input_padd">
+                    <select className="px-5 py-3.5 bg-background border rounded-xl border-neutral50 text-lg2 placeholder-neutral200 text-neutral-50 w-full" onChange={(event) => setnetworkType(event.target.value)}>
+                      <option value="coordinate">Coordinate</option>
+                      <option value="alys">Alys</option>
+                    </select>
+                  </div>
                   <div className="w-full gap-6 flex flex-col">
-                    <Input
+                    {/* <Input
                       title="Name"
                       text="Token name"
                       value={headline}
@@ -187,7 +278,7 @@ const SingleToken = () => {
                       text="Token ticker"
                       value={ticker}
                       onChange={(e) => setTicker(e.target.value)}
-                    />
+                    /> */}
                     {/* NaN erro */}
                     <Input
                       title="Supply"
@@ -203,8 +294,40 @@ const SingleToken = () => {
                       title="Token logo image url"
                       text="Token logo image"
                       value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
+                      onChange={(e) => {
+                        setImageUrl(e.target.value);
+                        setErrorMessage(''); 
+                      }}
+
                     />
+                    {imageUrl && (
+                      <div style={{ marginTop: '10px' }}>
+                      
+                        <img
+                          src={imageUrl}
+                          alt="Token Logo Preview"
+                          style={{
+                            maxWidth: '200px',
+                            maxHeight: '200px',
+                            objectFit: 'contain',
+                            border: '1px solid #ccc',
+                            padding: '5px',
+                            display: showImage ? 'block' : 'none',
+                          }}
+                          onLoad={handleImageLoad}
+                          onError={handleImageError}
+                        />
+                      </div>
+                    )}
+                    {showImage ? (
+                      <button onClick={handleDelete} style={{ marginTop: '10px' }}>
+                        <CloseCircle size={16} color="#F8F9FA" />
+                      </button>
+                    ) : (
+                      errorMessage && (
+                        <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
+                      )
+                    )}
                   </div>
                 </div>
                 {/* <div className="flex flex-col gap-8 w-full">
@@ -220,22 +343,22 @@ const SingleToken = () => {
                     />
                   )}
                 </div> */}
-                 {
+                {
                   walletState.connectionState == "connected" ?
-                <div className="flex flex-row gap-8 justify-between w-full">
-                  <ButtonOutline
-                    title="Back"
-                    onClick={() => router.push("/")}
-                  />
-                  <ButtonLg
-                    type="submit"
-                    isSelected={true}
-                    isLoading={isLoading}
-                  // disabled={isLoading}
-                  >
-                    {isLoading ? "...loading" : "Continue"}
-                  </ButtonLg>
-                </div>:null}
+                    <div className="flex flex-row gap-8 justify-between w-full">
+                      <ButtonOutline
+                        title="Back"
+                        onClick={() => router.push("/")}
+                      />
+                      <ButtonLg
+                        type="submit"
+                        isSelected={true}
+                        isLoading={isLoading}
+                      // disabled={isLoading}
+                      >
+                        {isLoading ? "...loading" : "Continue"}
+                      </ButtonLg>
+                    </div> : null}
               </div>
               {error && <div className="text-red-500">{error}</div>}
             </form>

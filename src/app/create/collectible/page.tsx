@@ -9,7 +9,7 @@ import Input from "@/components/ui/input";
 import ButtonOutline from "@/components/ui/buttonOutline";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getAlysAddress, getProvider, mintToken } from "@/utils/mint";
+import {  getContractInfo, getProvider, mintToken } from "@/utils/mint";
 import UploadCardFit from "@/components/atom/cards/uploadCardFit";
 import Layout from "@/components/layout/layout";
 import {
@@ -17,10 +17,10 @@ import {
   FEERATE,
   RECEIVER_ADDRESS,
   MOCK_MENOMIC,
-  contractAddress,
   chromaBookApi,
   appBaseUrl,
   privateKey,
+  nftContractAddress,
 } from "@/lib/constants";
 import { alysAssetData, tokenData } from "@/types";
 import useFormState from "@/lib/store/useFormStore";
@@ -31,6 +31,7 @@ import { nftAbi } from "@/utils/nftAbi";
 import path from "path";
 import { nftInstance, saveJsonData } from "@/lib/service/fetcher";
 import axios from "axios";
+import { CloseCircle } from "iconsax-react";
 
 const stepperData = ["Upload", "Confirm"];
 const SingleCollectible = () => {
@@ -60,7 +61,25 @@ const SingleCollectible = () => {
   const [step, setStep] = useState<number>(0);
   const [response, setResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const alysaddress = localStorage.getItem("address") || "";
+  const [showImage, setShowImage] = React.useState(false)
+  const [errorMessage, setErrorMessage] = useState('');
 
+
+  const handleDelete = (): void => {
+    setImageUrl("")
+    setShowImage(false)
+    setErrorMessage('');
+  }
+
+  const handleImageError = () => {
+    setShowImage(false);
+    setErrorMessage('Please provide a valid image URL.');
+  };
+  const handleImageLoad = () => {
+    setShowImage(true);
+    setErrorMessage(''); 
+  };
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -126,8 +145,8 @@ const SingleCollectible = () => {
 
     const opReturnValues = [
       {
-        image_data: imageBase64,
-        mime: imageMime,
+        image_data: imageUrl,
+        //mime: imageMime,
       },
     ];
 
@@ -151,9 +170,9 @@ const SingleCollectible = () => {
       // Call the mintToken function with the required data
       if (networkType === "alys") {
 
-        console.log("====contractAddress", contractAddress)
+        console.log("====contractAddress", )
 
-        const contractInstance = await nftInstance(contractAddress);
+        const contractInstance = await nftInstance(nftContractAddress);
         console.log("====contractInstance", contractInstance)
 
         let tokenId = 0;
@@ -165,36 +184,37 @@ const SingleCollectible = () => {
         console.log("====mintId", mintId)
         const response = await saveJsonData(alysData, mintId || 0);
         console.log("response====", response.message);
-        const provider = getProvider(chromaBookApi)
-        console.log("---provider", provider)
-        const signer = new ethers.Wallet(privateKey, provider)
-        const nonces = await provider.getTransactionCount(signer.address, "pending")
-        console.log("----nonces", nonces)
-        const contract = new ethers.Contract(contractAddress, nftAbi, signer);
-        console.log("----contract", contract)
+        const contractData= await getContractInfo(alysaddress,nftContractAddress,nftAbi)
 
-        const gasPrice = (await provider.getFeeData()).gasPrice
-        console.log("----gasPrice", gasPrice)
-        const alysaddress = localStorage.getItem("address") || "";
+        // const provider = getProvider(chromaBookApi)
+        // console.log("---provider", provider)
+        // const signer = new ethers.Wallet(privateKey, provider)
+        // const nonces = await provider.getTransactionCount(signer.address, "pending")
+        // console.log("----nonces", nonces)
+        // const contract = new ethers.Contract(nftContractAddress, nftAbi, signer);
+        // console.log("----contract", contract)
 
-        console.log("----alys.address", alysaddress)
+        // const gasPrice = (await provider.getFeeData()).gasPrice
+        // console.log("----gasPrice", gasPrice)
 
-        if (!gasPrice) {
+        console.log("----alys.contractData", contractData)
+
+        if (!contractData.gasPrice) {
           return
         }
         console.log("url contruct", appBaseUrl + 'api/metaUri/' + mintId)
-        const estimateTxFee = gasPrice * BigInt(30000);
+        const estimateTxFee = contractData.gasPrice * BigInt(30000);
         console.log("----estimateTxFee", estimateTxFee)
-        const gethex = await contract.safeMint.populateTransaction(
+        const gethex = await contractData.contract.safeMint.populateTransaction(
           alysaddress,
           mintId,
           appBaseUrl + 'api/metaUri/' + mintId,
 
           {
-            gasPrice: estimateTxFee,
-            nonce: nonces
+            gasPrice: contractData.gasPrice,
+            nonce: contractData.nonces
           })
-        try {
+        
           console.log("gethex ..----------.", gethex)
           const inputData =
             [
@@ -226,13 +246,6 @@ const SingleCollectible = () => {
           } catch (error) {
             console.error("Error decoding data:", error);
           }
-        }
-        catch (error: any) {
-          console.log("ERRor", error)
-          setStep(0);
-          setIsLoading(false);
-          setError(error)
-        }
       }
       else {
 
@@ -283,9 +296,9 @@ const SingleCollectible = () => {
     }
   };
 
-  const handleDelete = () => {
-    setImageBase64("");
-  };
+  // const handleDelete = () => {
+  //   setImageBase64("");
+  // };
 
   const triggerRefresh = () => {
     setStep(0);
@@ -333,17 +346,47 @@ const SingleCollectible = () => {
                       value={ticker}
                       onChange={(e) => setTicker(e.target.value)}
                     />
-                    {networkType === "alys" &&
+                  
                       <Input
                         title="Image url"
                         text="Collectable image"
                         value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
+                        onChange={(e) => {
+                          setImageUrl(e.target.value);
+                          setErrorMessage(''); 
+                        }}
                       />
-                    }
+                    {imageUrl && (
+                      <div style={{ marginTop: '10px' }}>
+                      
+                        <img
+                          src={imageUrl}
+                          alt="Token Logo Preview"
+                          style={{
+                            maxWidth: '200px',
+                            maxHeight: '200px',
+                            objectFit: 'contain',
+                            border: '1px solid #ccc',
+                            padding: '5px',
+                            display: showImage ? 'block' : 'none',
+                          }}
+                          onLoad={handleImageLoad}
+                          onError={handleImageError}
+                        />
+                      </div>
+                    )}
+                    {showImage ? (
+                      <button onClick={handleDelete} style={{ marginTop: '10px' }}>
+                        <CloseCircle size={16} color="#F8F9FA" />
+                      </button>
+                    ) : (
+                      errorMessage && (
+                        <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
+                      )
+                    )}
                   </div>
                 </div>
-                {networkType === "coordinate" &&
+                {/* {networkType === "coordinate" &&
                   <div className="w-full gap-8 flex flex-col">
                     <p className="text-profileTitle text-neutral50 font-bold">
                       Upload your Collectible
@@ -360,7 +403,7 @@ const SingleCollectible = () => {
                       />
                     )}
                   </div>
-                }
+                } */}
                 <div className="w-full flex flex-row gap-8">
                   <ButtonOutline
                     title="Back"

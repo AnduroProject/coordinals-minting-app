@@ -23,7 +23,7 @@ import {
   getSavedUtxo,
   saveUsedUtxo,
 } from "./localStorageHelper";
-import { apiurl, maraUrl } from "@/lib/constants";
+import { apiurl, chromaBookApi, maraUrl, privateKey } from "@/lib/constants";
 import { toast } from "sonner";
 import { ethers } from "ethers";
 
@@ -36,35 +36,30 @@ export const stringtoHex = (value: any) => {
   const hexString = buffer.toString("hex");
   return hexString;
 };
-export const getAlysAddress = (mnemonic: string, baseURL: string) => {
-  console.log("came 1", mnemonic)
-  console.log("came 2", baseURL)
 
-  let path = getDerivationPath("alys")
-  const masterSecretKey = deriveKeyFromMnemonic(mnemonic, path)
-  const privateKey = Buffer.from(masterSecretKey).toString("hex")
-  console.log("privateKey : ", privateKey)
-  const provider = getProvider(baseURL)
-  const signer = new ethers.Wallet(privateKey, provider)
-  return {
-    address: signer.address,    xPrivateKey: privateKey,
-  }
-}
-const getDerivationPath = (networkType: string) => {
-  // let path = "m/84'/0'/0'" // mainnet
-  let path = "m/84'/1'/0'"
-  if (networkType === "sidechain") {
-    path = "m/84'/2222'/0'"
-  } else if (networkType === "alys") {
-    path = "m/12381/3600/0/0"
-  }
-  return path
-}
 export function getProvider(apiUrl: any) {
   console.log("provider api url",apiUrl)
   return new ethers.JsonRpcProvider(apiUrl)
 }
 
+export async function getContractInfo(toAddress:any ,contractAddress:any,abiFile:any){
+  const provider = getProvider(chromaBookApi)
+  console.log("---provider", provider)
+  const signer = new ethers.Wallet(privateKey, provider)
+  const nonces = await provider.getTransactionCount(toAddress, "pending")
+  console.log("----nonces", nonces)
+  const contract = new ethers.Contract(contractAddress, abiFile, signer);
+  console.log("----contract", contract)
+
+  const gasPrice = (await provider.getFeeData()).gasPrice
+  console.log("----gasPrice", gasPrice)
+
+  return {
+    contract, 
+    gasPrice,
+    nonces
+  }
+}
 
 export async function mintToken(
   data: tokenData,
