@@ -167,7 +167,7 @@ export default function Header() {
       </div>
 
       <div className={`fixed top-0 left-0 w-full h-full bg-overlayRgb flex justify-center items-center z-[99999] ${!isOpenNetworkPopup ? "hidden" : ""}`}>
-      <div className="max-w-2xl relative">
+      <div className="max-w-2xl w-full relative">
        <Image
           src={"/background.png"}
           alt="background"
