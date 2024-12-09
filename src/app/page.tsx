@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import Header from "@/components/layout/header";
 import Image from "next/image";
 import Options from "@/components/section/options";
@@ -14,6 +15,8 @@ import { useRouter } from "next/navigation";
 const Create = () => {
   const router = useRouter();
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+    const [isWalletConnected, setIsWalletConnected] = React.useState<string | null>(localStorage.getItem("isWalletConnected") || null)
+
 
   const handleOptionClick = (id: number) => {
     setSelectedOption((prevSelectedOption) => {
