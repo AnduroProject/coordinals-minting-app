@@ -21,7 +21,7 @@ export async function GET(
 
     console.log("inside metauri post mintId",mintId)
     if (!mintId) {
-      return NextApiResponse.json({ error: "Mint ID is required" }, { status: 400 });    
+      return NextResponse.json({ error: "Mint ID is required" }, { status: 400 });    
     } 
     // convert the callback-based function to a promise-based function provided by aws-sdk
     const mintData = await getFileFromS3(mintId)  

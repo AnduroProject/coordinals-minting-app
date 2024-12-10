@@ -9,7 +9,7 @@ import Input from "@/components/ui/input";
 import ButtonOutline from "@/components/ui/buttonOutline";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import {  getContractInfo, getProvider, mintToken } from "@/utils/mint";
+import { getContractInfo, getProvider, mintToken } from "@/utils/mint";
 import UploadCardFit from "@/components/atom/cards/uploadCardFit";
 import Layout from "@/components/layout/layout";
 import {
@@ -38,7 +38,7 @@ const SingleCollectible = () => {
   const router = useRouter();
   const [networkType, setnetworkType] =
     React.useState<string>("")
-  const {walletState, signAndSendTransaction,mintAlysAsset } =
+  const { walletState, signAndSendTransaction, mintAlysAsset } =
     React.useContext<any>(useConnector);
 
   const {
@@ -62,6 +62,7 @@ const SingleCollectible = () => {
   const [response, setResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const alysaddress = localStorage.getItem("address") || "";
+  
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -78,7 +79,7 @@ const SingleCollectible = () => {
   };
   const handleImageLoad = () => {
     setShowImage(true);
-    setErrorMessage(''); 
+    setErrorMessage('');
   };
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -115,13 +116,16 @@ const SingleCollectible = () => {
       setError("");
     }
     const chainId = localStorage.getItem("chainId")
-
-    if(chainId === "5"){
-      setnetworkType("Coordinate")
-    }else if (chainId === "6"){
-      setnetworkType("Alys")
-
+    const walletconnection = localStorage.getItem("isWalletConnected")
+    if(walletconnection === "true"){
+      if (chainId === "5") {
+        setnetworkType("Coordinate")
+      } else if (chainId === "6") {
+        setnetworkType("Alys")
+  
+      }
     }
+    
   }, [walletState]);
 
   React.useEffect(() => {
@@ -168,17 +172,17 @@ const SingleCollectible = () => {
     };
 
     const alysData: alysAssetData = {
-    name:  headline,
-    symbol:  ticker,
-      image :imageUrl,
+      name: headline,
+      symbol: ticker,
+      image: imageUrl,
 
     };
     try {
 
       // Call the mintToken function with the required data
       if (networkType === "Alys") {
-console.log("network type,",networkType)
-        console.log("====contractAddress", )
+        console.log("network type,", networkType)
+        console.log("====contractAddress",)
 
         const contractInstance = await nftInstance(nftContractAddress);
         console.log("====contractInstance", contractInstance)
@@ -192,7 +196,7 @@ console.log("network type,",networkType)
         console.log("====mintId", mintId)
         const response = await saveJsonData(alysData, mintId || 0);
         console.log("response====", response.message);
-        const contractData= await getContractInfo(alysaddress,nftContractAddress,nftAbi)
+        const contractData = await getContractInfo(alysaddress, nftContractAddress, nftAbi)
 
         // const provider = getProvider(alysRPCUrl)
         // console.log("---provider", provider)
@@ -206,7 +210,7 @@ console.log("network type,",networkType)
         // const gasPrice = (await provider.getFeeData()).gasPrice
         // console.log("----gasPrice", gasPrice)
 
-      //  console.log("----alys.contractData", contractData)
+        //  console.log("----alys.contractData", contractData)
 
         if (!contractData.gasPrice) {
           return
@@ -214,51 +218,63 @@ console.log("network type,",networkType)
         console.log("url contruct", appBaseUrl + 'api/metaUri/' + mintId)
         const estimateTxFee = contractData.gasPrice * BigInt(30000);
         console.log("----estimateTxFee", estimateTxFee)
-        console.log("====mintId 22", mintId)       
-         console.log("====alysaddress 22", alysaddress)
+        console.log("====mintId 22", mintId)
+        console.log("====alysaddress 22", alysaddress)
 
 
         const gethex = await contractData.contract.safeMint.populateTransaction(
           alysaddress,
           mintId,
           //appBaseUrl + 'api/metaUri/' + mintId,
-          "https://mara-sidechain-tesnet-coordinate.s3.amazonaws.com/nft/"+ mintId +".json",
+          "https://mara-sidechain-tesnet-coordinate.s3.amazonaws.com/nft/" + mintId + ".json",
           {
             gasPrice: contractData.gasPrice,
             nonce: contractData.nonces
           })
-        
-          console.log("gethex ..----------.", gethex)
-          const inputData =
-            [
-              gethex.data, gethex.gasPrice?.toString(), gethex.nonce, gethex.to
+          // const newtx = new Transaction()
+          // newtx.to = alysaddress
+          // newtx.data = gethex.data
+          
+        console.log("gethex ..----------.", gethex)
+        // console.log(
+        //   "populatetransaction 2 ..----------alys token hex----------.",
+        //   newtx.unsignedSerialized,
+        // )
+        // const inputData =
+        //   [
+        //     gethex.data, gethex.gasPrice?.toString(), gethex.nonce, gethex.to
 
-            ];      
-          const abiTypes = ["string" , "string", "uint256", "string"];
-          try {
-            const txHex = ethers.AbiCoder.defaultAbiCoder().encode(abiTypes, inputData);
-            console.log("encoded :", txHex);
-            const result = await mintAlysAsset({
-              hex: txHex,
-         
-            }); 
-            console.log("🚀 ~ mintAlysAsset ~ res:", result);
-            console.log(" tx hash ..----------.", result.result.hash)
+        //   ];
+        // const abiTypes = ["string", "string", "uint256", "string"];
+        try {
+          // const txHex = ethers.AbiCoder.defaultAbiCoder().encode(abiTypes, inputData);
+          // console.log("encoded :", txHex);
+          // const result = await mintAlysAsset({
+          //   hex: newtx.unsignedSerialized,
 
-            if (result) {
-              setError("")
-              setStep(1);
-              setIsLoading(false);
-            } else {
-              setError(error)
-              toast.error(error)
-              setStep(0);
-              setIsLoading(false);
-  
-            }
-          } catch (error) {
-            console.error("Error decoding data:", error);
+          // });
+          const signedTxn = await contractData.signer.sendTransaction(gethex);
+          console.log("signedTxn ..----------.", signedTxn)
+          const receipt = await signedTxn.wait();
+         if(receipt){
+          console.log("Transaction is successful!!!" + '\n'
+             + "Transaction Hash:", (await signedTxn).hash + '\n' 
+             + "Block Number: " + receipt.blockNumber + '\n')
+            setError("")
+            setStep(1);
+            setIsLoading(false);
+         }
+
+       else {
+            setError(error)
+            toast.error(error)
+            setStep(0);
+            setIsLoading(false);
+
           }
+        } catch (error) {
+          console.error("Error decoding data:", error);
+        }
       }
       else {
 
@@ -319,16 +335,23 @@ console.log("network type,",networkType)
     router.push("/create/collectible");
   };
 
+  const getTitle = (step: any, networktype: any) => {
+    if (step === 0) {
+      if (networktype === "Coordinate" ||networktype === "Alys"  ) return "Create Collectible";
+   
+    }
+    else if (step === 1) {
+      if (networktype === "Coordinate" ||networktype === "Alys") return "Collectible created successfully";
+    
+    }
+    return ""
+  };
   return (
     <Layout>
       <div className="flex flex-col w-full h-full bg-background items-center pb-[148px]">
         <div className="w-full flex flex-col items-center gap-16 z-50">
           <Banner
-            title={
-              step == 0
-                ? "Create single Collectible"
-                : "Your Collectible is successfully created!"
-            }
+              title={getTitle(step, networkType)}
             image={"/background-2.png"}
             setStep={step}
             stepperData={stepperData}
@@ -341,9 +364,9 @@ console.log("network type,",networkType)
                     Details 
                   </p> */}
                   <div className="input_padd">
-                  <p className="text-profileTitle text-neutral20 font-bold">
-                    {networkType} Collectible
-                  </p>
+                    <p className="text-profileTitle text-neutral20 font-bold">
+                      {networkType} Collectible
+                    </p>
                     {/* <select className="px-5 py-3.5 bg-background border rounded-xl border-neutral50 text-lg2 placeholder-neutral200 text-neutral-50 w-full" onChange={(event) => setnetworkType(event.target.value)}>
                       <option value="coordinate">Coordinate</option>
                       <option value="alys">Alys</option>
@@ -362,46 +385,46 @@ console.log("network type,",networkType)
                       value={ticker}
                       onChange={(e) => setTicker(e.target.value)}
                     />
-                  
-                      <Input
-                        title="Image url"
-                        text="Image url"
-                        value={imageUrl}
-                        onChange={(e) => {
-                          setImageUrl(e.target.value);
-                          setErrorMessage(''); 
-                        }}
-                      />
-                   <div className="mt-2.5">   
-                    {imageUrl && (
-                      <div className="relative inline-block">
-                      
-                        <img
-                          src={imageUrl}
-                          alt="Token Logo Preview"
-                          style={{
-                            maxWidth: '200px',
-                            maxHeight: '200px',
-                            objectFit: 'contain',
-                            border: '1px solid #ccc',
-                            padding: '5px',
-                            display: showImage ? 'block' : 'none',
-                          }}
-                          onLoad={handleImageLoad}
-                          onError={handleImageError}
-                        />
-                         {showImage ? (
-                      <button onClick={handleDelete} className="absolute -top-1.5 -right-1.5 bg-background rounded-full">
-                        <CloseCircle size={16} color="#F8F9FA" />
-                      </button>
-                    ) : (
-                      errorMessage && (
-                        <p className="text-red-500">{errorMessage}</p>
-                      )
-                    )}
-                      </div>
-                    )}
-                   </div> 
+
+                    <Input
+                      title="Image url"
+                      text="Image url"
+                      value={imageUrl}
+                      onChange={(e) => {
+                        setImageUrl(e.target.value);
+                        setErrorMessage('');
+                      }}
+                    />
+                    <div className="mt-2.5">
+                      {imageUrl && (
+                        <div className="relative inline-block">
+
+                          <img
+                            src={imageUrl}
+                            alt="Token Logo Preview"
+                            style={{
+                              maxWidth: '200px',
+                              maxHeight: '200px',
+                              objectFit: 'contain',
+                              border: '1px solid #ccc',
+                              padding: '5px',
+                              display: showImage ? 'block' : 'none',
+                            }}
+                            onLoad={handleImageLoad}
+                            onError={handleImageError}
+                          />
+                          {showImage ? (
+                            <button onClick={handleDelete} className="absolute -top-1.5 -right-1.5 bg-background rounded-full">
+                              <CloseCircle size={16} color="#F8F9FA" />
+                            </button>
+                          ) : (
+                            errorMessage && (
+                              <p className="text-red-500">{errorMessage}</p>
+                            )
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 {/* {networkType === "coordinate" &&
@@ -424,39 +447,44 @@ console.log("network type,",networkType)
                 } */}
                 {
                   walletState.connectionState == "connected" ?
-                <div className="w-full flex flex-row gap-8">
-                  <ButtonOutline
-                    title="Back"
-                    onClick={() => router.push("/")}
-                  />
-                  <ButtonLg
-                    type="submit"
-                    isSelected={true}
-                    isLoading={isLoading}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "...loading" : "Continue"}
-                  </ButtonLg>
-                </div> : null}
+                    <div className="w-full flex flex-row gap-8">
+                      <ButtonOutline
+                        title="Back"
+                        onClick={() => router.push("/")}
+                      />
+                      <ButtonLg
+                        type="submit"
+                        isSelected={true}
+                        isLoading={isLoading}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "...loading" : "Continue"}
+                      </ButtonLg>
+                    </div> : null}
               </div>
               <div className="text-red-500">{error}</div>
             </form>
           )}
           {step == 1 && (
-            <div className="w-[800px] flex flex-col gap-16">
+            <div className="w-full max-w-[800px] flex flex-col gap-16 px-4">
               <div className="w-full flex flex-row items-center gap-8 justify-start">
-                <img
-                  src={imageUrl}
-                  //alt="background"
-                  width={0}
-                  height={160}
-                  sizes="100%"
-                  className="w-[280px] h-[280px] object-cover rounded-3xl"
-                />
+                {/* {networkType === "Coordinate" && */}
+                  <img
+                    src={imageUrl}
+                    //alt="background"
+                    width={0}
+                    height={160}
+                    sizes="100%"
+                    className="w-[280px] h-[280px] object-cover rounded-3xl"
+                  />
+                {/* } */}
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3">
+                  <p className="text-3xl text-neutral50 font-bold">
+                      {headline}
+                    </p>
                     <p className="text-3xl text-neutral50 font-bold">
-                      ${ticker}
+                      {ticker}
                     </p>
                     <p className="text-xl text-neutral100 font-medium">
                       Total supply: {1}

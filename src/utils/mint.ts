@@ -46,7 +46,7 @@ export async function getContractInfo(toAddress:any ,contractAddress:any,abiFile
   const provider = getProvider(alysRPCUrl)
   console.log("---provider", provider)
   const signer = new ethers.Wallet(privateKey, provider)
-  const nonces = await provider.getTransactionCount(toAddress, "pending")
+  const nonces = await provider.getTransactionCount(signer.address, "pending")
   console.log("----nonces", nonces)
   const contract = new ethers.Contract(contractAddress, abiFile, signer);
   console.log("----contract", contract)
@@ -57,7 +57,8 @@ export async function getContractInfo(toAddress:any ,contractAddress:any,abiFile
   return {
     contract, 
     gasPrice,
-    nonces
+    nonces,
+    signer
   }
 }
 

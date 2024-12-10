@@ -24,6 +24,7 @@ export default function Header() {
   const [isWalletConnected, setIsWalletConnected] = React.useState<string>("false")
   const [isOpenNetworkPopup, setIsOpenNetworkPopup] = React.useState<boolean>(false)
   const [chainId, setChainId] = React.useState<number>(0)
+
   const [error, setError] = useState<string>("");
 
   const handleDisconnectionAction = async () => {
@@ -32,7 +33,7 @@ export default function Header() {
     if (result.status === true) {
       setWalletAddress("");
       localStorage.removeItem("isWalletConnected")
-      localStorage.removeItem("chainId")
+    //  localStorage.removeItem("chainId")
       setChainId(0)
 
       setIsConnecting(false)
@@ -41,16 +42,17 @@ export default function Header() {
     }
   };
   const handleNetworkInfo = async () => {
+
     const result = await networkInfo()
     console.log("*******INITIALIZE RESULT", result)
 
     if (result.status === true) {
       localStorage.setItem("isWalletConnected", "true")
-      localStorage.setItem("chainId", chainId.toString())
+    //  localStorage.setItem("chainId", chain.toString())
       setIsWalletConnected("true")
     } else {
       localStorage.removeItem("isWalletConnected")
-      localStorage.removeItem("chainId")
+      //localStorage.removeItem("chainId")
 
       setIsWalletConnected("false")
     }
@@ -108,7 +110,6 @@ export default function Header() {
           localStorage.setItem("isWalletConnected", "true")
           localStorage.setItem("chainId", chainId.toString())
           localStorage.setItem("address", response.result.address);
-
 
           setWalletAddress(walletAddress);
           setIsConnecting(true);

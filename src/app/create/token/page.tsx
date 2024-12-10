@@ -64,13 +64,15 @@ const SingleToken = () => {
       setError("");
     }
     const chainId = localStorage.getItem("chainId")
-
+    const walletconnection = localStorage.getItem("isWalletConnected")
+    if(walletconnection === "true"){
     if (chainId === "5") {
       setnetworkType("Coordinate")
     } else if (chainId === "6") {
       setnetworkType("Alys")
 
     }
+  }
   }, [walletState]);
 
 
@@ -166,32 +168,46 @@ const SingleToken = () => {
         if (!contractData.gasPrice) {
           return
         }
-        const gethex = await contractData.contract.transfer.populateTransaction(
+        // const gethex = await contractData.contract.transfer.populateTransaction(
+        //   alysaddress,
+        //   tokenContractAddress,
+        //   {
+        //     chainId: "212121",
+        //     gasPrice: contractData.gasPrice,
+        //     nonce: contractData.nonces,
+        //   },
+        // )
+        const gethex = await contractData.contract.transfer(
           alysaddress,
-          tokenContractAddress,
+          ethers.parseEther(supply.toString()),
           {
             chainId: "212121",
             gasPrice: contractData.gasPrice,
             nonce: contractData.nonces,
           },
         )
-        const newtx = new Transaction()
-        newtx.to = alysaddress
-        newtx.data = gethex.data
-        newtx.value = ethers.parseEther(supply.toString())
-        console.log(
-          "populatetransaction 2 ..----------alys token hex----------.",
-          newtx.unsignedSerialized,
-        )
+        console.log("gethex ..----------.", gethex)
+
+        // const newtx = new Transaction()
+        // newtx.to = alysaddress
+        // newtx.data = gethex.data
+        // console.log("ethers",ethers.parseEther(supply.toString()))
+        // console.log("ethers",supply.toString())
+
+        // newtx.value = ethers.parseEther(supply.toString())
+        // console.log(
+        //   "populatetransaction 2 ..----------alys token hex----------.",
+        //   newtx.unsignedSerialized,
+        // )
         try {
-          const result = await signAlysTransaction({
-            hex: newtx.unsignedSerialized,
+          // const result = await signAlysTransaction({
+          //   hex: newtx.unsignedSerialized,
 
-          });
-          console.log("🚀 ~ signAlysTransaction ~ res:", result);
-          console.log(" tx hash ..----------.", result.result.txid)
+          // });
+          // console.log("🚀 ~ signAlysTransaction ~ res:", result);
+          // console.log(" tx hash ..----------.", result.result.txid)
 
-          if (result) {
+          if (gethex.hash) {
             setError("")
             setStep(1);
             setIsLoading(false);
@@ -248,6 +264,18 @@ const SingleToken = () => {
     router.push("/create/token");
   };
 
+  const getTitle = (step: any, networktype: any) => {
+    if (step === 0) {
+      if (networktype === "Coordinate") return "Create Token";
+      if (networktype === "Alys") return "Transfer Token";
+
+    }
+    else if (step === 1) {
+      if (networktype === "Coordinate") return "Token created successfully";
+      if (networktype === "Alys") return "Token transfered successfully";
+    }
+    return ""
+  };
   const stepperData = ["Upload", "Confirm"];
 
   return (
@@ -255,7 +283,7 @@ const SingleToken = () => {
       <div className="flex flex-col w-full h-full pb-[148px]">
         <div className="flex flex-col items-center gap-16 z-50">
           <Banner
-            title="Create token"
+            title={getTitle(step, networkType)}
             image={"/background-2.png"}
             setStep={step}
             stepperData={stepperData}
@@ -311,35 +339,35 @@ const SingleToken = () => {
 
                         />
                         <div className="mt-2.5">
-                         {imageUrl && (
-                          <div className="relative inline-block">
+                          {imageUrl && (
+                            <div className="relative inline-block">
 
-                            <img
-                              src={imageUrl}
-                              alt="Token Logo Preview"
-                              style={{
-                                maxWidth: '200px',
-                                maxHeight: '200px',
-                                objectFit: 'contain',
-                                border: '1px solid #ccc',
-                                padding: '5px',
-                                display: showImage ? 'block' : 'none',
-                              }}
-                              onLoad={handleImageLoad}
-                              onError={handleImageError}
-                            />
-                            {showImage ? (
-                              <button onClick={handleDelete} className="absolute -top-1.5 -right-1.5 bg-background rounded-full">
-                                <CloseCircle size={16} color="#F8F9FA" />
-                              </button>
-                            ) : (
-                              errorMessage && (
-                                <p className="text-red-500">{errorMessage}</p>
-                              )
-                            )}
-                          </div>
-                        )}
-                       </div>
+                              <img
+                                src={imageUrl}
+                                alt="Token Logo Preview"
+                                style={{
+                                  maxWidth: '200px',
+                                  maxHeight: '200px',
+                                  objectFit: 'contain',
+                                  border: '1px solid #ccc',
+                                  padding: '5px',
+                                  display: showImage ? 'block' : 'none',
+                                }}
+                                onLoad={handleImageLoad}
+                                onError={handleImageError}
+                              />
+                              {showImage ? (
+                                <button onClick={handleDelete} className="absolute -top-1.5 -right-1.5 bg-background rounded-full">
+                                  <CloseCircle size={16} color="#F8F9FA" />
+                                </button>
+                              ) : (
+                                errorMessage && (
+                                  <p className="text-red-500">{errorMessage}</p>
+                                )
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </>
                     }
                     {networkType === "Alys" &&
@@ -390,16 +418,18 @@ const SingleToken = () => {
             </form>
           )}
           {step == 1 && (
-            <div className="w-[800px] flex flex-col gap-16">
+            <div className="w-full max-w-[800px] flex flex-col gap-16 px-4">
               <div className="w-full flex flex-row items-center gap-8 justify-start">
-                <img
-                  src={imageUrl}
-                  alt="background"
-                  width={0}
-                  height={160}
-                  sizes="100%"
-                  className="w-[280px] h-[280px] object-cover rounded-3xl"
-                />
+                {networkType === "Coordinate" &&
+                  <img
+                    src={imageUrl}
+                    alt="background"
+                    width={0}
+                    height={160}
+                    sizes="100%"
+                    className="w-[280px] h-[280px] object-cover rounded-3xl"
+                  />
+                }
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3">
                     {networkType === "Coordinate" &&
