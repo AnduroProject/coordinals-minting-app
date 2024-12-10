@@ -446,7 +446,7 @@ console.log("network type,",networkType)
             <div className="w-[800px] flex flex-col gap-16">
               <div className="w-full flex flex-row items-center gap-8 justify-start">
                 <img
-                  src={imageBase64}
+                  src={imageUrl}
                   //alt="background"
                   width={0}
                   height={160}

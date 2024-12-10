@@ -35,22 +35,25 @@ export async function calculateSize(
     transactionSize += inputSize * psbt.data.inputs.length
     console.log("====psbt.data.inputs.length",psbt.data.inputs.length)
     console.log("====psbt.data.outputs.length",outputs.length)
+    console.log("====psbt.",data)
 
     for (let index = 0; index < outputs.length; index++) {
       transactionSize += 31
       
     }  
+    console.log("====psbt.data.")
+
       transactionSize += 2 // default size for asset type
       transactionSize += Buffer.from(data.headline, "utf8").byteLength
       transactionSize += Buffer.from(data.ticker, "utf8").byteLength
-        //  if(data.assetType === 0 || data.assetType === 1){
+          if(data.assetType === 0 || data.assetType === 1){
         transactionSize += Buffer.from(data.opReturnValues[0].image_url
           , "utf8").byteLength
-      // }else {
-      //   transactionSize += Buffer.from(data.opReturnValues[0].image_data
-      //     , "base64").byteLength
+      }else {
+        transactionSize += Buffer.from(data.opReturnValues[0].image_data
+          , "base64").byteLength
         
-      // }
+      }
   console.log("====outputSize",transactionSize)
   return transactionSize;
 }
@@ -64,18 +67,28 @@ return chroma
   
 }
 
-
-
 export const getNetwork = (networkMode: string, networkType: string) => {
-  console.log("network mode -network type",networkMode,networkType)
+     console.log("network mode -network type",networkMode,networkType)
+
   if (networkMode === "test") {
-    return chroma.networks.testnet
+    return getChainInstance(networkType).networks.testnet
   }
   if (networkMode === "main") {
-    return chroma.networks.bitcoin
+    return getChainInstance(networkType).networks.bitcoin
   }
-  return chroma.networks.regtest
+  return getChainInstance(networkType).networks.regtest
 }
+
+// export const getNetwork = (networkMode: string, networkType: string) => {
+//   console.log("network mode -network type",networkMode,networkType)
+//   if (networkMode === "test") {
+//     return chroma.networks.testnet
+//   }
+//   if (networkMode === "main") {
+//     return chroma.networks.bitcoin
+//   }
+//   return chroma.networks.regtest
+// }
 
 
 
