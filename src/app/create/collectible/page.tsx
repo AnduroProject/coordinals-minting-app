@@ -374,7 +374,7 @@ console.log("network type,",networkType)
                       />
                    <div className="mt-2.5">   
                     {imageUrl && (
-                      <div className="relative inline-block ">
+                      <div className="relative inline-block">
                       
                         <img
                           src={imageUrl}
