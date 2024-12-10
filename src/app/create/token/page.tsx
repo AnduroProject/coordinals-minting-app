@@ -310,8 +310,9 @@ const SingleToken = () => {
                           }}
 
                         />
-                        {imageUrl && (
-                          <div style={{ marginTop: '10px' }}>
+                        <div className="mt-2.5">
+                         {imageUrl && (
+                          <div className="relative inline-block">
 
                             <img
                               src={imageUrl}
@@ -327,17 +328,18 @@ const SingleToken = () => {
                               onLoad={handleImageLoad}
                               onError={handleImageError}
                             />
+                            {showImage ? (
+                              <button onClick={handleDelete} className="absolute -top-1.5 -right-1.5 bg-background rounded-full">
+                                <CloseCircle size={16} color="#F8F9FA" />
+                              </button>
+                            ) : (
+                              errorMessage && (
+                                <p className="text-red-500">{errorMessage}</p>
+                              )
+                            )}
                           </div>
                         )}
-                        {showImage ? (
-                          <button onClick={handleDelete} style={{ marginTop: '10px' }}>
-                            <CloseCircle size={16} color="#F8F9FA" />
-                          </button>
-                        ) : (
-                          errorMessage && (
-                            <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
-                          )
-                        )}
+                       </div>
                       </>
                     }
                     {networkType === "Alys" &&
