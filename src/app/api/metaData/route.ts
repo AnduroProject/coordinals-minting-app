@@ -1,28 +1,18 @@
 import { NextResponse } from "next/server";
-import path from "path";
-const fs = require("fs")
+var AWS = require('aws-sdk');
+import { uploadToS3 } from "@/lib/service/awshelper"
+
+
 
 
 export async function POST(req: Request) {
   try {
     const { jsonData,tokenId } = await req.json();
-console.log("====json data",jsonData)
-console.log("====json tokenId",tokenId)
-
-    //folder and filename 
-    const folderPath = path.join(process.cwd(), "data");
-    const filePath = path.join(folderPath, tokenId +".json");
-
-    
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
-    }
-
-    fs.writeFileSync(filePath, JSON.stringify(jsonData, null, 2));
-    return NextResponse.json({ message: "JSON file saved successfully" }, { status: 200 });
+    let uploadResponse = await uploadToS3(tokenId, jsonData)  
+    return NextResponse.json(uploadResponse, { status: 200 });
   } catch (error) {
     console.error("Error writing JSON file:", error);
-    return NextResponse.json({ message: "Failed to save JSON file" }, { status: 500 });
+    return NextResponse.json(error, { status: 500 });
   }
 }
 

@@ -372,8 +372,9 @@ console.log("network type,",networkType)
                           setErrorMessage(''); 
                         }}
                       />
+                   <div className="mt-2.5">   
                     {imageUrl && (
-                      <div style={{ marginTop: '10px' }}>
+                      <div className="relative inline-block">
                       
                         <img
                           src={imageUrl}
@@ -392,7 +393,7 @@ console.log("network type,",networkType)
                       </div>
                     )}
                     {showImage ? (
-                      <button onClick={handleDelete} style={{ marginTop: '10px' }}>
+                      <button onClick={handleDelete} className="absolute top-0 right-0">
                         <CloseCircle size={16} color="#F8F9FA" />
                       </button>
                     ) : (
@@ -400,6 +401,7 @@ console.log("network type,",networkType)
                         <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
                       )
                     )}
+                   </div> 
                   </div>
                 </div>
                 {/* {networkType === "coordinate" &&

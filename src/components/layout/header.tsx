@@ -239,7 +239,7 @@ export default function Header() {
               <div className="text-center mt-8">
                 <Button className="bg-neutral100 border border-border-neutral100 text-neutral600 hover:bg-transparent hover:text-neutral600" onClick={() => handleLogin()}>Connect</Button>
               </div>
-              {error && chainId === 0 && <div className="text-red-500">{error}</div>}
+              {error && chainId === 0 && <div className="text-red-500 text-sm text-center mt-1">{error}</div>}
             </div>
           </div>
         </div>
