@@ -390,18 +390,17 @@ console.log("network type,",networkType)
                           onLoad={handleImageLoad}
                           onError={handleImageError}
                         />
-                        {showImage ? (
-                      <button onClick={handleDelete} className="absolute top-0 right-0">
+                         {showImage ? (
+                      <button onClick={handleDelete} className="absolute -top-1.5 -right-1.5 bg-background rounded-full">
                         <CloseCircle size={16} color="#F8F9FA" />
                       </button>
                     ) : (
                       errorMessage && (
-                        <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
+                        <p className="text-red-500">{errorMessage}</p>
                       )
                     )}
                       </div>
                     )}
-                    
                    </div> 
                   </div>
                 </div>
