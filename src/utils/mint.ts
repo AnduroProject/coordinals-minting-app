@@ -23,7 +23,7 @@ import {
   getSavedUtxo,
   saveUsedUtxo,
 } from "./localStorageHelper";
-import { apiurl, chromaBookApi, maraUrl, privateKey } from "@/lib/constants";
+import { alysRPCUrl, apiurl, maraUrl, privateKey } from "@/lib/constants";
 import { toast } from "sonner";
 import { ethers } from "ethers";
 
@@ -43,7 +43,7 @@ export function getProvider(apiUrl: any) {
 }
 
 export async function getContractInfo(toAddress:any ,contractAddress:any,abiFile:any){
-  const provider = getProvider(chromaBookApi)
+  const provider = getProvider(alysRPCUrl)
   console.log("---provider", provider)
   const signer = new ethers.Wallet(privateKey, provider)
   const nonces = await provider.getTransactionCount(toAddress, "pending")

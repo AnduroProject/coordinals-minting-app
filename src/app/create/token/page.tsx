@@ -52,7 +52,7 @@ const SingleToken = () => {
   const [error, setError] = useState<string>("");
   const [connect, setConnect] = useState<boolean>(false);
   const [networkType, setnetworkType] =
-    React.useState<string>("coordinate")
+    React.useState<string>("")
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -62,6 +62,14 @@ const SingleToken = () => {
     }
     else {
       setError("");
+    }
+    const chainId = localStorage.getItem("chainId")
+
+    if (chainId === "5") {
+      setnetworkType("Coordiante")
+    } else if (chainId === "6") {
+      setnetworkType("Alys")
+
     }
   }, [walletState]);
 
@@ -78,7 +86,7 @@ const SingleToken = () => {
   };
   const handleImageLoad = () => {
     setShowImage(true);
-    setErrorMessage(''); 
+    setErrorMessage('');
   };
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     setError("");
@@ -136,7 +144,7 @@ const SingleToken = () => {
     //   return;
     // }
     try {
-      if (networkType === "alys") {
+      if (networkType === "Alys") {
 
         console.log("====contractAddress", tokenContractAddress)
         const alysaddress = localStorage.getItem("address") || "";
@@ -256,17 +264,20 @@ const SingleToken = () => {
             <form onSubmit={handleSubmit}>
               <div className="w-[592px] items-start flex flex-col gap-16">
                 <div className="flex flex-col w-full gap-8">
-                  <p className="text-profileTitle text-neutral50 font-bold">
-                    Details
+                  <p className="text-profileTitle text-neutral20 font-bold">
+                    {networkType} Token
                   </p>
                   <div className="input_padd">
-                    <select className="px-5 py-3.5 bg-background border rounded-xl border-neutral50 text-lg2 placeholder-neutral200 text-neutral-50 w-full" onChange={(event) => setnetworkType(event.target.value)}>
+                    {/* <select className="px-5 py-3.5 bg-background border rounded-xl border-neutral50 text-lg2 placeholder-neutral200 text-neutral-50 w-full" onChange={(event) => setnetworkType(event.target.value)}>
                       <option value="coordinate">Coordinate</option>
                       <option value="alys">Alys</option>
-                    </select>
+                    </select> */}
                   </div>
                   <div className="w-full gap-6 flex flex-col">
-                    {/* <Input
+                    
+                      {networkType === "Coordiante" && 
+                      <>
+                    <Input
                       title="Name"
                       text="Token name"
                       value={headline}
@@ -277,56 +288,70 @@ const SingleToken = () => {
                       text="Token ticker"
                       value={ticker}
                       onChange={(e) => setTicker(e.target.value)}
-                    /> */}
+                    />
                     {/* NaN erro */}
-                    <Input
-                      title="Supply"
-                      text="Token supply"
-                      value={supply}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setSupply(value === "" ? 0 : parseInt(value, 10));
-                      }}
-                      type="number"
-                    />
-                    <Input
-                      title="Token logo image url"
-                      text="Token logo image"
-                      value={imageUrl}
-                      onChange={(e) => {
-                        setImageUrl(e.target.value);
-                        setErrorMessage(''); 
-                      }}
+                      <Input
+                        title="Supply"
+                        text="Token supply"
+                        value={supply}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setSupply(value === "" ? 0 : parseInt(value, 10));
+                        }}
+                        type="number"
+                      />
+                      <Input
+                        title="Token logo image url"
+                        text="Token logo image url"
+                        value={imageUrl}
+                        onChange={(e) => {
+                          setImageUrl(e.target.value);
+                          setErrorMessage('');
+                        }}
 
-                    />
-                    {imageUrl && (
-                      <div style={{ marginTop: '10px' }}>
-                      
-                        <img
-                          src={imageUrl}
-                          alt="Token Logo Preview"
-                          style={{
-                            maxWidth: '200px',
-                            maxHeight: '200px',
-                            objectFit: 'contain',
-                            border: '1px solid #ccc',
-                            padding: '5px',
-                            display: showImage ? 'block' : 'none',
-                          }}
-                          onLoad={handleImageLoad}
-                          onError={handleImageError}
-                        />
-                      </div>
-                    )}
-                    {showImage ? (
-                      <button onClick={handleDelete} style={{ marginTop: '10px' }}>
-                        <CloseCircle size={16} color="#F8F9FA" />
-                      </button>
-                    ) : (
-                      errorMessage && (
-                        <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
-                      )
-                    )}
+                      />
+                      {imageUrl && (
+                        <div style={{ marginTop: '10px' }}>
+
+                          <img
+                            src={imageUrl}
+                            alt="Token Logo Preview"
+                            style={{
+                              maxWidth: '200px',
+                              maxHeight: '200px',
+                              objectFit: 'contain',
+                              border: '1px solid #ccc',
+                              padding: '5px',
+                              display: showImage ? 'block' : 'none',
+                            }}
+                            onLoad={handleImageLoad}
+                            onError={handleImageError}
+                          />
+                        </div>
+                      )}
+                      {showImage ? (
+                        <button onClick={handleDelete} style={{ marginTop: '10px' }}>
+                          <CloseCircle size={16} color="#F8F9FA" />
+                        </button>
+                      ) : (
+                        errorMessage && (
+                          <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
+                        )
+                      )}
+                  </>
+                      }
+                          {networkType === "Alys" && 
+                      <Input
+                        title="Supply"
+                        text="Token supply"
+                        value={supply}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setSupply(value === "" ? 0 : parseInt(value, 10));
+                        }}
+                        type="number"
+                      />
+                      }
                   </div>
                 </div>
                 {/* <div className="flex flex-col gap-8 w-full">

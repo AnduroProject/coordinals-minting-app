@@ -20,6 +20,7 @@ import {
   appBaseUrl,
   privateKey,
   nftContractAddress,
+  alysRPCUrl,
 } from "@/lib/constants";
 import { alysAssetData, tokenData } from "@/types";
 import useFormState from "@/lib/store/useFormStore";
@@ -175,8 +176,8 @@ const SingleCollectible = () => {
     try {
 
       // Call the mintToken function with the required data
-      if (networkType === "alys") {
-
+      if (networkType === "Alys") {
+console.log("network type,",networkType)
         console.log("====contractAddress", )
 
         const contractInstance = await nftInstance(nftContractAddress);
@@ -193,9 +194,10 @@ const SingleCollectible = () => {
         console.log("response====", response.message);
         const contractData= await getContractInfo(alysaddress,nftContractAddress,nftAbi)
 
-        // const provider = getProvider(chromaBookApi)
+        // const provider = getProvider(alysRPCUrl)
         // console.log("---provider", provider)
         // const signer = new ethers.Wallet(privateKey, provider)
+        // console.log("signer",signer)
         // const nonces = await provider.getTransactionCount(signer.address, "pending")
         // console.log("----nonces", nonces)
         // const contract = new ethers.Contract(nftContractAddress, nftAbi, signer);
@@ -204,7 +206,7 @@ const SingleCollectible = () => {
         // const gasPrice = (await provider.getFeeData()).gasPrice
         // console.log("----gasPrice", gasPrice)
 
-        console.log("----alys.contractData", contractData)
+      //  console.log("----alys.contractData", contractData)
 
         if (!contractData.gasPrice) {
           return
@@ -212,6 +214,10 @@ const SingleCollectible = () => {
         console.log("url contruct", appBaseUrl + 'api/metaUri/' + mintId)
         const estimateTxFee = contractData.gasPrice * BigInt(30000);
         console.log("----estimateTxFee", estimateTxFee)
+        console.log("====mintId 22", mintId)       
+         console.log("====alysaddress 22", alysaddress)
+
+
         const gethex = await contractData.contract.safeMint.populateTransaction(
           alysaddress,
           mintId,
@@ -331,12 +337,12 @@ const SingleCollectible = () => {
             <form onSubmit={handleSubmit}>
               <div className="w-[592px] items-start flex flex-col gap-16">
                 <div className="flex flex-col gap-8 w-full">
-                  <p className="text-profileTitle text-neutral50 font-bold">
+                  {/* <p className="text-profileTitle text-neutral50 font-bold">
                     Details 
-                  </p>
+                  </p> */}
                   <div className="input_padd">
                   <p className="text-profileTitle text-neutral20 font-bold">
-                    {networkType} 
+                    {networkType} Collectible
                   </p>
                     {/* <select className="px-5 py-3.5 bg-background border rounded-xl border-neutral50 text-lg2 placeholder-neutral200 text-neutral-50 w-full" onChange={(event) => setnetworkType(event.target.value)}>
                       <option value="coordinate">Coordinate</option>
@@ -359,7 +365,7 @@ const SingleCollectible = () => {
                   
                       <Input
                         title="Image url"
-                        text="Collectable image"
+                        text="Image url"
                         value={imageUrl}
                         onChange={(e) => {
                           setImageUrl(e.target.value);

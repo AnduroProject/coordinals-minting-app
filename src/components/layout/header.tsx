@@ -22,7 +22,7 @@ export default function Header() {
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [isWalletConnected, setIsWalletConnected] = React.useState<string>("false")
-  const [isOpenNetworkPopup , setIsOpenNetworkPopup] = React.useState<boolean>(false)
+  const [isOpenNetworkPopup, setIsOpenNetworkPopup] = React.useState<boolean>(false)
   const [chainId, setChainId] = React.useState<number>(0)
   const [error, setError] = useState<string>("");
 
@@ -73,7 +73,7 @@ export default function Header() {
 
   const openNetworkPopup = async () => {
     try {
-      setIsOpenNetworkPopup(true)    
+      setIsOpenNetworkPopup(true)
     } catch (error) {
       toast.error(`Error when connecting wallet`);
       setIsConnecting(false);
@@ -84,50 +84,51 @@ export default function Header() {
 
   const handleLogin = async () => {
     try {
-        if (chainId > 0) {
+      if (chainId > 0) {
         //  setError("")
-          console.log("======wallet url", WALLET_URL, chainId)
-          const response = await connect({
-            chainId: chainId,
-            walletURL: WALLET_URL,
-          });
-          console.log("======wallet url 22", WALLET_URL)
-    
-          console.log("🚀 ~ handleLogin ~ response:", response);
-          if (response.status == true) {
-            setIsOpenNetworkPopup(false)
+        console.log("======wallet url", WALLET_URL, chainId)
+        const response = await connect({
+          chainId: chainId,
+          walletURL: WALLET_URL,
+        });
+        console.log("======wallet url 22", WALLET_URL)
 
-            console.log(
-              "🚀 ~ handleLogin ~ response.result.accountPublicKey:",
-              response.result.accountPublicKey,
-            );
-    
-            const walletAddress = response.result.accountPublicKey;
-            localStorage.setItem("connectedAddress", JSON.stringify(walletAddress));
-            localStorage.setItem("xpubkey", response.result.xpubKey);
-            localStorage.setItem("isWalletConnected", "true")
-            localStorage.setItem("chainId", chainId.toString())
+        console.log("🚀 ~ handleLogin ~ response:", response);
+        if (response.status == true) {
+          setIsOpenNetworkPopup(false)
 
-    
-            setWalletAddress(walletAddress);
-            setIsConnecting(true);
-            toast.success(`Successfully connected`);
-            // }
-          } else {
-            setIsConnecting(false);
-            toast.error(`Canceled`);
-            setWalletAddress("");
-    
-          }
+          console.log(
+            "🚀 ~ handleLogin ~ response.result.accountPublicKey:",
+            response.result.accountPublicKey,
+          );
+
+          const walletAddress = response.result.accountPublicKey;
+          localStorage.setItem("connectedAddress", JSON.stringify(walletAddress));
+          localStorage.setItem("xpubkey", response.result.xpubKey);
+          localStorage.setItem("isWalletConnected", "true")
+          localStorage.setItem("chainId", chainId.toString())
+          localStorage.setItem("address", response.result.address);
+
+
+          setWalletAddress(walletAddress);
+          setIsConnecting(true);
+          toast.success(`Successfully connected`);
+          // }
+        } else {
+          setIsConnecting(false);
+          toast.error(`Canceled`);
+          setWalletAddress("");
+
         }
-        else{
-          setError("Please select one of the chain before connect")
-        }
+      }
+      else {
+        setError("Please select one of the chain before connect")
+      }
     } catch (error) {
-        toast.error(`Error when connecting wallet`);
-        setIsConnecting(false);
-        setWalletAddress("");
-        console.log(error);
+      toast.error(`Error when connecting wallet`);
+      setIsConnecting(false);
+      setWalletAddress("");
+      console.log(error);
     }
   };
 
@@ -179,64 +180,72 @@ export default function Header() {
       </div>
 
       <div className={`fixed top-0 left-0 w-full h-full bg-overlayRgb flex justify-center items-center z-[99999] ${!isOpenNetworkPopup ? "hidden" : ""}`}>
-       <div className="bg-white rounded-lg max-w-2xl w-full">
-        <div className="grid grid-cols-12">
-         <div className="col-span-4">
-          <div className="p-5 bg-neutral100 rounded-l-lg">
-           <Link href={"/"}>
-              <Image src={"/Logo.svg"} alt="coordinals" width={160} height={40} />
-            </Link>
-           <h4 className="my-3 text-neutral600">Connect chains</h4>
-           <p className="text-sm mb-3 text-neutral600">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,.</p>
-          </div> 
-         </div>
-         <div className="col-span-8">
-          <div className="border-b border-neutral100 flex flex-row justify-between items-center p-2 px-3">
-           <h3 className="font-semibold text-lg text-neutral600">Available Chains</h3>
-           <button className="bg-transparent border-none text-2xl text-neutral600" onClick={() => setIsOpenNetworkPopup(false)}>&times;</button>
-          </div>
-          <div className="grid grid-cols-12 gap-2 mt-4 px-3">
-           <div className="col-span-6" onClick={() => setChainId(5)}>
-            <div className="relative border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
-             <div className="p-1.5 px-0 rounded-lg">
-              <Image
-                src={"/cbtc.svg"}
-                alt="background"
-                width={20}
-                height={20}
-                sizes="100%"
-                className="object-cover w-5 h-5"
-              />
-             </div>
-             <p className="pl-2 text-base text-neutral600">Coordinate <span className="absolute top-0 right-0 text-2xl p-1.5 hidden">&#10003;</span></p>
+        <div className="bg-white rounded-lg max-w-2xl w-full">
+          <div className="grid grid-cols-12">
+            <div className="col-span-4">
+              <div className="p-5 bg-neutral100 rounded-l-lg">
+                <Link href={"/"}>
+                  <Image src={"/Logo.svg"} alt="coordinals" width={160} height={40} />
+                </Link>
+                <h4 className="my-3 text-neutral600">Connect chains</h4>
+                <p className="text-sm mb-3 text-neutral600">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,.</p>
+              </div>
             </div>
-           </div>
-           <div className="col-span-6" onClick={() => setChainId(6)}>
-            <div className="relative border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
-             <div className="p-1.5 px-0 rounded-lg">
-              <Image
-                src={"/alys.svg"}
-                alt="background"
-                width={20}
-                height={20}
-                sizes="100%"
-                className="object-cover w-5 h-5 rounded-full"
-              />
-             </div>
-             <p className="pl-2 text-base text-neutral600">Alys <span className="absolute top-0 right-0 text-2xl p-1.5 hidden">&#10003;</span></p>
+            <div className="col-span-8">
+              <div className="border-b border-neutral100 flex flex-row justify-between items-center p-2 px-3">
+                <h3 className="font-semibold text-lg text-neutral600">Available Chains</h3>
+                <button className="bg-transparent border-none text-2xl text-neutral600" onClick={() => setIsOpenNetworkPopup(false)}>&times;</button>
+              </div>
+              <div className="grid grid-cols-12 gap-2 mt-4 px-3">
+                <div className="col-span-6" onClick={() => setChainId(5)}>
+                  <div className="relative border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
+                    <div className="p-1.5 px-0 rounded-lg">
+                      <Image
+                        src={"/cbtc.svg"}
+                        alt="background"
+                        width={20}
+                        height={20}
+                        sizes="100%"
+                        className="object-cover w-5 h-5"
+                      />
+                    </div>
+                    <p className="pl-2 text-base text-neutral600">Coordinate  <span
+                      className={`absolute top-0 right-0 text-2xl p-1.5 ${chainId === 5 ? '' : 'hidden'
+                        }`}
+                    > &#10003;
+                    </span></p>
+                  </div>
+                </div>
+                <div className="col-span-6" onClick={() => setChainId(6)}>
+                  <div className="relative border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
+                    <div className="p-1.5 px-0 rounded-lg">
+                      <Image
+                        src={"/alys.svg"}
+                        alt="background"
+                        width={20}
+                        height={20}
+                        sizes="100%"
+                        className="object-cover w-5 h-5 rounded-full"
+                      />
+                    </div>
+                    <p className="pl-2 text-base text-neutral600">Alys <span
+                      className={`absolute top-0 right-0 text-2xl p-1.5 ${chainId === 6 ? '' : 'hidden'
+                        }`}
+                    > &#10003;
+                    </span></p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center mt-8">
+                <Button className="bg-neutral100 border border-border-neutral100 text-neutral600 hover:bg-transparent hover:text-neutral600" onClick={() => handleLogin()}>Connect</Button>
+              </div>
+              {error && chainId === 0 && <div className="text-red-500">{error}</div>}
             </div>
-           </div>
           </div>
-          <div className="text-center mt-8">
-           <Button className="bg-neutral100 border border-border-neutral100 text-neutral600 hover:bg-transparent hover:text-neutral600" onClick={() => handleLogin()}>Connect</Button>
-          </div>
-          {error && chainId === 0 && <div className="text-red-500">{error}</div>}
-         </div> 
         </div>
       </div>
-     </div>
     </div>
-    
+
 
   );
 }
