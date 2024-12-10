@@ -30,7 +30,7 @@ export type utxo = {
   value: number;
   coinbase: boolean;
   height: number;
-  derivation_index: number;
+  derviation_index: number;
   confirmations: number;
   unspent_type:number
 

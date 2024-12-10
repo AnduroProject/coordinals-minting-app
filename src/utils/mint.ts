@@ -159,7 +159,8 @@ export async function mintToken(
     // Add the input to the PSBT
     const network = getNetwork("test", "sidechain");
     console.log("====network", network);
-    console.log("==== chroma.address", chroma.address);
+    console.log("==== chroma.address", getChainInstance("sidechain").address);
+    console.log("==== chroma", currentUtxo.derviation_index);
 
 
     psbt.addInput({
@@ -167,7 +168,7 @@ export async function mintToken(
       index: currentUtxo.vout,
 
     });
-    const testNode = acc.derive(currentUtxo.derivation_index);
+    const testNode = acc.derive(currentUtxo.derviation_index);
     const address = coordinate.payments.p2wpkh({
       pubkey: testNode.publicKey,
       network: coordinate.networks.testnet,
@@ -176,10 +177,12 @@ export async function mintToken(
 
     psbt.updateInput(i, {
       witnessUtxo: {
-        script: chroma.address.toOutputScript(address|| "", network),
+        script: getChainInstance("sidechain").address.toOutputScript(address|| "", network),
         value: currentUtxo.value,
       },
     });
+    ///script: getChainInstance(networkType || "").address.toOutputScript(address, network),
+
 
     // Calculate the size and fee
     const vbytes = await calculateSize(psbt, outputs, data);

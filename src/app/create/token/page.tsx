@@ -274,22 +274,73 @@ const SingleToken = () => {
                     </select> */}
                   </div>
                   <div className="w-full gap-6 flex flex-col">
-                    
-                      {networkType === "Coordiante" && 
+
+                    {networkType === "Coordiante" &&
                       <>
-                    <Input
-                      title="Name"
-                      text="Token name"
-                      value={headline}
-                      onChange={(e) => setHeadline(e.target.value)}
-                    />
-                    <Input
-                      title="Ticker"
-                      text="Token ticker"
-                      value={ticker}
-                      onChange={(e) => setTicker(e.target.value)}
-                    />
-                    {/* NaN erro */}
+                        <Input
+                          title="Name"
+                          text="Token name"
+                          value={headline}
+                          onChange={(e) => setHeadline(e.target.value)}
+                        />
+                        <Input
+                          title="Ticker"
+                          text="Token ticker"
+                          value={ticker}
+                          onChange={(e) => setTicker(e.target.value)}
+                        />
+                        {/* NaN erro */}
+                        <Input
+                          title="Supply"
+                          text="Token supply"
+                          value={supply}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setSupply(value === "" ? 0 : parseInt(value, 10));
+                          }}
+                          type="number"
+                        />
+                        <Input
+                          title="Token logo image url"
+                          text="Token logo image url"
+                          value={imageUrl}
+                          onChange={(e) => {
+                            setImageUrl(e.target.value);
+                            setErrorMessage('');
+                          }}
+
+                        />
+                        {imageUrl && (
+                          <div style={{ marginTop: '10px' }}>
+
+                            <img
+                              src={imageUrl}
+                              alt="Token Logo Preview"
+                              style={{
+                                maxWidth: '200px',
+                                maxHeight: '200px',
+                                objectFit: 'contain',
+                                border: '1px solid #ccc',
+                                padding: '5px',
+                                display: showImage ? 'block' : 'none',
+                              }}
+                              onLoad={handleImageLoad}
+                              onError={handleImageError}
+                            />
+                          </div>
+                        )}
+                        {showImage ? (
+                          <button onClick={handleDelete} style={{ marginTop: '10px' }}>
+                            <CloseCircle size={16} color="#F8F9FA" />
+                          </button>
+                        ) : (
+                          errorMessage && (
+                            <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
+                          )
+                        )}
+                      </>
+                    }
+                    {networkType === "Alys" &&
                       <Input
                         title="Supply"
                         text="Token supply"
@@ -300,58 +351,7 @@ const SingleToken = () => {
                         }}
                         type="number"
                       />
-                      <Input
-                        title="Token logo image url"
-                        text="Token logo image url"
-                        value={imageUrl}
-                        onChange={(e) => {
-                          setImageUrl(e.target.value);
-                          setErrorMessage('');
-                        }}
-
-                      />
-                      {imageUrl && (
-                        <div style={{ marginTop: '10px' }}>
-
-                          <img
-                            src={imageUrl}
-                            alt="Token Logo Preview"
-                            style={{
-                              maxWidth: '200px',
-                              maxHeight: '200px',
-                              objectFit: 'contain',
-                              border: '1px solid #ccc',
-                              padding: '5px',
-                              display: showImage ? 'block' : 'none',
-                            }}
-                            onLoad={handleImageLoad}
-                            onError={handleImageError}
-                          />
-                        </div>
-                      )}
-                      {showImage ? (
-                        <button onClick={handleDelete} style={{ marginTop: '10px' }}>
-                          <CloseCircle size={16} color="#F8F9FA" />
-                        </button>
-                      ) : (
-                        errorMessage && (
-                          <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
-                        )
-                      )}
-                  </>
-                      }
-                          {networkType === "Alys" && 
-                      <Input
-                        title="Supply"
-                        text="Token supply"
-                        value={supply}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setSupply(value === "" ? 0 : parseInt(value, 10));
-                        }}
-                        type="number"
-                      />
-                      }
+                    }
                   </div>
                 </div>
                 {/* <div className="flex flex-col gap-8 w-full">
@@ -400,12 +400,15 @@ const SingleToken = () => {
                 />
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3">
-                    <p className="text-3xl text-neutral50 font-bold">
-                      ${ticker}
-                    </p>
+                    {networkType === "Coordiante" &&
+                      <p className="text-3xl text-neutral50 font-bold">
+                        ${ticker}
+                      </p>
+                    }
                     <p className="text-xl text-neutral100 font-medium">
-                      Total supply:{supply}
+                      Total supply: {supply}
                     </p>
+
                   </div>
                   <p className="text-neutral100 text-lg2">
                     <a href={txUrl} target="_blank" className="text-blue-600">
