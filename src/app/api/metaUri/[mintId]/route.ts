@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
-import axios from "axios";
-import path from "path";
 import { NextApiRequest, NextApiResponse } from "next";
+import { getFileFromS3 } from "@/lib/service/awshelper"
 const fs = require("fs")
+var AWS = require('aws-sdk');
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey:  process.env.AWS_SECRET_ACCESS_KEY,
+  region:  process.env.AWS_REGION,
+})  
+const s3 = new AWS.S3()
 
 
 export async function GET(
@@ -15,19 +21,11 @@ export async function GET(
 
     console.log("inside metauri post mintId",mintId)
     if (!mintId) {
-      return NextResponse.json({ error: "Mint ID is required" }, { status: 400 });
-    }
-
-    const filePath = path.join(process.cwd(), "data", `${mintId}.json`);
-
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json({ error: "Metadata not found" }, { status: 404 });
-    }
-
-    const fileContent = fs.readFileSync(filePath, "utf-8");
-    const metadata = JSON.parse(fileContent);
-
-    return NextResponse.json({ data: metadata }, { status: 200 });
+      return NextApiResponse.json({ error: "Mint ID is required" }, { status: 400 });    
+    } 
+    // convert the callback-based function to a promise-based function provided by aws-sdk
+    const mintData = await getFileFromS3(mintId)  
+    return NextResponse.json(mintData);
   } catch (error) {
     console.error("Error fetching metadata:", error);
     return NextResponse.json({ error: "Failed to fetch metadata" }, { status: 500 });
