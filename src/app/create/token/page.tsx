@@ -66,7 +66,7 @@ const SingleToken = () => {
     const chainId = localStorage.getItem("chainId")
 
     if (chainId === "5") {
-      setnetworkType("Coordiante")
+      setnetworkType("Coordinate")
     } else if (chainId === "6") {
       setnetworkType("Alys")
 
@@ -275,7 +275,7 @@ const SingleToken = () => {
                   </div>
                   <div className="w-full gap-6 flex flex-col">
 
-                    {networkType === "Coordiante" &&
+                    {networkType === "Coordinate" &&
                       <>
                         <Input
                           title="Name"
@@ -400,9 +400,9 @@ const SingleToken = () => {
                 />
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3">
-                    {networkType === "Coordiante" &&
+                    {networkType === "Coordinate" &&
                       <p className="text-3xl text-neutral50 font-bold">
-                        ${ticker}
+                        {ticker}
                       </p>
                     }
                     <p className="text-xl text-neutral100 font-medium">

@@ -7,9 +7,9 @@ export type tokenData = {
   supply: number;
 };
 export type alysAssetData = {
-  headline: string;
-  ticker: string;
-  imageUrl: any;
+  name: string;
+  symbol: string;
+  image: any;
 
 };
 

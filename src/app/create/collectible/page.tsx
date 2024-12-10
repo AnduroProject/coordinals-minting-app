@@ -117,7 +117,7 @@ const SingleCollectible = () => {
     const chainId = localStorage.getItem("chainId")
 
     if(chainId === "5"){
-      setnetworkType("Coordiante")
+      setnetworkType("Coordinate")
     }else if (chainId === "6"){
       setnetworkType("Alys")
 
@@ -168,9 +168,9 @@ const SingleCollectible = () => {
     };
 
     const alysData: alysAssetData = {
-      headline,
-      ticker,
-      imageUrl,
+    name:  headline,
+    symbol:  ticker,
+      image :imageUrl,
 
     };
     try {
@@ -221,8 +221,8 @@ console.log("network type,",networkType)
         const gethex = await contractData.contract.safeMint.populateTransaction(
           alysaddress,
           mintId,
-          appBaseUrl + 'api/metaUri/' + mintId,
-
+          //appBaseUrl + 'api/metaUri/' + mintId,
+          "https://mara-sidechain-tesnet-coordinate.s3.amazonaws.com/nft/"+ mintId +".json",
           {
             gasPrice: contractData.gasPrice,
             nonce: contractData.nonces
@@ -390,9 +390,7 @@ console.log("network type,",networkType)
                           onLoad={handleImageLoad}
                           onError={handleImageError}
                         />
-                      </div>
-                    )}
-                    {showImage ? (
+                        {showImage ? (
                       <button onClick={handleDelete} className="absolute top-0 right-0">
                         <CloseCircle size={16} color="#F8F9FA" />
                       </button>
@@ -401,6 +399,9 @@ console.log("network type,",networkType)
                         <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>
                       )
                     )}
+                      </div>
+                    )}
+                    
                    </div> 
                   </div>
                 </div>
