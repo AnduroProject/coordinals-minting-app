@@ -42,14 +42,22 @@ export default function Header() {
     }
   };
   const handleNetworkInfo = async () => {
+    console.log("******INITIALIZE RESULT inside")
 
     const result = await networkInfo()
     console.log("*******INITIALIZE RESULT", result)
 
     if (result.status === true) {
       localStorage.setItem("isWalletConnected", "true")
+      const chain=localStorage.getItem("chainId")
+      console.log("chain",chain)
+
+      setChainId(Number(chain))
+
     //  localStorage.setItem("chainId", chain.toString())
       setIsWalletConnected("true")
+      console.log("wallet addres",walletAddress)
+      console.log(" result.result.chaiI",result.result.chainId)
     } else {
       localStorage.removeItem("isWalletConnected")
       //localStorage.removeItem("chainId")
@@ -59,17 +67,36 @@ export default function Header() {
   }
 
   React.useEffect(() => {
+    console.log("walletAddress--------", walletAddress);
+  
+  }, [walletAddress]);
+
+
+
+  React.useEffect(() => {
     console.log("Connector Network Information", networkState);
     console.log("Connector Wallet Information", walletState);
     const walletconnection = localStorage.getItem("isWalletConnected")
     console.log("======walletconnection ", walletconnection)
+    console.log("======address wallet ", walletAddress)
+
 
     if (walletState.connectionState == "disconnected" && walletconnection === "true") {
+      console.log("---inside wallet  conf")
       setWalletAddress("");
       localStorage.removeItem("isWalletConnected")
       handleNetworkInfo()
+
     } else if (walletState.connectionState == "connected") {
-      setWalletAddress(walletState.accountPublicKey);
+      console.log("---else part,",chainId)
+      if(chainId === 6){
+        console.log("---else chainId",chainId)
+
+      setWalletAddress(walletState.address);
+      }else{
+        setWalletAddress(walletState.accountPublicKey);
+
+      }
     }
   }, [walletState, networkState]);
 
@@ -103,9 +130,21 @@ export default function Header() {
             "🚀 ~ handleLogin ~ response.result.accountPublicKey:",
             response.result.accountPublicKey,
           );
+          if(chainId === 6){
+            const walletAddress = response.result.address;
+            console.log("walletAddress",walletAddress)
+            setWalletAddress(walletAddress);
 
-          const walletAddress = response.result.accountPublicKey;
+            localStorage.setItem("connectedAddress", walletAddress);
+
+          }
+          else if(chainId === 5)
+          {
+            const walletAddress = response.result.accountPublicKey;
           localStorage.setItem("connectedAddress", JSON.stringify(walletAddress));
+
+          }
+          
           localStorage.setItem("xpubkey", response.result.xpubKey);
           localStorage.setItem("isWalletConnected", "true")
           localStorage.setItem("chainId", chainId.toString())
@@ -113,6 +152,7 @@ export default function Header() {
 
           setWalletAddress(walletAddress);
           setIsConnecting(true);
+          console.log("===is connecting")
           toast.success(`Successfully connected`);
           // }
         } else {
