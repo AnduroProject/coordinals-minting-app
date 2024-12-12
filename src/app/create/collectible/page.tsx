@@ -21,6 +21,7 @@ import {
   privateKey,
   nftContractAddress,
   alysRPCUrl,
+  tokenContractAddress,
 } from "@/lib/constants";
 import { alysAssetData, tokenData } from "@/types";
 import useFormState from "@/lib/store/useFormStore";
@@ -32,6 +33,7 @@ import path from "path";
 import { nftInstance, saveJsonData } from "@/lib/service/fetcher";
 import axios from "axios";
 import { CloseCircle } from "iconsax-react";
+import { getAlysTokenInfo } from "@/utils/libs";
 
 const stepperData = ["Upload", "Confirm"];
 const SingleCollectible = () => {
@@ -140,6 +142,8 @@ const SingleCollectible = () => {
 
   const validateForm = (inputData: FormInputData): { isValid: boolean; error?: string } => {
     const { headline, ticker, imageUrl } = inputData;
+
+
     if (
       headline.trim().length === 0 ||
       ticker.trim().length === 0 ||

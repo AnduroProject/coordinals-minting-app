@@ -8,7 +8,7 @@ import Input from "@/components/ui/input";
 import ButtonLg from "@/components/ui/buttonLg";
 import { useRouter } from "next/navigation";
 import ButtonOutline from "@/components/ui/buttonOutline";
-import { tokenData } from "@/types";
+import { tokenData, TokenInfo } from "@/types";
 import { getContractInfo, getProvider, mintToken } from "@/utils/mint";
 import Layout from "@/components/layout/layout";
 import {
@@ -26,6 +26,8 @@ import { useConnector } from "anduro-wallet-connector-react";
 import { ethers, Transaction } from "ethers"
 import { tokenAbi } from "@/utils/tokenAbi";
 import { CloseCircle } from "iconsax-react";
+import { getAlysTokenInfo } from "@/utils/libs";
+import { alysTokenInfo } from "@/lib/service/fetcher";
 
 const SingleToken = () => {
   const router = useRouter();
@@ -55,6 +57,7 @@ const SingleToken = () => {
     React.useState<string>("")
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
+  const [tokenData, setTokenData] = useState<TokenInfo | null>(null);
 
 
   interface FormInputData {
@@ -63,6 +66,7 @@ const SingleToken = () => {
     imageUrl: string;
     supply: number
   }
+
   React.useEffect(() => {
     if (walletState.connectionState == "disconnected") {
       setError("Wallet is not connected.");
@@ -81,6 +85,26 @@ const SingleToken = () => {
       }
     }
   }, [walletState]);
+
+
+  React.useEffect(() => {
+    alysTokenInfo(tokenContractAddress)
+      .then((tokenInfo) => {
+        console.log("Token Info:", tokenInfo);
+        console.log("Token Info supply:", tokenInfo.total_supply);
+        const Data: TokenInfo = {
+          address: tokenInfo.address,
+          name: tokenInfo.name,
+          symbol: tokenInfo.symbol,
+          total_supply: tokenInfo.total_supply,
+        };
+        setTokenData(Data)
+      })
+
+      .catch((error) => {
+        console.error("Error fetching token info:", error);
+      });
+  }, []);
 
 
   const handleDelete = (): void => {
@@ -102,7 +126,7 @@ const SingleToken = () => {
     const { headline, ticker, imageUrl, supply } = inputData;
     console.log("type oif no====", typeof (supply))
     console.log("SUPLLY", supply && supply <= 0)
-
+    console.log("===token info")
     if (networkType === "Coordinate") {
       if (
         headline.trim().length === 0 ||
@@ -134,6 +158,7 @@ const SingleToken = () => {
         return { isValid: false, error: "Image is not provided." };
       }
     }
+
     if (supply <= 0) {
       console.log("supply====")
       return {
@@ -148,6 +173,16 @@ const SingleToken = () => {
         error: "Max supply is 2100000000000000",
       }
     }
+    console.log("Token tokenData:", tokenData?.total_supply);
+
+    if (supply >= tokenData?.total_supply! && networkType === "Alys") {
+
+      return {
+        isValid: false,
+        error: "Supply should be less than " + tokenData?.total_supply! / 10 ** 18,
+      }
+    }
+
 
     if (errorMessage) {
       return { isValid: false };
@@ -428,17 +463,19 @@ const SingleToken = () => {
                       </>
                     }
                     {networkType === "Alys" &&
-                      <Input
-                        title="Supply"
-                        text="Token supply"
-                        value={supply}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setSupply(value === "" ? 1 : parseInt(value, 10));
+                      <><p className="text-profileTitle text-neutral20 font-bold">
+                        {tokenData?.name}
 
-                        }}
-                        type="number"
-                      />
+                      </p><Input
+                          title="Supply"
+                          text="Token supply"
+                          value={supply}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setSupply(value === "" ? 1 : parseInt(value, 10));
+
+                          }}
+                          type="number" /></>
                     }
                   </div>
                 </div>
@@ -490,15 +527,25 @@ const SingleToken = () => {
                 }
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3">
-                    {networkType === "Coordinate" &&
+                    {networkType === "Coordinate" ?
                       <p className="text-3xl text-neutral50 font-bold">
                         {ticker}
-                      </p>
+                      </p> :
+                      <><div className="h-9 w-9 rounded-full flex items-center justify-center font-bold 
+                      text-neutral50 border-neutral50 border">
+                        <p className="text-2xl text-neutral50 font-bold">
+                          {tokenData?.name.charAt(0).toUpperCase()}
+                        </p>
+                      </div><><p className="text-3xl text-neutral50 font-bold">
+                          {supply} {tokenData?.symbol}
+                      </p></></>
+
                     }
+                    {networkType === "Coordinate" &&
                     <p className="text-xl text-neutral100 font-medium">
                       Total supply: {supply}
                     </p>
-
+          }
                   </div>
                   <p className="text-neutral100 text-lg2">
                     <a href={txUrl} target="_blank" className="text-blue-600">
@@ -521,7 +568,7 @@ const SingleToken = () => {
                   onClick={() => triggerRefresh()}
                 // onClick={() => router.reload()}
                 >
-                  Create 
+                  Create
                 </ButtonLg>
               </div>
 

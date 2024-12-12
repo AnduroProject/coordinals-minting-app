@@ -85,12 +85,12 @@ export function nftInstance(tokenAddress: string) {
     }); 
 }
 
-export function alysTokenInfo(tokenAddress: string) {
-  console.log("nftInstance===========",tokenAddress)
-  if (!tokenAddress) {
+export function alysTokenInfo(address: string) {
+  console.log("alysTokenInfo===========",address)
+  if (!address) {
     throw new Error("tokenAddress is missing");
   }
-  return axios.post("/api/tokenInfo", { tokenAddress })
+  return axios.post("/api/tokenInfo", { address })
   .then((response: any) =>  response.data.data)
     .catch((error: any) => {
       console.error("Error in getting instances:", error);

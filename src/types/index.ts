@@ -13,6 +13,12 @@ export type alysAssetData = {
   supply :number;
 
 };
+export type TokenInfo ={
+  address: string;
+  name: string;
+  symbol: string;
+  total_supply:number
+}
 
 export type collectionData = {
   address: string;

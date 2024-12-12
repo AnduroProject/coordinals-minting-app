@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const { address } = await req.json();
-
+ console.log("----ADDRESS",address)
   try {
     const response = await getAlysTokenInfo(address);
     return NextResponse.json({ status: 200, data: response, message: null });

@@ -189,7 +189,7 @@ export async function getAlysTokenInfo(address: string) {
     console.log("====response",response)
     return response.data;
   } catch (error:any) {
-    console.error("Error fetching token instances:", error.response?.data);
+    console.error("Error fetching token Info:", error.response?.data);
     return error;
   }
 }
