@@ -66,7 +66,11 @@ const SingleCollectible = () => {
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
 
-
+  interface FormInputData {
+    headline: string;
+    ticker: string;
+    imageUrl: string;
+  }
   const handleDelete = (): void => {
     setImageUrl("")
     setShowImage(false)
@@ -132,32 +136,76 @@ const SingleCollectible = () => {
     console.log("network type.", networkType);
 
   }, [networkType]);
+  
+
+  const validateForm = (inputData: FormInputData): { isValid: boolean; error?: string } => {
+    const { headline, ticker, imageUrl } = inputData;
+    if (
+      headline.trim().length === 0 ||
+      ticker.trim().length === 0 ||
+      imageUrl.trim() === ""
+
+    ) {
+      return { isValid: false, error: "Fields are required" }
+    }
+    if (!headline) {
+      return { isValid: false, error: "Headline is not provided." };
+    }
+    if (headline.trim().length > 50) {
+      return { isValid: false, error: "Headline should be 50 characters long." };
+    }
+    if (!ticker) {
+      return { isValid: false, error: "Ticker is not provided." };
+    }
+    if (ticker.trim().length > 7) {
+      return { isValid: false, error: "Ticker should be 7 characters long." };
+    }
+    if (/[^a-zA-Z]/.test(ticker)) {
+      return {
+        isValid: false,
+        error: "Ticker  contains special characters, numbers, or spaces that are not allowed",
+      }
+    }
+    if (!imageUrl) {
+      return { isValid: false, error: "Image is not provided." };
+    }
+    if(errorMessage)
+    {
+      return { isValid: false };
+
+    }
+  
+    return { isValid: true };
+  };
 
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     let mintId;
-    // if (!imageBase64) {
-    //   setError("Image is not provided.");
-    //   setIsLoading(false);
-    //   return;
-    // }
+    const inputData: FormInputData = {
+      headline,
+      ticker,
+      imageUrl,
+    };
+  
+    const validationResult = validateForm(inputData);
 
-    if (!headline) {
-      setError("headline is not provided.");
+    if (!validationResult.isValid) {
+      setError(validationResult.error || "Provide valid data");
       setIsLoading(false);
       return;
     }
-    if (ticker.length > 7) {
-      setError("Invalid ticker. Need to be no longer than 7 character long");
-      setIsLoading(false);
-      return;
+ 
+    else{
+      setError("");
     }
+
+    
 
     const opReturnValues = [
       {
-        image_data: imageUrl,
+        image_url: imageUrl,
         //mime: imageMime,
       },
     ];
@@ -165,7 +213,7 @@ const SingleCollectible = () => {
     const data: tokenData = {
       address: RECEIVER_ADDRESS,
       opReturnValues,
-      assetType: ASSETTYPE.NFTONCHAIN,
+      assetType: ASSETTYPE.NFTOFFCHAIN,
       headline,
       ticker,
       supply: 1,
@@ -175,6 +223,7 @@ const SingleCollectible = () => {
       name: headline,
       symbol: ticker,
       image: imageUrl,
+      supply: 1,
 
     };
     try {
@@ -378,6 +427,7 @@ const SingleCollectible = () => {
                       text="Collectable name"
                       value={headline}
                       onChange={(e) => setHeadline(e.target.value)}
+                      
                     />
                     <Input
                       title="Ticker"
@@ -393,6 +443,7 @@ const SingleCollectible = () => {
                       onChange={(e) => {
                         setImageUrl(e.target.value);
                         setErrorMessage('');
+                        setError("")
                       }}
                     />
                     <div className="mt-2.5">
@@ -508,7 +559,7 @@ const SingleCollectible = () => {
                   isLoading={isLoading}
                   onClick={() => triggerRefresh()}
                 >
-                  Create again
+                  Create 
                 </ButtonLg>
               </div>
             </div>

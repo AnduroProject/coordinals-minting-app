@@ -56,6 +56,13 @@ const SingleToken = () => {
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
 
+
+  interface FormInputData {
+    headline: string;
+    ticker: string;
+    imageUrl: string;
+    supply: number
+  }
   React.useEffect(() => {
     if (walletState.connectionState == "disconnected") {
       setError("Wallet is not connected.");
@@ -65,14 +72,14 @@ const SingleToken = () => {
     }
     const chainId = localStorage.getItem("chainId")
     const walletconnection = localStorage.getItem("isWalletConnected")
-    if(walletconnection === "true"){
-    if (chainId === "5") {
-      setnetworkType("Coordinate")
-    } else if (chainId === "6") {
-      setnetworkType("Alys")
+    if (walletconnection === "true") {
+      if (chainId === "5") {
+        setnetworkType("Coordinate")
+      } else if (chainId === "6") {
+        setnetworkType("Alys")
 
+      }
     }
-  }
   }, [walletState]);
 
 
@@ -90,22 +97,93 @@ const SingleToken = () => {
     setShowImage(true);
     setErrorMessage('');
   };
+
+  const validateForm = (inputData: FormInputData): { isValid: boolean; error?: string } => {
+    const { headline, ticker, imageUrl, supply } = inputData;
+    console.log("type oif no====", typeof (supply))
+    console.log("SUPLLY", supply && supply <= 0)
+
+    if (networkType === "Coordinate") {
+      if (
+        headline.trim().length === 0 ||
+        ticker.trim().length === 0 ||
+        imageUrl.trim() === ""
+
+      ) {
+        return { isValid: false, error: "Fields are required" }
+      }
+      if (!headline) {
+        return { isValid: false, error: "Headline is not provided." };
+      }
+      if (headline.trim().length > 50) {
+        return { isValid: false, error: "Headline should be 50 characters long." };
+      }
+      if (!ticker) {
+        return { isValid: false, error: "Ticker is not provided." };
+      }
+      if (ticker.trim().length > 7) {
+        return { isValid: false, error: "Ticker should be 7 characters long." };
+      }
+      if (/[^a-zA-Z]/.test(ticker)) {
+        return {
+          isValid: false,
+          error: "Ticker  contains special characters, numbers, or spaces that are not allowed",
+        }
+      }
+      if (!imageUrl) {
+        return { isValid: false, error: "Image is not provided." };
+      }
+    }
+    if (supply <= 0) {
+      console.log("supply====")
+      return {
+        isValid: false,
+        error: "Provide valid supply",
+      }
+
+    }
+    if (supply === 2100000000000000 && networkType === "Coordinate") {
+      return {
+        isValid: false,
+        error: "Max supply is 2100000000000000",
+      }
+    }
+
+    if (errorMessage) {
+      return { isValid: false };
+
+    }
+    return { isValid: true };
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    console.log("----supply 111")
     setError("");
     event.preventDefault();
     setIsLoading(true);
 
-    // if (!imageUrl) {
-    //   setIsLoading(false);
-    //   setError("Image not provided.");
-    //   return;
-    // }
+    const inputData: FormInputData = {
+      headline,
+      ticker,
+      imageUrl,
+      supply
+    };
+    console.log("----supply 222")
 
-    // if (!headline) {
-    //   setError("headline not provided.");
-    //   setIsLoading(false);
-    //   return;
-    // }
+
+    const validationResult = validateForm(inputData);
+    console.log("----supply 333")
+
+    if (!validationResult.isValid) {
+      setError(validationResult.error || "Provide valid data");
+      setIsLoading(false);
+      return;
+    }
+
+    else {
+      setError("");
+    }
+
 
     const opReturnValues = [
       {
@@ -122,29 +200,7 @@ const SingleToken = () => {
       supply,
     };
 
-    if (supply == 0) {
-      setError("Supply can not be 0.");
-      setIsLoading(false);
-      return;
-    }
 
-    if (!supply) {
-      setError("Supply can not be empty");
-      setIsLoading(false);
-      return;
-    }
-
-    if (supply == 2100000000000000) {
-      setError("Max amount of supply is 2100000000000000");
-      setIsLoading(false);
-      return;
-    }
-
-    // if (data.ticker.length > 7) {
-    //   setIsLoading(false);
-    //   setError("Invalid ticker. Need to be no longer than 7 character long");
-    //   return;
-    // }
     try {
       if (networkType === "Alys") {
 
@@ -324,7 +380,8 @@ const SingleToken = () => {
                           value={supply}
                           onChange={(e) => {
                             const value = e.target.value;
-                            setSupply(value === "" ? 0 : parseInt(value, 10));
+                            setSupply(value === "" ? 1 : parseInt(value, 10));
+
                           }}
                           type="number"
                         />
@@ -377,7 +434,8 @@ const SingleToken = () => {
                         value={supply}
                         onChange={(e) => {
                           const value = e.target.value;
-                          setSupply(value === "" ? 0 : parseInt(value, 10));
+                          setSupply(value === "" ? 1 : parseInt(value, 10));
+
                         }}
                         type="number"
                       />
@@ -463,7 +521,7 @@ const SingleToken = () => {
                   onClick={() => triggerRefresh()}
                 // onClick={() => router.reload()}
                 >
-                  Create again
+                  Create 
                 </ButtonLg>
               </div>
 

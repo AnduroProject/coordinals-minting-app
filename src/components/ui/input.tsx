@@ -7,7 +7,11 @@ interface InputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   type?: string;
 }
-
+interface FormInputData {
+  headline: string;
+  ticker: string;
+  imageUrl: string;
+}
 const Input: React.FC<InputProps> = ({
   title,
   text,

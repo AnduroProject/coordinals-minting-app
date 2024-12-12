@@ -23,7 +23,7 @@ export default function Header() {
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [isWalletConnected, setIsWalletConnected] = React.useState<string>("false")
   const [isOpenNetworkPopup, setIsOpenNetworkPopup] = React.useState<boolean>(false)
-  const [chainId, setChainId] = React.useState<number>(0)
+  const [chainId, setChainId] = React.useState<number>(Number(localStorage.getItem("chainId")) || 0)
 
   const [error, setError] = useState<string>("");
 
@@ -33,7 +33,7 @@ export default function Header() {
     if (result.status === true) {
       setWalletAddress("");
       localStorage.removeItem("isWalletConnected")
-    //  localStorage.removeItem("chainId")
+      localStorage.removeItem("chainId")
       setChainId(0)
 
       setIsConnecting(false)
@@ -49,11 +49,11 @@ export default function Header() {
 
     if (result.status === true) {
       localStorage.setItem("isWalletConnected", "true")
-      const chain=localStorage.getItem("chainId")
-      console.log("chain",chain)
+      //const chain=localStorage.getItem("chainId")
+      console.log("chain",chainId)
 
-      setChainId(Number(chain))
-
+      setChainId(chainId)
+      toast.success(`Successfully connected`);
     //  localStorage.setItem("chainId", chain.toString())
       setIsWalletConnected("true")
       console.log("wallet addres",walletAddress)

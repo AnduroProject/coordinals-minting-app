@@ -10,6 +10,7 @@ export type alysAssetData = {
   name: string;
   symbol: string;
   image: any;
+  supply :number;
 
 };
 

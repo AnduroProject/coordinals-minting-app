@@ -114,7 +114,7 @@ export async function mintToken(
 
   if (utxos.length === 0) {
     console.log("====222")
-    throw { message: "UTXO not found" };
+    throw { message: "Insufficient funds" };
   }
   const outputs: Array<{ address: string; value: number }> = [];
 
@@ -137,7 +137,7 @@ export async function mintToken(
   console.log("===toAddress=", toAddress)
 
   if (!controllerAddress || !toAddress)
-    throw new Error("Controller or change address does not exists.");
+    throw new Error("Address does not exists.");
 
   outputs.push({ address: controllerAddress, value: 10 ** 8 });
   outputs.push({ address: toAddress, value: data.supply });
