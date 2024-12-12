@@ -177,3 +177,19 @@ export async function sendTransactionToRpc(transactionHex: string) {
 
   return response.data;
 }
+
+
+
+export async function getAlysTokenInfo(address: string) {
+ 
+  try {
+    const url = `${alysBaseURL}/${address}`;
+    console.log("__URL", url)
+    const response = await axios.get(url);
+    console.log("====response",response)
+    return response.data;
+  } catch (error:any) {
+    console.error("Error fetching token instances:", error.response?.data);
+    return error;
+  }
+}
