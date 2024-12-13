@@ -6,14 +6,10 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     // { tokenAddress } = params;
-    console.log("tokenAddress11",req)
 
     const { tokenAddress } = await req.json();
 
-    console.log("tokenAddress",tokenAddress)
-
     const data = await fetchTokenInstances(tokenAddress);
-    console.log("===datat",data)
   if(data.response?.data.message === 'Not found'){
     return NextResponse.json({ data: null }, { status: 200 });
   }else{

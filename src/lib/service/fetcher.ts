@@ -97,3 +97,29 @@ export function alysTokenInfo(address: string) {
       throw error;
     }); 
 }
+export function tokenInfo() {
+
+  return axios.get("/api/database")
+  .then((response) =>  {
+    console.log("======response data",response.data.data)
+    return response.data;
+    })
+    .catch((error) => {
+      console.error("Error in getting token data:", error);
+      throw error;
+    }); 
+}
+export function storeTokenInfo(tokenId: number,metaData:any) {
+  console.log("tokenId===========",tokenId)
+  console.log("metaData===========",metaData)
+
+  if (!tokenId) {
+    throw new Error("tokenId is missing");
+  }
+  return axios.post("/api/database", { tokenId ,metaData})
+  .then((response) =>  response.data.data)
+    .catch((error) => {
+      console.error("Error in storing token data:", error);
+      throw error;
+    }); 
+}

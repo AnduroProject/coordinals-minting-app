@@ -82,16 +82,12 @@ export default function Header() {
 
 
     if (walletState.connectionState == "disconnected" && walletconnection === "true") {
-      console.log("---inside wallet  conf")
       setWalletAddress("");
       localStorage.removeItem("isWalletConnected")
       handleNetworkInfo()
 
     } else if (walletState.connectionState == "connected") {
-      console.log("---else part,",chainId)
       if(chainId === 6){
-        console.log("---else chainId",chainId)
-
       setWalletAddress(walletState.address);
       }else{
         setWalletAddress(walletState.accountPublicKey);
@@ -120,7 +116,6 @@ export default function Header() {
           chainId: chainId,
           walletURL: WALLET_URL,
         });
-        console.log("======wallet url 22", WALLET_URL)
 
         console.log("🚀 ~ handleLogin ~ response:", response);
         if (response.status == true) {
@@ -152,7 +147,6 @@ export default function Header() {
 
           setWalletAddress(walletAddress);
           setIsConnecting(true);
-          console.log("===is connecting")
           toast.success(`Successfully connected`);
           // }
         } else {

@@ -207,12 +207,9 @@ const SingleToken = () => {
       setIsLoading(false);
       return;
     }
-
     else {
       setError("");
     }
-
-
     const opReturnValues = [
       {
         image_url: imageUrl,
@@ -235,32 +232,12 @@ const SingleToken = () => {
         console.log("====contractAddress", tokenContractAddress)
         const alysaddress = localStorage.getItem("address") || "";
         const contractData = await getContractInfo(alysaddress, tokenContractAddress, tokenAbi)
-
-        // const provider = getProvider(chromaBookApi)
-        // console.log("---provider", provider)
-        // const signer = new ethers.Wallet(privateKey, provider)
-        // const nonces = await provider.getTransactionCount(alysaddress, "pending")
-        // console.log("----nonces", nonces)
-        // const contract = new ethers.Contract(tokenContractAddress, tokenAbi, signer);
-        // console.log("----contract", contract)
-
-        // const gasPrice = (await provider.getFeeData()).gasPrice
-        // console.log("----gasPrice", gasPrice)
-
         console.log("----alys.contractData", contractData)
 
         if (!contractData.gasPrice) {
           return
         }
-        // const gethex = await contractData.contract.transfer.populateTransaction(
-        //   alysaddress,
-        //   tokenContractAddress,
-        //   {
-        //     chainId: "212121",
-        //     gasPrice: contractData.gasPrice,
-        //     nonce: contractData.nonces,
-        //   },
-        // )
+   
         const gethex = await contractData.contract.transfer(
           alysaddress,
           ethers.parseEther(supply.toString()),
@@ -492,7 +469,11 @@ const SingleToken = () => {
                     <div className="flex flex-row gap-8 justify-between w-full">
                       <ButtonOutline
                         title="Back"
-                        onClick={() => router.push("/")}
+                        onClick={() => {
+                          router.push("/")
+                          reset();
+                        }
+                        }
                       />
                       <ButtonLg
                         type="submit"

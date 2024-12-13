@@ -27,10 +27,10 @@ import { alysAssetData, tokenData } from "@/types";
 import useFormState from "@/lib/store/useFormStore";
 import { toast } from "sonner";
 import { useConnector } from "anduro-wallet-connector-react";
-import { ethers, Transaction } from "ethers"
+import { ethers, keccak256, toUtf8Bytes, Transaction } from "ethers"
 import { nftAbi } from "@/utils/nftAbi";
 import path from "path";
-import { nftInstance, saveJsonData } from "@/lib/service/fetcher";
+import { nftInstance, saveJsonData, storeTokenInfo, tokenInfo, } from "@/lib/service/fetcher";
 import axios from "axios";
 import { CloseCircle } from "iconsax-react";
 import { getAlysTokenInfo } from "@/utils/libs";
@@ -64,7 +64,7 @@ const SingleCollectible = () => {
   const [response, setResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const alysaddress = localStorage.getItem("address") || "";
-  
+
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -123,22 +123,22 @@ const SingleCollectible = () => {
     }
     const chainId = localStorage.getItem("chainId")
     const walletconnection = localStorage.getItem("isWalletConnected")
-    if(walletconnection === "true"){
+    if (walletconnection === "true") {
       if (chainId === "5") {
         setnetworkType("Coordinate")
       } else if (chainId === "6") {
         setnetworkType("Alys")
-  
+
       }
     }
-    
+
   }, [walletState]);
 
   React.useEffect(() => {
     console.log("network type.", networkType);
 
   }, [networkType]);
-  
+
 
   const validateForm = (inputData: FormInputData): { isValid: boolean; error?: string } => {
     const { headline, ticker, imageUrl } = inputData;
@@ -164,15 +164,16 @@ const SingleCollectible = () => {
     if (imageUrl.trim() === "") {
       return { isValid: false, error: "Image is not provided." };
     }
-    if(errorMessage)
-    {
+    if (errorMessage) {
       return { isValid: false };
 
     }
-  
+
     return { isValid: true };
   };
 
+
+  
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -183,20 +184,16 @@ const SingleCollectible = () => {
       ticker,
       imageUrl,
     };
-  
     const validationResult = validateForm(inputData);
-
     if (!validationResult.isValid) {
       setError(validationResult.error || "Provide valid data");
       setIsLoading(false);
       return;
     }
- 
-    else{
+
+    else {
       setError("");
     }
-
-    
 
     const opReturnValues = [
       {
@@ -204,7 +201,6 @@ const SingleCollectible = () => {
         //mime: imageMime,
       },
     ];
-
     const data: tokenData = {
       address: RECEIVER_ADDRESS,
       opReturnValues,
@@ -227,41 +223,24 @@ const SingleCollectible = () => {
       if (networkType === "Alys") {
         console.log("network type,", networkType)
         console.log("====contractAddress",)
+    
+        const token = await tokenInfo()
+        console.log("====token", token)
 
-        const contractInstance = await nftInstance(nftContractAddress);
-        console.log("====contractInstance", contractInstance)
+        mintId = token.data[0].token_id + 1
 
-        let tokenId = 0;
-        if (contractInstance != null && Array.isArray(contractInstance.items) && contractInstance.items.length > 0) {
-          tokenId = parseInt(contractInstance.items[0].id, 10);
-        }
-        mintId = tokenId + 1;
-        console.log("====tokenId", tokenId)
         console.log("====mintId", mintId)
+        console.log("====alysData", alysData)
+
         const response = await saveJsonData(alysData, mintId || 0);
         console.log("response====", response.message);
         const contractData = await getContractInfo(alysaddress, nftContractAddress, nftAbi)
 
-        // const provider = getProvider(alysRPCUrl)
-        // console.log("---provider", provider)
-        // const signer = new ethers.Wallet(privateKey, provider)
-        // console.log("signer",signer)
-        // const nonces = await provider.getTransactionCount(signer.address, "pending")
-        // console.log("----nonces", nonces)
-        // const contract = new ethers.Contract(nftContractAddress, nftAbi, signer);
-        // console.log("----contract", contract)
-
-        // const gasPrice = (await provider.getFeeData()).gasPrice
-        // console.log("----gasPrice", gasPrice)
-
-        //  console.log("----alys.contractData", contractData)
-
         if (!contractData.gasPrice) {
           return
         }
-        console.log("url contruct", appBaseUrl + 'api/metaUri/' + mintId)
-        const estimateTxFee = contractData.gasPrice * BigInt(30000);
-        console.log("----estimateTxFee", estimateTxFee)
+        // const estimateTxFee = contractData.gasPrice * BigInt(30000);
+        // console.log("----estimateTxFee", estimateTxFee)
         console.log("====mintId 22", mintId)
         console.log("====alysaddress 22", alysaddress)
 
@@ -275,10 +254,8 @@ const SingleCollectible = () => {
             gasPrice: contractData.gasPrice,
             nonce: contractData.nonces
           })
-          // const newtx = new Transaction()
-          // newtx.to = alysaddress
-          // newtx.data = gethex.data
-          
+    
+
         console.log("gethex ..----------.", gethex)
         // console.log(
         //   "populatetransaction 2 ..----------alys token hex----------.",
@@ -304,15 +281,14 @@ const SingleCollectible = () => {
           console.log("Transaction is successful!!!" + '\n'
           + "Transaction Hash:", (await signedTxn).hash + '\n' 
         )
-          // console.log("Transaction is successful!!!" + '\n'
-          //    + "Transaction Hash:", (await signedTxn).hash + '\n' 
-          //    + "Block Number: " + receipt.blockNumber + '\n')
+          storeTokenInfo(mintId,alysData)
+      
             setError("")
             setStep(1);
             setIsLoading(false);
          }
 
-       else {
+          else {
             setError(error)
             toast.error(error)
             setStep(0);
@@ -321,7 +297,7 @@ const SingleCollectible = () => {
           }
         } catch (error:any) {
           setIsLoading(false)
-          setError( "Transaction not processed")
+          setError("Transaction not processed")
 
           console.error("Error decoding data:", error);
         }
@@ -387,12 +363,12 @@ const SingleCollectible = () => {
 
   const getTitle = (step: any, networktype: any) => {
     if (step === 0) {
-      if (networktype === "Coordinate" ||networktype === "Alys"  ) return "Create Collectible";
-   
+      if (networktype === "Coordinate" || networktype === "Alys") return "Create Collectible";
+
     }
     else if (step === 1) {
-      if (networktype === "Coordinate" ||networktype === "Alys") return "Collectible created successfully";
-    
+      if (networktype === "Coordinate" || networktype === "Alys") return "Collectible created successfully";
+
     }
     return ""
   };
@@ -401,7 +377,7 @@ const SingleCollectible = () => {
       <div className="flex flex-col w-full h-full bg-background items-center pb-[148px]">
         <div className="w-full flex flex-col items-center gap-16 z-50">
           <Banner
-              title={getTitle(step, networkType)}
+            title={getTitle(step, networkType)}
             image={"/background-2.png"}
             setStep={step}
             stepperData={stepperData}
@@ -428,16 +404,18 @@ const SingleCollectible = () => {
                       text="Collectable name"
                       value={headline}
                       onChange={(e) => setHeadline(e.target.value)}
-                      
+
                     />
-                  
+
                     <Input
                       title="Ticker"
                       text="Collectable ticker"
                       value={ticker}
-                      onChange={(e) => {setTicker(e.target.value)
-                        setError("")}}
-                      
+                      onChange={(e) => {
+                        setTicker(e.target.value)
+                        setError("")
+                      }}
+
                     />
 
                     <Input
@@ -505,7 +483,9 @@ const SingleCollectible = () => {
                     <div className="w-full flex flex-row gap-8">
                       <ButtonOutline
                         title="Back"
-                        onClick={() => router.push("/")}
+                        onClick={() => {
+                          router.push("/")
+                          reset();}}
                       />
                       <ButtonLg
                         type="submit"
@@ -524,18 +504,18 @@ const SingleCollectible = () => {
             <div className="w-full max-w-[800px] flex flex-col gap-16 px-4">
               <div className="w-full flex flex-row items-center gap-8 justify-start">
                 {/* {networkType === "Coordinate" && */}
-                  <img
-                    src={imageUrl}
-                    //alt="background"
-                    width={0}
-                    height={160}
-                    sizes="100%"
-                    className="w-[280px] h-[280px] object-cover rounded-3xl"
-                  />
+                <img
+                  src={imageUrl}
+                  //alt="background"
+                  width={0}
+                  height={160}
+                  sizes="100%"
+                  className="w-[280px] h-[280px] object-cover rounded-3xl"
+                />
                 {/* } */}
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3">
-                  <p className="text-3xl text-neutral50 font-bold">
+                    <p className="text-3xl text-neutral50 font-bold">
                       {headline}
                     </p>
                     <p className="text-3xl text-neutral50 font-bold">
@@ -563,7 +543,7 @@ const SingleCollectible = () => {
                   isLoading={isLoading}
                   onClick={() => triggerRefresh()}
                 >
-                  Create 
+                  Create
                 </ButtonLg>
               </div>
             </div>
