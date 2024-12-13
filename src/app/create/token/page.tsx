@@ -128,21 +128,14 @@ const SingleToken = () => {
     console.log("SUPLLY", supply && supply <= 0)
     console.log("===token info")
     if (networkType === "Coordinate") {
-      if (
-        headline.trim().length === 0 ||
-        ticker.trim().length === 0 ||
-        imageUrl.trim() === ""
-
-      ) {
-        return { isValid: false, error: "Fields are required" }
-      }
-      if (!headline) {
+    
+      if (headline.trim().length === 0) {
         return { isValid: false, error: "Headline is not provided." };
       }
       if (headline.trim().length > 50) {
         return { isValid: false, error: "Headline should be 50 characters long." };
       }
-      if (!ticker) {
+      if (ticker.trim().length === 0) {
         return { isValid: false, error: "Ticker is not provided." };
       }
       if (ticker.trim().length > 7) {
@@ -154,7 +147,7 @@ const SingleToken = () => {
           error: "Ticker  contains special characters, numbers, or spaces that are not allowed",
         }
       }
-      if (!imageUrl) {
+      if (imageUrl.trim() === "") {
         return { isValid: false, error: "Image is not provided." };
       }
     }
@@ -406,7 +399,8 @@ const SingleToken = () => {
                           title="Ticker"
                           text="Token ticker"
                           value={ticker}
-                          onChange={(e) => setTicker(e.target.value)}
+                          onChange={(e) => {setTicker(e.target.value)
+                            setError("")}}
                         />
                         {/* NaN erro */}
                         <Input
@@ -427,6 +421,7 @@ const SingleToken = () => {
                           onChange={(e) => {
                             setImageUrl(e.target.value);
                             setErrorMessage('');
+                            setError("")
                           }}
 
                         />

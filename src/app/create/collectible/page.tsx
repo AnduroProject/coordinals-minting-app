@@ -143,22 +143,13 @@ const SingleCollectible = () => {
   const validateForm = (inputData: FormInputData): { isValid: boolean; error?: string } => {
     const { headline, ticker, imageUrl } = inputData;
 
-
-    if (
-      headline.trim().length === 0 ||
-      ticker.trim().length === 0 ||
-      imageUrl.trim() === ""
-
-    ) {
-      return { isValid: false, error: "Fields are required" }
-    }
-    if (!headline) {
+    if (headline.trim().length === 0) {
       return { isValid: false, error: "Headline is not provided." };
     }
     if (headline.trim().length > 50) {
       return { isValid: false, error: "Headline should be 50 characters long." };
     }
-    if (!ticker) {
+    if (ticker.trim().length === 0) {
       return { isValid: false, error: "Ticker is not provided." };
     }
     if (ticker.trim().length > 7) {
@@ -170,7 +161,7 @@ const SingleCollectible = () => {
         error: "Ticker  contains special characters, numbers, or spaces that are not allowed",
       }
     }
-    if (!imageUrl) {
+    if (imageUrl.trim() === "") {
       return { isValid: false, error: "Image is not provided." };
     }
     if(errorMessage)
@@ -308,11 +299,14 @@ const SingleCollectible = () => {
           // });
           const signedTxn = await contractData.signer.sendTransaction(gethex);
           console.log("signedTxn ..----------.", signedTxn)
-          const receipt = await signedTxn.wait();
-         if(receipt){
+          //const receipt = await signedTxn.wait();
+         if(signedTxn){
           console.log("Transaction is successful!!!" + '\n'
-             + "Transaction Hash:", (await signedTxn).hash + '\n' 
-             + "Block Number: " + receipt.blockNumber + '\n')
+          + "Transaction Hash:", (await signedTxn).hash + '\n' 
+        )
+          // console.log("Transaction is successful!!!" + '\n'
+          //    + "Transaction Hash:", (await signedTxn).hash + '\n' 
+          //    + "Block Number: " + receipt.blockNumber + '\n')
             setError("")
             setStep(1);
             setIsLoading(false);
@@ -325,7 +319,10 @@ const SingleCollectible = () => {
             setIsLoading(false);
 
           }
-        } catch (error) {
+        } catch (error:any) {
+          setIsLoading(false)
+          setError( "Transaction not processed")
+
           console.error("Error decoding data:", error);
         }
       }
@@ -433,11 +430,14 @@ const SingleCollectible = () => {
                       onChange={(e) => setHeadline(e.target.value)}
                       
                     />
+                  
                     <Input
                       title="Ticker"
                       text="Collectable ticker"
                       value={ticker}
-                      onChange={(e) => setTicker(e.target.value)}
+                      onChange={(e) => {setTicker(e.target.value)
+                        setError("")}}
+                      
                     />
 
                     <Input
