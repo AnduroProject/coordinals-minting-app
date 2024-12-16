@@ -18,6 +18,7 @@ import {
   MOCK_MENOMIC,
   tokenContractAddress,
   privateKey,
+  ownerAddress,
 } from "@/lib/constants";
 import Image from "next/image";
 import useFormState from "@/lib/store/useFormStore";
@@ -58,6 +59,8 @@ const SingleToken = () => {
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
   const [tokenData, setTokenData] = useState<TokenInfo | null>(null);
+  const alysaddress = localStorage.getItem("address") || "";
+  const [balance, setBalance] = useState<string>("");
 
 
   interface FormInputData {
@@ -88,21 +91,48 @@ const SingleToken = () => {
 
 
   React.useEffect(() => {
-    alysTokenInfo(tokenContractAddress)
-      .then((tokenInfo) => {
-        console.log("Token Info:", tokenInfo);
-        console.log("Token Info supply:", tokenInfo.total_supply);
+    // alysTokenInfo(tokenContractAddress)
+    //   .then((tokenInfo) => {
+    //     console.log("Token Info:", tokenInfo);
+    //     console.log("Token Info supply:", tokenInfo.total_supply);
+    //     const Data: TokenInfo = {
+    //       //address: tokenInfo.address,
+    //       name: tokenInfo.name,
+    //       symbol: tokenInfo.symbol,
+    //       total_supply: tokenInfo.total_supply,
+    //     };
+    //     setTokenData(Data)
+    //   })
+
+    //   .catch((error) => {
+    //     console.error("Error fetching alys token info:", error);
+    //   });
+
+    getContractInfo(alysaddress, tokenContractAddress, tokenAbi)
+      .then(contract => {
+        const { contract: tokenContract } = contract;
+
+        // Fetch balance, name, and symbol 
+        return Promise.all([
+          tokenContract.balanceOf(ownerAddress),
+          tokenContract.name(),
+          tokenContract.symbol()
+        ]);
+      })
+      .then(([balance, name, symbol]) => {
+        console.log("===balance", balance.toString());
+        console.log("===balance format", ethers.formatEther(balance));
         const Data: TokenInfo = {
-          address: tokenInfo.address,
-          name: tokenInfo.name,
-          symbol: tokenInfo.symbol,
-          total_supply: tokenInfo.total_supply,
+          name: name,
+          symbol: symbol,
+          total_supply: ethers.formatEther(balance),
         };
         setTokenData(Data)
+        console.log("===Token Name:", name);
+        console.log("===Token Symbol:", symbol);
       })
-
-      .catch((error) => {
-        console.error("Error fetching token info:", error);
+      .catch(error => {
+        console.error("Error:", error);
       });
   }, []);
 
@@ -125,10 +155,10 @@ const SingleToken = () => {
   const validateForm = (inputData: FormInputData): { isValid: boolean; error?: string } => {
     const { headline, ticker, imageUrl, supply } = inputData;
     console.log("type oif no====", typeof (supply))
-    console.log("SUPLLY", supply && supply <= 0)
-    console.log("===token info")
+    console.log("==netwoektypw", networkType)
+
     if (networkType === "Coordinate") {
-    
+
       if (headline.trim().length === 0) {
         return { isValid: false, error: "Headline is not provided." };
       }
@@ -160,19 +190,20 @@ const SingleToken = () => {
       }
 
     }
-    if (supply === 2100000000000000 && networkType === "Coordinate") {
+    if (supply >= 2100000000000000 && networkType === "Coordinate") {
       return {
         isValid: false,
         error: "Max supply is 2100000000000000",
       }
     }
-    console.log("Token tokenData:", tokenData?.total_supply);
+    console.log("Token supply:",  Number(tokenData?.total_supply));
+    console.log("Token supplysupply:", supply);
 
-    if (supply >= tokenData?.total_supply! && networkType === "Alys") {
+    if (supply >= Number(tokenData?.total_supply) && networkType === "Alys") {
 
       return {
         isValid: false,
-        error: "Supply should be less than " + tokenData?.total_supply! / 10 ** 18,
+        error: "Supply should be less than " + Number(tokenData?.total_supply)
       }
     }
 
@@ -189,6 +220,7 @@ const SingleToken = () => {
     setError("");
     event.preventDefault();
     setIsLoading(true);
+
 
     const inputData: FormInputData = {
       headline,
@@ -230,14 +262,13 @@ const SingleToken = () => {
       if (networkType === "Alys") {
 
         console.log("====contractAddress", tokenContractAddress)
-        const alysaddress = localStorage.getItem("address") || "";
         const contractData = await getContractInfo(alysaddress, tokenContractAddress, tokenAbi)
         console.log("----alys.contractData", contractData)
 
         if (!contractData.gasPrice) {
           return
         }
-   
+
         const gethex = await contractData.contract.transfer(
           alysaddress,
           ethers.parseEther(supply.toString()),
@@ -312,7 +343,9 @@ const SingleToken = () => {
         }
       }
     } catch (error: any) {
-      console.log("🚀 ~ handleSubmit ~ error:", JSON.stringify(error));
+      console.log("🚀 ~ handleSubmit ~ error:", error);
+
+      //console.log("🚀 ~ handleSubmit ~ error:", JSON.stringify(error));
       setError(error.message);
       toast.error(error.message || "An error occurred");
       setIsLoading(false);
@@ -376,8 +409,10 @@ const SingleToken = () => {
                           title="Ticker"
                           text="Token ticker"
                           value={ticker}
-                          onChange={(e) => {setTicker(e.target.value)
-                            setError("")}}
+                          onChange={(e) => {
+                            setTicker(e.target.value)
+                            setError("")
+                          }}
                         />
                         {/* NaN erro */}
                         <Input
@@ -513,15 +548,15 @@ const SingleToken = () => {
                           {tokenData?.name.charAt(0).toUpperCase()}
                         </p>
                       </div><><p className="text-3xl text-neutral50 font-bold">
-                          {supply} {tokenData?.symbol}
+                        {supply} {tokenData?.symbol}
                       </p></></>
 
                     }
                     {networkType === "Coordinate" &&
-                    <p className="text-xl text-neutral100 font-medium">
-                      Total supply: {supply}
-                    </p>
-          }
+                      <p className="text-xl text-neutral100 font-medium">
+                        Total supply: {supply}
+                      </p>
+                    }
                   </div>
                   <p className="text-neutral100 text-lg2">
                     <a href={txUrl} target="_blank" className="text-blue-600">

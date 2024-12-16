@@ -14,10 +14,10 @@ export type alysAssetData = {
 
 };
 export type TokenInfo ={
-  address: string;
+  //address: string;
   name: string;
   symbol: string;
-  total_supply:number
+  total_supply:string
 }
 
 export type collectionData = {

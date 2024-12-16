@@ -12,6 +12,7 @@ export const appBaseUrl = "http://localhost:3000/";
 
 export const nftContractAddress= "0xBdB3dbeC70B4Bcb4A0E8FA9AF18980Af38FA826e"
 export const tokenContractAddress= "0x894554AE5373d7C3456009d21e4bf7B407Ab8752"
+export const ownerAddress= "0x1ab4267E6F8581A34e45a7fDFACcF1f072964eBe"
 
 export const privateKey= "2dd20bf2585b6a1947315762ee8660990d064ab2dc3f4cf1a365a35a53a8f252"
 export const alysRPCUrl = "http://btcalys.xyz:8545"
