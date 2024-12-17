@@ -232,9 +232,9 @@ const SingleCollectible = () => {
         console.log("====mintId", mintId)
         console.log("====alysData", alysData)
 
-        const response = await saveJsonData(alysData, mintId || 0);
+        const response = await saveJsonData(alysData, mintId);
         console.log("response====", response.message);
-        const contractData = await getContractInfo(alysaddress, nftContractAddress, nftAbi)
+        const contractData = await getContractInfo(nftContractAddress, nftAbi)
 
         if (!contractData.gasPrice) {
           return
@@ -357,8 +357,10 @@ const SingleCollectible = () => {
 
   const triggerRefresh = () => {
     setStep(0);
-    reset();
+    //reset();
     router.push("/create/collectible");
+    reset();
+
   };
 
   const getTitle = (step: any, networktype: any) => {

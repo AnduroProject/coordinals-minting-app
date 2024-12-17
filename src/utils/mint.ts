@@ -42,7 +42,7 @@ export function getProvider(apiUrl: any) {
   return new ethers.JsonRpcProvider(apiUrl)
 }
 
-export async function getContractInfo(toAddress:any ,contractAddress:any,abiFile:any){
+export async function getContractInfo(contractAddress:any,abiFile:any){
   const provider = getProvider(alysRPCUrl)
   console.log("---provider", provider)
   const signer = new ethers.Wallet(privateKey, provider)

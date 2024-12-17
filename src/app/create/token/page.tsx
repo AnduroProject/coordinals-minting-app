@@ -108,11 +108,10 @@ const SingleToken = () => {
     //     console.error("Error fetching alys token info:", error);
     //   });
 
-    getContractInfo(alysaddress, tokenContractAddress, tokenAbi)
+    getContractInfo(tokenContractAddress, tokenAbi)
       .then(contract => {
         const { contract: tokenContract } = contract;
 
-        // Fetch balance, name, and symbol 
         return Promise.all([
           tokenContract.balanceOf(ownerAddress),
           tokenContract.name(),
@@ -134,7 +133,7 @@ const SingleToken = () => {
       .catch(error => {
         console.error("Error:", error);
       });
-  }, []);
+  }, [tokenData?.total_supply]);
 
 
   const handleDelete = (): void => {
@@ -190,7 +189,7 @@ const SingleToken = () => {
       }
 
     }
-    if (supply >= 2100000000000000 && networkType === "Coordinate") {
+    if (supply > 2100000000000000 && networkType === "Coordinate") {
       return {
         isValid: false,
         error: "Max supply is 2100000000000000",
@@ -199,11 +198,11 @@ const SingleToken = () => {
     console.log("Token supply:",  Number(tokenData?.total_supply));
     console.log("Token supplysupply:", supply);
 
-    if (supply >= Number(tokenData?.total_supply) && networkType === "Alys") {
+    if (supply > Number(tokenData?.total_supply) && networkType === "Alys") {
 
       return {
         isValid: false,
-        error: "Supply should be less than " + Number(tokenData?.total_supply)
+        error: "Available supply " + Number(tokenData?.total_supply)
       }
     }
 
@@ -228,11 +227,9 @@ const SingleToken = () => {
       imageUrl,
       supply
     };
-    console.log("----supply 222")
 
 
     const validationResult = validateForm(inputData);
-    console.log("----supply 333")
 
     if (!validationResult.isValid) {
       setError(validationResult.error || "Provide valid data");
@@ -262,7 +259,7 @@ const SingleToken = () => {
       if (networkType === "Alys") {
 
         console.log("====contractAddress", tokenContractAddress)
-        const contractData = await getContractInfo(alysaddress, tokenContractAddress, tokenAbi)
+        const contractData = await getContractInfo( tokenContractAddress, tokenAbi)
         console.log("----alys.contractData", contractData)
 
         if (!contractData.gasPrice) {
@@ -354,7 +351,7 @@ const SingleToken = () => {
 
   const triggerRefresh = () => {
     setStep(0);
-    //reset();
+    reset();
     router.push("/create/token");
   };
 

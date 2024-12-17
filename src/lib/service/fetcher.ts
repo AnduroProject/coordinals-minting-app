@@ -93,7 +93,7 @@ export function alysTokenInfo(address: string) {
   return axios.post("/api/tokenInfo", { address })
   .then((response: any) =>  response.data.data)
     .catch((error: any) => {
-      console.error("Error in getting tokeninfo:", error);
+      console.error("Error in getting instances:", error);
       throw error;
     }); 
 }
