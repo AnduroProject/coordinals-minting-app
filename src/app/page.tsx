@@ -15,7 +15,6 @@ import { useRouter } from "next/navigation";
 const Create = () => {
   const router = useRouter();
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
-    const [isWalletConnected, setIsWalletConnected] = React.useState<string | null>(localStorage.getItem("isWalletConnected") || null)
 
 
   const handleOptionClick = (id: number) => {

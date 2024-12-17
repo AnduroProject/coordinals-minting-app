@@ -23,7 +23,7 @@ export default function Header() {
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [isWalletConnected, setIsWalletConnected] = React.useState<string>("false")
   const [isOpenNetworkPopup, setIsOpenNetworkPopup] = React.useState<boolean>(false)
-  const [chainId, setChainId] = React.useState<number>(Number(localStorage.getItem("chainId")) || 0)
+  const [chainId, setChainId] = React.useState<number>(0)
 
   const [error, setError] = useState<string>("");
 
@@ -67,9 +67,9 @@ export default function Header() {
   }
 
   React.useEffect(() => {
-    console.log("walletAddress--------", walletAddress);
-  
-  }, [walletAddress]);
+    //console.log("walletAddress--------", walletAddress);
+    setChainId(Number(localStorage.getItem("chainId")))
+  }, []);
 
 
 
