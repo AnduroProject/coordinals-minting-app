@@ -36,13 +36,13 @@ export async function POST(req: Request) {
   }
 
   try {
-    await client.connect();  // Try to connect to the database
+    await client.connect();  
     await client.query('INSERT INTO token_data (token_id, metadata) VALUES ($1, $2)', [tokenId, metaData]);
-     return NextResponse.json({ message: 'User created successfully' },{status:201});
+     return NextResponse.json({ message: 'Data inserted successfully' },{status:201});
   } catch (error: any) {
     return NextResponse.json({ error: 'Database connection failed', details: error.message },
     {status: 500});
   } finally {
-    await client.end();  // Always close the connection
+    await client.end();  
   }
 }
