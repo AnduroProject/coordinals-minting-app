@@ -15,9 +15,7 @@ import {
   ASSETTYPE,
   FEERATE,
   RECEIVER_ADDRESS,
-  MOCK_MENOMIC,
   tokenContractAddress,
-  privateKey,
   ownerAddress,
 } from "@/lib/constants";
 import Image from "next/image";
@@ -27,13 +25,12 @@ import { useConnector } from "anduro-wallet-connector-react";
 import { ethers, Transaction } from "ethers"
 import { tokenAbi } from "@/utils/tokenAbi";
 import { CloseCircle } from "iconsax-react";
-import { getAlysTokenInfo } from "@/utils/libs";
-import { alysTokenInfo } from "@/lib/service/fetcher";
+
 
 const SingleToken = () => {
   const router = useRouter();
 
-  const { signAndSendTransaction, walletState, signAlysTransaction } =
+  const { signAndSendTransaction, walletState } =
     React.useContext<any>(useConnector);
   const {
     ticker,
@@ -53,14 +50,12 @@ const SingleToken = () => {
   const [step, setStep] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  const [connect, setConnect] = useState<boolean>(false);
   const [networkType, setnetworkType] =
     React.useState<string>("")
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
   const [tokenData, setTokenData] = useState<TokenInfo | null>(null);
   const alysaddress = localStorage.getItem("address") || "";
-  const [balance, setBalance] = useState<string>("");
 
 
   interface FormInputData {
@@ -215,7 +210,6 @@ const SingleToken = () => {
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    console.log("----supply 111")
     setError("");
     event.preventDefault();
     setIsLoading(true);
@@ -277,25 +271,7 @@ const SingleToken = () => {
         )
         console.log("gethex ..----------.", gethex)
 
-        // const newtx = new Transaction()
-        // newtx.to = alysaddress
-        // newtx.data = gethex.data
-        // console.log("ethers",ethers.parseEther(supply.toString()))
-        // console.log("ethers",supply.toString())
-
-        // newtx.value = ethers.parseEther(supply.toString())
-        // console.log(
-        //   "populatetransaction 2 ..----------alys token hex----------.",
-        //   newtx.unsignedSerialized,
-        // )
         try {
-          // const result = await signAlysTransaction({
-          //   hex: newtx.unsignedSerialized,
-
-          // });
-          // console.log("🚀 ~ signAlysTransaction ~ res:", result);
-          // console.log(" tx hash ..----------.", result.result.txid)
-
           if (gethex.hash) {
             setError("")
             setStep(1);
@@ -314,7 +290,6 @@ const SingleToken = () => {
       else {
         // Call the mintToken function with the required data
         const transactionResult = await mintToken(data, FEERATE);
-        //console.log("🚀 ~ handleSubmit ~ res:", transactionResult);
         if (transactionResult) {
           const result = await signAndSendTransaction({
             hex: transactionResult,

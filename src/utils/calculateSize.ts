@@ -79,16 +79,6 @@ export const getNetwork = (networkMode: string, networkType: string) => {
   return getChainInstance(networkType).networks.regtest
 }
 
-// export const getNetwork = (networkMode: string, networkType: string) => {
-//   console.log("network mode -network type",networkMode,networkType)
-//   if (networkMode === "test") {
-//     return chroma.networks.testnet
-//   }
-//   if (networkMode === "main") {
-//     return chroma.networks.bitcoin
-//   }
-//   return chroma.networks.regtest
-// }
 
 
 

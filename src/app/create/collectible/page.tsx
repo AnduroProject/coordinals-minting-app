@@ -4,36 +4,26 @@ import React, { useState } from "react";
 import Header from "@/components/layout/header";
 import Banner from "@/components/section/banner";
 import ButtonLg from "@/components/ui/buttonLg";
-import UploadFile from "@/components/section/uploadFile";
 import Input from "@/components/ui/input";
 import ButtonOutline from "@/components/ui/buttonOutline";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getContractInfo, getProvider, mintToken } from "@/utils/mint";
-import UploadCardFit from "@/components/atom/cards/uploadCardFit";
 import Layout from "@/components/layout/layout";
 import {
   ASSETTYPE,
   FEERATE,
   RECEIVER_ADDRESS,
-  MOCK_MENOMIC,
   appBaseUrl,
-  privateKey,
   nftContractAddress,
-  alysRPCUrl,
-  tokenContractAddress,
 } from "@/lib/constants";
 import { alysAssetData, tokenData } from "@/types";
 import useFormState from "@/lib/store/useFormStore";
 import { toast } from "sonner";
 import { useConnector } from "anduro-wallet-connector-react";
-import { ethers, keccak256, toUtf8Bytes, Transaction } from "ethers"
 import { nftAbi } from "@/utils/nftAbi";
-import path from "path";
-import { nftInstance, saveJsonData, storeTokenInfo, tokenInfo, } from "@/lib/service/fetcher";
-import axios from "axios";
+import {  saveJsonData, storeTokenInfo, tokenInfo, } from "@/lib/service/fetcher";
 import { CloseCircle } from "iconsax-react";
-import { getAlysTokenInfo } from "@/utils/libs";
 
 const stepperData = ["Upload", "Confirm"];
 const SingleCollectible = () => {
@@ -87,31 +77,7 @@ const SingleCollectible = () => {
     setShowImage(true);
     setErrorMessage('');
   };
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const maxSizeInBytes = 1024 * 512
-      if (file.size > maxSizeInBytes) {
-        setError("Image size should not exceed 512 kB.");
-        setIsLoading(false);
-        return;
-      }
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        const mime = base64
-          .split(",")[0]
-          .split(":")[1]
-          .split(";")[0]
-          .split("/")[1];
-        setImageBase64(base64);
-        setImageMime(mime);
-      };
-
-      reader.readAsDataURL(file);
-    }
-  };
+  
 
   React.useEffect(() => {
     console.log("network type.", networkType);
@@ -239,12 +205,8 @@ const SingleCollectible = () => {
         if (!contractData.gasPrice) {
           return
         }
-        // const estimateTxFee = contractData.gasPrice * BigInt(30000);
-        // console.log("----estimateTxFee", estimateTxFee)
         console.log("====mintId 22", mintId)
         console.log("====alysaddress 22", alysaddress)
-
-
         const gethex = await contractData.contract.safeMint.populateTransaction(
           alysaddress,
           mintId,
@@ -254,26 +216,10 @@ const SingleCollectible = () => {
             gasPrice: contractData.gasPrice,
             nonce: contractData.nonces
           })
-    
-
         console.log("gethex ..----------.", gethex)
-        // console.log(
-        //   "populatetransaction 2 ..----------alys token hex----------.",
-        //   newtx.unsignedSerialized,
-        // )
-        // const inputData =
-        //   [
-        //     gethex.data, gethex.gasPrice?.toString(), gethex.nonce, gethex.to
 
-        //   ];
-        // const abiTypes = ["string", "string", "uint256", "string"];
         try {
-          // const txHex = ethers.AbiCoder.defaultAbiCoder().encode(abiTypes, inputData);
-          // console.log("encoded :", txHex);
-          // const result = await mintAlysAsset({
-          //   hex: newtx.unsignedSerialized,
-
-          // });
+        
           const signedTxn = await contractData.signer.sendTransaction(gethex);
           console.log("signedTxn ..----------.", signedTxn)
           //const receipt = await signedTxn.wait();
@@ -329,21 +275,7 @@ const SingleCollectible = () => {
           }
         }
       }
-      // if (transactionResult && transactionResult.error == false) {
-      //   setError(transactionResult.message || "An error occurred"); // Set the error state
-      //   toast.error(transactionResult.message || "An error occurred");
-      //   setIsLoading(false);
-      // } else if (transactionResult) {
-      //   setError("");
-      //   setResponse(transactionResult);
-      //   setIsLoading(false);
-      //   setTxUrl(
-      //     `https://testnet.coordiscan.io/tx/${transactionResult.result}`,
-      //   );
-      //   setStep(1);
-      // }
-
-      //setStep(1);
+    
     } catch (error: any) {
       setError(error.message || "An error occurred");
       toast.error(error.message || "An error occurred");
@@ -351,9 +283,6 @@ const SingleCollectible = () => {
     }
   };
 
-  // const handleDelete = () => {
-  //   setImageBase64("");
-  // };
 
   const triggerRefresh = () => {
     setStep(0);

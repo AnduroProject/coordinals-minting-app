@@ -13,18 +13,9 @@ import * as chroma from "chromajs-lib"
 import { calculateSize, convertToSAT, getChainInstance, getNetwork, } from "./calculateSize";
 import { prepareInputs } from "./prepareInputs";
 import {
-  fetchBlockHash,
-  fetchTransactionHex,
   fetchUtxos,
-  sendTransactionHelper,
 } from "@/lib/service/fetcher";
-import {
-  checkUsedUtxo,
-  getSavedUtxo,
-  saveUsedUtxo,
-} from "./localStorageHelper";
-import { alysRPCUrl, apiurl, maraUrl, privateKey } from "@/lib/constants";
-import { toast } from "sonner";
+import { alysRPCUrl, maraUrl, privateKey } from "@/lib/constants";
 import { ethers } from "ethers";
 
 export const convertDataToSha256Hex = (value: any) => {
@@ -75,7 +66,6 @@ export async function mintToken(
   const acc = bip32.fromBase58(walletxpub, coordinate.networks.testnet);
   const node = acc.derive(0)
   const destNode = acc.derive(2);
-  let blockHash, txHex;
 
 
   const opreturnData = JSON.stringify(data.opReturnValues);
