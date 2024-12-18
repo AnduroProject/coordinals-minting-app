@@ -531,9 +531,12 @@ const SingleToken = () => {
                 <div className="flex flex-row gap-6">
                   <div className="flex flex-row gap-3">
                     {networkType === "Coordinate" ?
-                      <p className="text-3xl text-neutral50 font-bold">
-                        {ticker}
-                      </p> :
+                      <><p className="text-3xl text-neutral50 font-bold">
+                        {headline}
+                      </p><p className="text-3xl text-neutral50 font-bold">
+                          {ticker}
+                        </p></> 
+                      :
                       <><div className="h-16 w-16 rounded-full flex items-center justify-center font-bold 
                       text-neutral50 border-neutral50 border">
                         <p className="text-2xl text-neutral50 font-bold">
@@ -558,9 +561,19 @@ const SingleToken = () => {
                         </div></>
                     }
                     {networkType === "Coordinate" &&
-                      <p className="text-xl text-neutral100 font-medium">
-                        Total supply: {supply}
-                      </p>
+                      <><p className="text-neutral100 text-xl flex flex-row items-center justify-center">
+                        Tx Id : {convertToSubstring(txid, 6, 4)}
+                        <button
+                          onClick={handleCopy}
+                          className={`text-brand p-1 hover:bg-gray-100 rounded ${isCopied ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                          disabled={isCopied}
+                          aria-label="Copy transaction link"
+                        >
+                          <Copy size="16" />
+                        </button>
+                      </p><p className="text-xl text-neutral100 font-medium">
+                          Total supply: {supply}
+                        </p></>
                     }
                   </div>
                 </div>
@@ -569,7 +582,7 @@ const SingleToken = () => {
                 <p className="text-neutral100 text-xl flex flex-row items-center justify-center">
                   <a href={txUrl} target="_blank" className="text-brand">
                     {networkType === "Coordinate" ? (
-                      <p>View on Coordinate :</p>
+                      <p>View on Coordinate </p>
                     ) : (
                       <p>View  on Alys</p>
                     )}

@@ -22,7 +22,7 @@ import useFormState from "@/lib/store/useFormStore";
 import { toast } from "sonner";
 import { useConnector } from "anduro-wallet-connector-react";
 import { nftAbi } from "@/utils/nftAbi";
-import { saveJsonData, storeTokenInfo, tokenInfo, } from "@/lib/service/fetcher";
+import { saveJsonData, storeTokenId, storeTokenInfo, tokenId, tokenInfo, } from "@/lib/service/fetcher";
 import { CloseCircle, Copy } from "iconsax-react";
 import { convertToSubstring } from "@/lib/utils";
 
@@ -201,12 +201,14 @@ const SingleCollectible = () => {
         console.log("network type,", networkType)
         console.log("====contractAddress",)
 
-        const token = await tokenInfo()
-        console.log("====token", token)
+        const token= await tokenId()
+        console.log("====TOKEN ID", token.tokenId)
+        console.log("====TOKEN ID type", typeof(token.tokenId))
 
-        mintId = token.data[0].token_id + 1
 
-        console.log("====mintId", mintId)
+       mintId = token.tokenId + 1
+        console.log("====mintId", mintId )
+      
         console.log("====alysData", alysData)
 
         const response = await saveJsonData(alysData, mintId);
@@ -238,7 +240,10 @@ const SingleCollectible = () => {
             console.log("Transaction is successful!!!" + '\n'
               + "Transaction Hash:", (await signedTxn).hash + '\n'
             )
-            storeTokenInfo(mintId, alysData)
+            const mintingId= await  storeTokenId(mintId)
+            console.log("===incrementID", mintingId)
+    
+            //storeTokenInfo(mintId, alysData)
             setTxid(signedTxn.hash)
             setTxUrl("http://testnet.alyscan.io/address/" + signedTxn.hash + "/transactions")
 

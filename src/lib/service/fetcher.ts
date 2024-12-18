@@ -123,3 +123,30 @@ export function storeTokenInfo(tokenId: number,metaData:any) {
       throw error;
     }); 
 }
+
+export function tokenId() {
+
+  return axios.get("/api/tokenId")
+  .then((response) =>  {
+    console.log("======response data",response.data)
+    return response.data.data;
+    })
+    .catch((error) => {
+      console.error("Error in getting token id:", error);
+      throw error;
+    }); 
+}
+
+export function storeTokenId(tokenId: number) {
+  console.log("tokenId====store=======",tokenId)
+ 
+  if (!tokenId) {
+    throw new Error("tokenId is missing");
+  }
+  return axios.post("/api/tokenId", { tokenId })
+  .then((response) =>  response)
+    .catch((error) => {
+      console.error("Error in storing token id:", error);
+      throw error;
+    }); 
+}
