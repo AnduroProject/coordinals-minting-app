@@ -31,6 +31,8 @@ const Create = () => {
     if (selectedOption !== null) {
       const selectedData = data.find((item) => item.id === selectedOption);
       if (selectedData) {
+        console.log("-----selected data",selectedData)
+
         router.push(selectedData.pageUrl);
       }
     }

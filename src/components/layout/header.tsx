@@ -49,16 +49,18 @@ export default function Header() {
 
     if (result.status === true) {
       localStorage.setItem("isWalletConnected", "true")
-      //const chain=localStorage.getItem("chainId")
-      console.log("chain",chainId)
+      //   const chain=localStorage.getItem("chainId")
+      // console.log("chain----",chain)
+      // setChainId(Number(chain))
 
       setChainId(chainId)
       toast.success(`Successfully connected`);
-    //  localStorage.setItem("chainId", chain.toString())
+      //  localStorage.setItem("chainId", chain.toString())
       setIsWalletConnected("true")
-      console.log("wallet addres",walletAddress)
-      console.log(" result.result.chaiI",result.result.chainId)
-    } else {
+      console.log("wallet addres", walletAddress)
+      console.log(" result.result.chaiI", result.result.chainId)
+    } 
+    else {
       localStorage.removeItem("isWalletConnected")
       //localStorage.removeItem("chainId")
 
@@ -67,9 +69,8 @@ export default function Header() {
   }
 
   React.useEffect(() => {
-    //console.log("walletAddress--------", walletAddress);
-    setChainId(Number(localStorage.getItem("chainId")))
-  }, []);
+    console.log("walletAddress--------", walletAddress);
+  }, [walletAddress]);
 
 
 
@@ -87,18 +88,29 @@ export default function Header() {
       handleNetworkInfo()
 
     } else if (walletState.connectionState == "connected") {
-      if(chainId === 6){
-      setWalletAddress(walletState.address);
-      }else{
+
+      console.log(" CHAIN", (Number(localStorage.getItem("chainId"))))
+      const id = (Number(localStorage.getItem("chainId")))
+      if (id === 6) {
+        setWalletAddress(walletState.address);
+      } else {
         setWalletAddress(walletState.accountPublicKey);
 
       }
     }
+  
   }, [walletState, networkState]);
 
   const openNetworkPopup = async () => {
     try {
-      setIsOpenNetworkPopup(true)
+      console.log("====chainIDDD",chainId)
+      if(Number(localStorage.getItem("chainId"))!= 0){
+        setIsOpenNetworkPopup(false)
+        handleNetworkInfo()
+      }
+      else{
+        setIsOpenNetworkPopup(true)
+      }
     } catch (error) {
       toast.error(`Error when connecting wallet`);
       setIsConnecting(false);
@@ -109,6 +121,7 @@ export default function Header() {
 
   const handleLogin = async () => {
     try {
+      console.log("=========login chain",chainId)
       if (chainId > 0) {
         //  setError("")
         console.log("======wallet url", WALLET_URL, chainId)
@@ -125,21 +138,21 @@ export default function Header() {
             "🚀 ~ handleLogin ~ response.result.accountPublicKey:",
             response.result.accountPublicKey,
           );
-          if(chainId === 6){
+          console.log("cCHAIN ID", chainId)
+          if (chainId === 6) {
             const walletAddress = response.result.address;
-            console.log("walletAddress",walletAddress)
+            console.log("walletAddress", walletAddress)
             setWalletAddress(walletAddress);
 
             localStorage.setItem("connectedAddress", walletAddress);
 
           }
-          else if(chainId === 5)
-          {
+          else if (chainId === 5) {
             const walletAddress = response.result.accountPublicKey;
-          localStorage.setItem("connectedAddress", JSON.stringify(walletAddress));
+            localStorage.setItem("connectedAddress", JSON.stringify(walletAddress));
 
           }
-          
+
           localStorage.setItem("xpubkey", response.result.xpubKey);
           localStorage.setItem("isWalletConnected", "true")
           localStorage.setItem("chainId", chainId.toString())

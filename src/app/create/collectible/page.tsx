@@ -22,8 +22,9 @@ import useFormState from "@/lib/store/useFormStore";
 import { toast } from "sonner";
 import { useConnector } from "anduro-wallet-connector-react";
 import { nftAbi } from "@/utils/nftAbi";
-import {  saveJsonData, storeTokenInfo, tokenInfo, } from "@/lib/service/fetcher";
-import { CloseCircle } from "iconsax-react";
+import { saveJsonData, storeTokenInfo, tokenInfo, } from "@/lib/service/fetcher";
+import { CloseCircle, Copy } from "iconsax-react";
+import { convertToSubstring } from "@/lib/utils";
 
 const stepperData = ["Upload", "Confirm"];
 const SingleCollectible = () => {
@@ -53,10 +54,12 @@ const SingleCollectible = () => {
   const [step, setStep] = useState<number>(0);
   const [response, setResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const alysaddress = localStorage.getItem("address") || "";
+  const [alysaddress, setAlysaddress] = useState<string>("");
 
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
+  const [txid, setTxid] = useState<string>("");
 
   interface FormInputData {
     headline: string;
@@ -77,7 +80,19 @@ const SingleCollectible = () => {
     setShowImage(true);
     setErrorMessage('');
   };
-  
+  React.useEffect(() => {
+    reset()
+    console.log("==addres", localStorage.getItem("address"))
+    setAlysaddress(localStorage.getItem("address") || "")
+  }, []);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(txid).then(() => {
+      setIsCopied(true);
+      toast.success("Copied!");
+      setTimeout(() => setIsCopied(false), 3000);
+    });
+  };
 
   React.useEffect(() => {
     console.log("network type.", networkType);
@@ -100,10 +115,6 @@ const SingleCollectible = () => {
 
   }, [walletState]);
 
-  React.useEffect(() => {
-    console.log("network type.", networkType);
-
-  }, [networkType]);
 
 
   const validateForm = (inputData: FormInputData): { isValid: boolean; error?: string } => {
@@ -139,7 +150,7 @@ const SingleCollectible = () => {
   };
 
 
-  
+
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -189,7 +200,7 @@ const SingleCollectible = () => {
       if (networkType === "Alys") {
         console.log("network type,", networkType)
         console.log("====contractAddress",)
-    
+
         const token = await tokenInfo()
         console.log("====token", token)
 
@@ -219,20 +230,22 @@ const SingleCollectible = () => {
         console.log("gethex ..----------.", gethex)
 
         try {
-        
+
           const signedTxn = await contractData.signer.sendTransaction(gethex);
           console.log("signedTxn ..----------.", signedTxn)
           //const receipt = await signedTxn.wait();
-         if(signedTxn){
-          console.log("Transaction is successful!!!" + '\n'
-          + "Transaction Hash:", (await signedTxn).hash + '\n' 
-        )
-          storeTokenInfo(mintId,alysData)
-      
+          if (signedTxn) {
+            console.log("Transaction is successful!!!" + '\n'
+              + "Transaction Hash:", (await signedTxn).hash + '\n'
+            )
+            storeTokenInfo(mintId, alysData)
+            setTxid(signedTxn.hash)
+            setTxUrl("http://testnet.alyscan.io/address/" + signedTxn.hash + "/transactions")
+
             setError("")
             setStep(1);
             setIsLoading(false);
-         }
+          }
 
           else {
             setError(error)
@@ -241,7 +254,7 @@ const SingleCollectible = () => {
             setIsLoading(false);
 
           }
-        } catch (error:any) {
+        } catch (error: any) {
           setIsLoading(false)
           setError("Transaction not processed")
 
@@ -258,6 +271,7 @@ const SingleCollectible = () => {
             transactionType: "normal",
 
           }); console.log("🚀 ~ signAndSendTransaction  ~ res:", result);
+          console.log("🚀 ~   ~ res:", result.result);
 
           if (result && result.error) {
             const errorMessage = typeof result.error === "string"
@@ -270,12 +284,14 @@ const SingleCollectible = () => {
           } else {
             setError("")
             setStep(1);
+            setTxid(result.result)
+            setTxUrl("https://testnet.coordiscan.io/tx/" + result.result)
             setIsLoading(false);
 
           }
         }
       }
-    
+
     } catch (error: any) {
       setError(error.message || "An error occurred");
       toast.error(error.message || "An error occurred");
@@ -321,7 +337,7 @@ const SingleCollectible = () => {
                     Details 
                   </p> */}
                   <div className="input_padd">
-                    <p className="text-profileTitle text-neutral20 font-bold">
+                    <p className="text-profileTitle text-white text-neutral20 font-bold">
                       {networkType} Collectible
                     </p>
                     {/* <select className="px-5 py-3.5 bg-background border rounded-xl border-neutral50 text-lg2 placeholder-neutral200 text-neutral-50 w-full" onChange={(event) => setnetworkType(event.target.value)}>
@@ -416,7 +432,8 @@ const SingleCollectible = () => {
                         title="Back"
                         onClick={() => {
                           router.push("/")
-                          reset();}}
+                          reset();
+                        }}
                       />
                       <ButtonLg
                         type="submit"
@@ -432,7 +449,7 @@ const SingleCollectible = () => {
             </form>
           )}
           {step == 1 && (
-            <div className="w-full max-w-[800px] flex flex-col gap-16 px-4">
+            <div className="w-full max-w-[800px] flex flex-col gap-10 px-4">
               <div className="w-full flex flex-row items-center gap-8 justify-start">
                 {/* {networkType === "Coordinate" && */}
                 <img
@@ -450,18 +467,34 @@ const SingleCollectible = () => {
                       {headline}
                     </p>
                     <p className="text-3xl text-neutral50 font-bold">
-                      {ticker}
+                    {1} {ticker}
                     </p>
                     <p className="text-xl text-neutral100 font-medium">
-                      Total supply: {1}
+                    Tx Id : {convertToSubstring(txid, 6, 4)}
+                    <button
+                      onClick={handleCopy}
+                      className={`text-brand p-1 hover:bg-gray-100 rounded ${isCopied ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                        }`}
+                      disabled={isCopied}
+                      aria-label="Copy transaction link"
+                    >
+                      <Copy size="16" />
+                    </button>
                     </p>
                   </div>
-                  <p className="text-neutral100 text-lg2">
-                    <a href={txUrl} target="_blank" className="text-blue-600">
-                      {txUrl}
-                    </a>
-                  </p>
                 </div>
+              </div>
+              <div className="">
+               <p className="text-neutral100 text-lg2">
+                    <p className="text-neutral100 text-xl flex flex-row items-center justify-center">
+                    <a href={txUrl} target="_blank" className="text-brand">
+                      {networkType === "Coordinate" ? (
+                        <p>View on Coordinate </p>
+                      ) : (
+                        <p>View  on Alys</p>
+                      )}                    </a>
+                      </p>
+               </p>
               </div>
               <div className="flex flex-row gap-8">
                 <ButtonOutline

@@ -24,7 +24,8 @@ import { toast } from "sonner";
 import { useConnector } from "anduro-wallet-connector-react";
 import { ethers, Transaction } from "ethers"
 import { tokenAbi } from "@/utils/tokenAbi";
-import { CloseCircle } from "iconsax-react";
+import { CloseCircle, Copy } from "iconsax-react";
+import { convertToSubstring } from "@/lib/utils";
 
 
 const SingleToken = () => {
@@ -55,7 +56,9 @@ const SingleToken = () => {
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
   const [tokenData, setTokenData] = useState<TokenInfo | null>(null);
-  const alysaddress = localStorage.getItem("address") || "";
+  const [alysaddress, setAlysaddress] = useState<string>("");
+  const [isCopied, setIsCopied] = useState(false);
+  const [txid, setTxid] = useState<string>("");
 
 
   interface FormInputData {
@@ -64,6 +67,12 @@ const SingleToken = () => {
     imageUrl: string;
     supply: number
   }
+
+  React.useEffect(() => {
+    reset()
+    console.log("==addres", localStorage.getItem("address"))
+    setAlysaddress(localStorage.getItem("address") || "")
+  }, []);
 
   React.useEffect(() => {
     if (walletState.connectionState == "disconnected") {
@@ -145,6 +154,13 @@ const SingleToken = () => {
     setShowImage(true);
     setErrorMessage('');
   };
+  const handleCopy = () => {
+    navigator.clipboard.writeText(txid).then(() => {
+      setIsCopied(true);
+      toast.success("Copied!");
+      setTimeout(() => setIsCopied(false), 3000);
+    });
+  };
 
   const validateForm = (inputData: FormInputData): { isValid: boolean; error?: string } => {
     const { headline, ticker, imageUrl, supply } = inputData;
@@ -190,7 +206,7 @@ const SingleToken = () => {
         error: "Max supply is 2100000000000000",
       }
     }
-    console.log("Token supply:",  Number(tokenData?.total_supply));
+    console.log("Token supply:", Number(tokenData?.total_supply));
     console.log("Token supplysupply:", supply);
 
     if (supply > Number(tokenData?.total_supply) && networkType === "Alys") {
@@ -253,7 +269,7 @@ const SingleToken = () => {
       if (networkType === "Alys") {
 
         console.log("====contractAddress", tokenContractAddress)
-        const contractData = await getContractInfo( tokenContractAddress, tokenAbi)
+        const contractData = await getContractInfo(tokenContractAddress, tokenAbi)
         console.log("----alys.contractData", contractData)
 
         if (!contractData.gasPrice) {
@@ -273,6 +289,8 @@ const SingleToken = () => {
 
         try {
           if (gethex.hash) {
+            setTxid(gethex.hash)
+            setTxUrl("http://testnet.alyscan.io/address/" + gethex.hash + "/transactions")
             setError("")
             setStep(1);
             setIsLoading(false);
@@ -308,6 +326,8 @@ const SingleToken = () => {
 
           } else {
             setError("")
+            setTxid(result.result)
+            setTxUrl("https://testnet.coordiscan.io/tx/" + result.result)
             setStep(1);
             setIsLoading(false);
           }
@@ -358,7 +378,7 @@ const SingleToken = () => {
             <form onSubmit={handleSubmit}>
               <div className="w-[592px] items-start flex flex-col gap-16">
                 <div className="flex flex-col w-full gap-8">
-                  <p className="text-profileTitle text-neutral20 font-bold">
+                  <p className="text-profileTitle  text-white text-neutral20 font-bold">
                     {networkType} Token
                   </p>
                   <div className="input_padd">
@@ -442,7 +462,7 @@ const SingleToken = () => {
                       </>
                     }
                     {networkType === "Alys" &&
-                      <><p className="text-profileTitle text-neutral20 font-bold">
+                      <><p className="text-profileTitle  text-white text-neutral20 font-bold">
                         {tokenData?.name}
 
                       </p><Input
@@ -496,7 +516,7 @@ const SingleToken = () => {
             </form>
           )}
           {step == 1 && (
-            <div className="w-full max-w-[800px] flex flex-col gap-16 px-4">
+            <div className="w-full max-w-[800px] flex flex-col gap-10 px-4">
               <div className="w-full flex flex-row items-center gap-8 justify-start">
                 {networkType === "Coordinate" &&
                   <img
@@ -508,21 +528,34 @@ const SingleToken = () => {
                     className="w-[280px] h-[280px] object-cover rounded-3xl"
                   />
                 }
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col gap-3">
+                <div className="flex flex-row gap-6">
+                  <div className="flex flex-row gap-3">
                     {networkType === "Coordinate" ?
                       <p className="text-3xl text-neutral50 font-bold">
                         {ticker}
                       </p> :
-                      <><div className="h-9 w-9 rounded-full flex items-center justify-center font-bold 
+                      <><div className="h-16 w-16 rounded-full flex items-center justify-center font-bold 
                       text-neutral50 border-neutral50 border">
                         <p className="text-2xl text-neutral50 font-bold">
                           {tokenData?.name.charAt(0).toUpperCase()}
                         </p>
-                      </div><><p className="text-3xl text-neutral50 font-bold">
-                        {supply} {tokenData?.symbol}
-                      </p></></>
-
+                      </div>
+                        <div><p className="text-3xl text-neutral50 font-bold leading-7 mb-1.5">
+                          {supply} {tokenData?.symbol}
+                        </p>
+                          <p className="text-neutral100 text-xl flex flex-row items-center justify-center">
+                            Tx Id : {convertToSubstring(txid, 6, 4)}
+                            <button
+                              onClick={handleCopy}
+                              className={`text-brand p-1 hover:bg-gray-100 rounded ${isCopied ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                                }`}
+                              disabled={isCopied}
+                              aria-label="Copy transaction link"
+                            >
+                              <Copy size="16" />
+                            </button>
+                          </p>
+                        </div></>
                     }
                     {networkType === "Coordinate" &&
                       <p className="text-xl text-neutral100 font-medium">
@@ -530,14 +563,19 @@ const SingleToken = () => {
                       </p>
                     }
                   </div>
-                  <p className="text-neutral100 text-lg2">
-                    <a href={txUrl} target="_blank" className="text-blue-600">
-                      {txUrl}
-                    </a>
-                  </p>
                 </div>
               </div>
-
+              <div className="flex flex-row items-center justify-center">
+                <p className="text-neutral100 text-xl flex flex-row items-center justify-center">
+                  <a href={txUrl} target="_blank" className="text-brand">
+                    {networkType === "Coordinate" ? (
+                      <p>View on Coordinate :</p>
+                    ) : (
+                      <p>View  on Alys</p>
+                    )}
+                  </a>
+                </p>
+              </div>
               <div className="flex flex-row gap-8">
                 <ButtonOutline
                   title="Go home"
