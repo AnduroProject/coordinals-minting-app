@@ -10,7 +10,7 @@ export const apiurl= "http://btc-testnet-wallet.mara.technology:9130/unspents/wh
 export const alysBaseURL = "http://testnet.alyscan.io/api/v2/tokens";
 export const appBaseUrl = "http://localhost:3000/";
 
-export const nftContractAddress= "0xBdB3dbeC70B4Bcb4A0E8FA9AF18980Af38FA826e"
+export const nftContractAddress= "0xFacAFE6C3A7A70E26f8859f9dFf557197B1936CF"
 export const tokenContractAddress="0xbB31Ea1ee792747Ee06b17902AA3C5554a41A06f"
 export const ownerAddress= "0x4009B868c9b432fA876b605edF2894963B0712FA"
 
