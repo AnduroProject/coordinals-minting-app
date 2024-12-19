@@ -56,7 +56,7 @@ const SingleToken = () => {
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
   const [tokenData, setTokenData] = useState<TokenInfo | null>(null);
-  const [alysaddress, setAlysaddress] = useState<string>("");
+  const [toaddress, setToaddress] = useState<string>("");
   const [isCopied, setIsCopied] = useState(false);
   const [txid, setTxid] = useState<string>("");
 
@@ -71,8 +71,8 @@ const SingleToken = () => {
   React.useEffect(() => {
     reset()
     console.log("==addres", localStorage.getItem("address"))
-    setAlysaddress(localStorage.getItem("address") || "")
-  }, []);
+    setToaddress(localStorage.getItem("address") || "")
+  }, [walletState]);
 
   React.useEffect(() => {
     if (walletState.connectionState == "disconnected") {
@@ -82,6 +82,8 @@ const SingleToken = () => {
       setError("");
     }
     const chainId = localStorage.getItem("chainId")
+    console.log("NETWORKTYPE chainId", chainId)
+
     const walletconnection = localStorage.getItem("isWalletConnected")
     if (walletconnection === "true") {
       if (chainId === "5") {
@@ -91,11 +93,15 @@ const SingleToken = () => {
 
       }
     }
-    else{
+    else {
       setnetworkType("")
     }
   }, [walletState]);
 
+  React.useEffect(() => {
+    console.log("NETWORKTYPE", networkType)
+
+  }, [networkType]);
 
   React.useEffect(() => {
     // alysTokenInfo(tokenContractAddress)
@@ -213,15 +219,15 @@ const SingleToken = () => {
     console.log("Token supply:", Number(tokenData?.total_supply));
     console.log("Token supplysupply:", supply);
 
-    if((supply > Number(tokenData?.total_supply) && networkType === "Alys") || 
-    (supply > 100 && networkType === "Alys")) {
+    if ((supply > Number(tokenData?.total_supply) && networkType === "Alys") ||
+      (supply > 100 && networkType === "Alys")) {
 
       return {
         isValid: false,
         error: supply > 100
-      ? "Supply must be less than 100"
-      : "Available supply " + Number(tokenData?.total_supply)
-      
+          ? "Supply must be less than 100"
+          : "Available supply " + Number(tokenData?.total_supply)
+
       }
     }
 
@@ -283,9 +289,12 @@ const SingleToken = () => {
         if (!contractData.gasPrice) {
           return
         }
+        console.log("----toaddress", toaddress)
+        console.log("----ethers.parseEther", ethers.parseEther(supply.toString()))
+
 
         const gethex = await contractData.contract.transfer(
-          alysaddress,
+          toaddress,
           ethers.parseEther(supply.toString()),
           {
             chainId: "212121",
@@ -304,7 +313,7 @@ const SingleToken = () => {
             setIsLoading(false);
           } else {
             setError(error)
-            console.log("======errorrrr",error)
+            console.log("======errorrrr", error)
             //toast.error(error)
             setStep(0);
             setIsLoading(false);
@@ -346,14 +355,15 @@ const SingleToken = () => {
     } catch (error: any) {
       console.log("🚀 ~ handleSubmit ~ error:", error);
       if (error.message.includes('insufficient funds')) {
-        const   err = 'Insufficient funds for this transaction';
+        const err = 'Insufficient funds for this transaction';
         setError(err)
 
+      } else {
+        setError("Transaction Failed");
+        //toast.error(error.message || "An error occurred");
+        setIsLoading(false);
       }
-      //console.log("🚀 ~ handleSubmit ~ error:", JSON.stringify(error));
-      //setError(error.message);
-      //toast.error(error.message || "An error occurred");
-      setIsLoading(false);
+
     }
   };
 
@@ -402,84 +412,83 @@ const SingleToken = () => {
                   </div>
                   <div className="w-full gap-6 flex flex-col">
 
-                    {networkType === "Coordinate" &&
-                      <>
-                        <Input
-                          title="Name"
-                          text="Token name"
-                          value={headline}
-                          onChange={(e) => setHeadline(e.target.value)}
-                        />
-                        <Input
-                          title="Ticker"
-                          text="Token ticker"
-                          value={ticker}
-                          onChange={(e) => {
-                            setTicker(e.target.value)
-                            setError("")
-                          }}
-                        />
-                        {/* NaN erro */}
-                        <Input
-                          title="Supply"
-                          text="Token supply"
-                          value={supply}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setSupply(value === "" ? 1 : parseInt(value, 10));
-
-                          }}
-                          type="number"
-                        />
-                        <Input
-                          title="Token  image url"
-                          text="Token  image url"
-                          value={imageUrl}
-                          onChange={(e) => {
-                            setImageUrl(e.target.value);
-                            setErrorMessage('');
-                            setError("")
-                          }}
-
-                        />
-                        <div className="mt-2.5">
-                          {imageUrl && (
-                            <div className="relative inline-block">
-
-                              <img
-                                src={imageUrl}
-                                alt="Token Logo Preview"
-                                style={{
-                                  maxWidth: '200px',
-                                  maxHeight: '200px',
-                                  objectFit: 'contain',
-                                  display: showImage ? 'block' : 'none',
-                                }}
-                                onLoad={handleImageLoad}
-                                onError={handleImageError}
-                              />
-                              {showImage ? (
-                                <button onClick={handleDelete} className="absolute -top-2.5 -right-2.5 bg-background rounded-full">
-                                  <CloseCircle size={30} color="#F8F9FA" />
-                                </button>
-                              ) : (
-                                errorMessage && (
-                                  <p className="text-red-500">{errorMessage}</p>
-                                )
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    }
-                    {/* {networkType === "Alys" && */}
-                      <>
-                      {tokenData && 
-                      <p className="text-profileTitle  text-white text-neutral20 font-bold">
-                         Name {tokenData?.name}
-
-                      </p>}
+                    {(networkType === "Coordinate" || networkType === "") && (<>
                       <Input
+                        title="Name"
+                        text="Token name"
+                        value={headline}
+                        onChange={(e) => setHeadline(e.target.value)}
+                      />
+                      <Input
+                        title="Ticker"
+                        text="Token ticker"
+                        value={ticker}
+                        onChange={(e) => {
+                          setTicker(e.target.value)
+                          setError("")
+                        }}
+                      />
+                      {/* NaN erro */}
+                      <Input
+                        title="Supply"
+                        text="Token supply"
+                        value={supply}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setSupply(value === "" ? 1 : parseInt(value, 10));
+
+                        }}
+                        type="number"
+                      />
+                      <Input
+                        title="Token  image url"
+                        text="Token  image url"
+                        value={imageUrl}
+                        onChange={(e) => {
+                          setImageUrl(e.target.value);
+                          setErrorMessage('');
+                          setError("")
+                        }}
+
+                      />
+                      <div className="mt-2.5">
+                        {imageUrl && (
+                          <div className="relative inline-block">
+
+                            <img
+                              src={imageUrl}
+                              alt="Token Logo Preview"
+                              style={{
+                                maxWidth: '200px',
+                                maxHeight: '200px',
+                                objectFit: 'contain',
+                                display: showImage ? 'block' : 'none',
+                              }}
+                              onLoad={handleImageLoad}
+                              onError={handleImageError}
+                            />
+                            {showImage ? (
+                              <button onClick={handleDelete} className="absolute -top-2.5 -right-2.5 bg-background rounded-full">
+                                <CloseCircle size={30} color="#F8F9FA" />
+                              </button>
+                            ) : (
+                              errorMessage && (
+                                <p className="text-red-500">{errorMessage}</p>
+                              )
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                    )}
+                    {networkType === "Alys" &&
+                      <>
+                        {tokenData &&
+                          <p className="text-profileTitle  text-white text-neutral20 font-bold">
+                            Name {tokenData?.name}
+
+                          </p>}
+                        <Input
                           title="Supply"
                           text="Token supply"
                           value={supply}
@@ -489,7 +498,7 @@ const SingleToken = () => {
 
                           }}
                           type="number" /></>
-                    {/* } */}
+                    }
                   </div>
                 </div>
                 {/* <div className="flex flex-col gap-8 w-full">
@@ -543,24 +552,43 @@ const SingleToken = () => {
                   />
                 }
                 <div className="flex flex-row gap-6">
-                  <div className="flex flex-col gap-3">
-                    {networkType === "Coordinate" ?
-                      <><p className="text-3xl text-neutral50 font-bold">
-                      Name :  {headline}
-                      </p><p className="text-3xl text-neutral50 font-bold">
-                      {supply} {ticker}
-                        </p></> 
-                      :
+                  {networkType === "Coordinate" ?
+                    <div className="flex flex-col gap-3">
+                      <><p className="text-xl text-neutral50 font-bold">
+                        Name :  {headline}
+                      </p><p className="text-xl text-neutral50 font-bold">
+                          Symbol : {ticker}
+                        </p>
+                        <p className="text-xl text-neutral50 font-bold">
+                        Supply :  {supply} 
+                        </p></>
+                      <><p className="text-neutral100 text-xl flex flex-row items-center justify-center font-bold">
+                        Tx Id : {convertToSubstring(txid, 6, 4)}
+                        <button
+                          onClick={handleCopy}
+                          className={`text-brand p-1 hover:bg-gray-100 rounded ${isCopied ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                          disabled={isCopied}
+                          aria-label="Copy transaction link"
+                        >
+                          <Copy size="16" />
+                        </button>
+                      </p></>
+                    </div>
+                    :
+                    <div className="flex flex-row gap-3">
                       <><div className="h-16 w-16 rounded-full flex items-center justify-center font-bold 
                       text-neutral50 border-neutral50 border">
                         <p className="text-2xl text-neutral50 font-bold">
-                           Name :  {tokenData?.name.charAt(0).toUpperCase()}
+                          {tokenData?.name.charAt(0).toUpperCase()}
                         </p>
                       </div>
-                        <div><p className="text-3xl text-neutral50 font-bold leading-7 mb-1.5">
-                          {supply} {tokenData?.symbol}
+                        <div><p className="text-xl text-neutral50 font-bold leading-7 mb-1.5">
+                       Symbol :  {tokenData?.symbol}
                         </p>
-                          <p className="text-neutral100 text-xl flex flex-row items-center justify-center">
+                        <p className="text-xl text-neutral50 font-bold leading-7 mb-1.5">
+                          Supply : {supply} 
+                        </p>
+                          <p className="text-neutral100 text-xl flex flex-row font-bold">
                             Tx Id : {convertToSubstring(txid, 6, 4)}
                             <button
                               onClick={handleCopy}
@@ -573,21 +601,9 @@ const SingleToken = () => {
                             </button>
                           </p>
                         </div></>
-                    }
-                    {networkType === "Coordinate" &&
-                      <><p className="text-neutral100 text-xl flex flex-row items-center justify-center">
-                        Tx Id : {convertToSubstring(txid, 6, 4)}
-                        <button
-                          onClick={handleCopy}
-                          className={`text-brand p-1 hover:bg-gray-100 rounded ${isCopied ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-                          disabled={isCopied}
-                          aria-label="Copy transaction link"
-                        >
-                          <Copy size="16" />
-                        </button>
-                      </p></>
-                    }
-                  </div>
+                    </div>
+                  }
+
                 </div>
               </div>
               <div className="flex flex-row items-center justify-center">

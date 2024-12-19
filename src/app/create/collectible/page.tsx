@@ -54,7 +54,7 @@ const SingleCollectible = () => {
   const [step, setStep] = useState<number>(0);
   const [response, setResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [alysaddress, setAlysaddress] = useState<string>("");
+  const [toaddress, setToaddress] = useState<string>("");
 
   const [showImage, setShowImage] = React.useState(false)
   const [errorMessage, setErrorMessage] = useState('');
@@ -83,8 +83,8 @@ const SingleCollectible = () => {
   React.useEffect(() => {
     reset()
     console.log("==addres", localStorage.getItem("address"))
-    setAlysaddress(localStorage.getItem("address") || "")
-  }, []);
+    setToaddress(localStorage.getItem("address") || "")
+  }, [walletState]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(txid).then(() => {
@@ -222,9 +222,9 @@ const SingleCollectible = () => {
           return
         }
         console.log("====mintId 22", mintId)
-        console.log("====alysaddress 22", alysaddress)
+        console.log("====toaddress 22", toaddress)
         const gethex = await contractData.contract.safeMint.populateTransaction(
-          alysaddress,
+          toaddress,
           mintId,
           //appBaseUrl + 'api/metaUri/' + mintId,
           "https://mara-sidechain-tesnet-coordinate.s3.amazonaws.com/nft/" + mintId + ".json",
@@ -470,13 +470,16 @@ const SingleCollectible = () => {
                 {/* } */}
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3">
-                    <p className="text-3xl text-neutral50 font-bold">
+                    <p className="text-xl text-neutral50 font-bold">
                     Name:  {headline}
                     </p>
-                    <p className="text-3xl text-neutral50 font-bold">
-                    {1} {ticker}
+                    <p className="text-xl text-neutral50 font-bold">
+                    Symbol : {ticker}
                     </p>
-                    <p className="text-xl text-neutral100 font-medium">
+                    <p className="text-xl text-neutral50 font-bold">
+                    Supply {1} 
+                    </p>
+                    <p className="text-xl text-neutral100 font-bold">
                     Tx Id : {convertToSubstring(txid, 6, 4)}
                     <button
                       onClick={handleCopy}
