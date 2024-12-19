@@ -485,7 +485,7 @@ const SingleToken = () => {
                       <>
                         {tokenData &&
                           <p className="text-profileTitle  text-white text-neutral20 font-bold">
-                            Name {tokenData?.name}
+                            Name :  {tokenData?.name}
 
                           </p>}
                         <Input

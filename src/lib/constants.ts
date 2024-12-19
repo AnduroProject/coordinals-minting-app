@@ -11,10 +11,10 @@ export const alysBaseURL = "http://testnet.alyscan.io/api/v2/tokens";
 export const appBaseUrl = "http://localhost:3000/";
 
 export const nftContractAddress= "0xBdB3dbeC70B4Bcb4A0E8FA9AF18980Af38FA826e"
-export const tokenContractAddress="0xD94c5fA88AcF2a7537E574b00A1E5064C1890528"
-export const ownerAddress= "0x1ab4267E6F8581A34e45a7fDFACcF1f072964eBe"
+export const tokenContractAddress="0xbB31Ea1ee792747Ee06b17902AA3C5554a41A06f"
+export const ownerAddress= "0x4009B868c9b432fA876b605edF2894963B0712FA"
 
-export const privateKey= "2dd20bf2585b6a1947315762ee8660990d064ab2dc3f4cf1a365a35a53a8f252"
+export const privateKey= "45dbead334d96a6936ba761a45441a01ecd35301e57884c22c24070928359b7b"
 export const alysRPCUrl = "http://btcalys.xyz:8545"
 export const fileSizeLimit = 3145728; //3MB in binary
 export const S3_BASE_URL = ""
