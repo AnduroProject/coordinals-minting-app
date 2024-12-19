@@ -59,7 +59,7 @@ export default function Header() {
       setIsWalletConnected("true")
       console.log("wallet addres", walletAddress)
       console.log(" result.result.chaiI", result.result.chainId)
-    } 
+    }
     else {
       localStorage.removeItem("isWalletConnected")
       //localStorage.removeItem("chainId")
@@ -98,17 +98,17 @@ export default function Header() {
 
       }
     }
-  
+
   }, [walletState, networkState]);
 
   const openNetworkPopup = async () => {
     try {
-      console.log("====chainIDDD",chainId)
-      if(Number(localStorage.getItem("chainId"))!= 0){
+      console.log("====chainIDDD", chainId)
+      if (Number(localStorage.getItem("chainId")) != 0) {
         setIsOpenNetworkPopup(false)
         handleNetworkInfo()
       }
-      else{
+      else {
         setIsOpenNetworkPopup(true)
       }
     } catch (error) {
@@ -121,7 +121,7 @@ export default function Header() {
 
   const handleLogin = async () => {
     try {
-      console.log("=========login chain",chainId)
+      console.log("=========login chain", chainId)
       if (chainId > 0) {
         //  setError("")
         console.log("======wallet url", WALLET_URL, chainId)
@@ -183,7 +183,7 @@ export default function Header() {
   const handleLogout = async () => {
     await handleDisconnectionAction();
     //  window.localStorage.removeItem("userProfile");
-    router.push("/");
+    //router.push("/");
   };
 
   return (
@@ -191,9 +191,11 @@ export default function Header() {
       <div className="h-[72px] w-full flex justify-center bg-neutral500 bg-opacity-[50%] mt-5 rounded-3xl">
         <div className="flex flex-row justify-between items-center max-w-[1216px] w-full">
           <div className="flex flex-row justify-between items-center w-full pl-6 pr-4 h-full">
-            <Link href={"/"}>
-              <Image src={"/Logo.svg"} alt="coordinals" width={222} height={40} />
-            </Link>
+            <h1>
+              <Link href={"/"}>
+                <Image src={"/Logo.svg"} alt="coordinals" width={222} height={40} />
+              </Link>
+            </h1>
             <div className="flex flex-row overflow-hidden items-center gap-4">
               <div className="flex flex-row gap-2 text-neutral00">
                 {routesData.map((item, index) => (
@@ -242,11 +244,15 @@ export default function Header() {
             <div className="col-span-8">
               <div className="border-b border-neutral100 flex flex-row justify-between items-center p-2 px-3">
                 <h3 className="font-semibold text-lg text-neutral600">Available Chains</h3>
-                <button className="bg-transparent border-none text-2xl text-neutral600" onClick={() => setIsOpenNetworkPopup(false)}>&times;</button>
+                <button className="bg-transparent border-none text-2xl text-neutral600" onClick={() => {
+                  setIsOpenNetworkPopup(false)
+                  setChainId(0)
+                }}>&times;</button>
               </div>
               <div className="grid grid-cols-12 gap-2 mt-4 px-3">
                 <div className="col-span-6" onClick={() => setChainId(5)}>
-                  <div className="relative border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
+                  <div className={`relative border border-neutral100 p-2 rounded-lg flex flex-row items-center cursor-pointer ${chainId === 5 ? 'bg-neutral100' : ''
+                    }`}>
                     <div className="p-1.5 px-0 rounded-lg">
                       <Image
                         src={"/cbtc.svg"}
@@ -265,7 +271,8 @@ export default function Header() {
                   </div>
                 </div>
                 <div className="col-span-6" onClick={() => setChainId(6)}>
-                  <div className="relative border border-neutral100 p-2 rounded-lg flex flex-row items-center hover:bg-neutral100 cursor-pointer">
+                  <div className={`relative border border-neutral100 p-2 rounded-lg flex flex-row items-center cursor-pointer ${chainId === 6 ? 'bg-neutral100' : ''
+                    }`}>
                     <div className="p-1.5 px-0 rounded-lg">
                       <Image
                         src={"/alys.svg"}

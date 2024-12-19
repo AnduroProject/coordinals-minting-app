@@ -112,6 +112,9 @@ const SingleCollectible = () => {
 
       }
     }
+    else{
+      setnetworkType("")
+    }
 
   }, [walletState]);
 
@@ -254,6 +257,7 @@ const SingleCollectible = () => {
 
           else {
             setError(error)
+            console.log()
             toast.error(error)
             setStep(0);
             setIsLoading(false);
@@ -261,7 +265,7 @@ const SingleCollectible = () => {
           }
         } catch (error: any) {
           setIsLoading(false)
-          setError("Transaction not processed")
+          setError("Transaction Failed")
 
           console.error("Error decoding data:", error);
         }
@@ -391,16 +395,14 @@ const SingleCollectible = () => {
                               maxWidth: '200px',
                               maxHeight: '200px',
                               objectFit: 'contain',
-                              border: '1px solid #ccc',
-                              padding: '5px',
                               display: showImage ? 'block' : 'none',
                             }}
                             onLoad={handleImageLoad}
                             onError={handleImageError}
                           />
                           {showImage ? (
-                            <button onClick={handleDelete} className="absolute -top-1.5 -right-1.5 bg-background rounded-full">
-                              <CloseCircle size={16} color="#F8F9FA" />
+                            <button onClick={handleDelete} className="absolute -top-2.5 -right-2.5 bg-background rounded-full">
+                              <CloseCircle size={30} color="#F8F9FA" />
                             </button>
                           ) : (
                             errorMessage && (
@@ -463,13 +465,13 @@ const SingleCollectible = () => {
                   width={0}
                   height={160}
                   sizes="100%"
-                  className="w-[280px] h-[280px] object-cover rounded-3xl"
+                  className="w-[280px] h-[280px] object-contain	bg-white rounded-3xl"
                 />
                 {/* } */}
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3">
                     <p className="text-3xl text-neutral50 font-bold">
-                      {headline}
+                    Name:  {headline}
                     </p>
                     <p className="text-3xl text-neutral50 font-bold">
                     {1} {ticker}

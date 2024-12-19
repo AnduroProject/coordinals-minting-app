@@ -41,7 +41,7 @@ export const RPC_PASSWORD = "marachain";
 export const FEERATE = 10;
 
 export const WALLET_URL =
-  "chrome-extension://aieohakdobeceddbemhdmlklalainiaf/index.html";
+  "chrome-extension://khebhoaoppjeidmdkpdglmlhghnooijn/index.html";
 
 export const exampleJson = [
   {

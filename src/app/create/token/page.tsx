@@ -91,6 +91,9 @@ const SingleToken = () => {
 
       }
     }
+    else{
+      setnetworkType("")
+    }
   }, [walletState]);
 
 
@@ -114,6 +117,7 @@ const SingleToken = () => {
 
     getContractInfo(tokenContractAddress, tokenAbi)
       .then(contract => {
+        console.log("===getContractInfo");
         const { contract: tokenContract } = contract;
 
         return Promise.all([
@@ -209,11 +213,15 @@ const SingleToken = () => {
     console.log("Token supply:", Number(tokenData?.total_supply));
     console.log("Token supplysupply:", supply);
 
-    if (supply > Number(tokenData?.total_supply) && networkType === "Alys") {
+    if((supply > Number(tokenData?.total_supply) && networkType === "Alys") || 
+    (supply > 100 && networkType === "Alys")) {
 
       return {
         isValid: false,
-        error: "Available supply " + Number(tokenData?.total_supply)
+        error: supply > 100
+      ? "Supply must be less than 100"
+      : "Available supply " + Number(tokenData?.total_supply)
+      
       }
     }
 
@@ -296,7 +304,8 @@ const SingleToken = () => {
             setIsLoading(false);
           } else {
             setError(error)
-            toast.error(error)
+            console.log("======errorrrr",error)
+            //toast.error(error)
             setStep(0);
             setIsLoading(false);
 
@@ -336,10 +345,14 @@ const SingleToken = () => {
       }
     } catch (error: any) {
       console.log("🚀 ~ handleSubmit ~ error:", error);
+      if (error.message.includes('insufficient funds')) {
+        const   err = 'Insufficient funds for this transaction';
+        setError(err)
 
+      }
       //console.log("🚀 ~ handleSubmit ~ error:", JSON.stringify(error));
-      setError(error.message);
-      toast.error(error.message || "An error occurred");
+      //setError(error.message);
+      //toast.error(error.message || "An error occurred");
       setIsLoading(false);
     }
   };
@@ -419,8 +432,8 @@ const SingleToken = () => {
                           type="number"
                         />
                         <Input
-                          title="Token logo image url"
-                          text="Token logo image url"
+                          title="Token  image url"
+                          text="Token  image url"
                           value={imageUrl}
                           onChange={(e) => {
                             setImageUrl(e.target.value);
@@ -440,16 +453,14 @@ const SingleToken = () => {
                                   maxWidth: '200px',
                                   maxHeight: '200px',
                                   objectFit: 'contain',
-                                  border: '1px solid #ccc',
-                                  padding: '5px',
                                   display: showImage ? 'block' : 'none',
                                 }}
                                 onLoad={handleImageLoad}
                                 onError={handleImageError}
                               />
                               {showImage ? (
-                                <button onClick={handleDelete} className="absolute -top-1.5 -right-1.5 bg-background rounded-full">
-                                  <CloseCircle size={16} color="#F8F9FA" />
+                                <button onClick={handleDelete} className="absolute -top-2.5 -right-2.5 bg-background rounded-full">
+                                  <CloseCircle size={30} color="#F8F9FA" />
                                 </button>
                               ) : (
                                 errorMessage && (
@@ -461,11 +472,14 @@ const SingleToken = () => {
                         </div>
                       </>
                     }
-                    {networkType === "Alys" &&
-                      <><p className="text-profileTitle  text-white text-neutral20 font-bold">
-                        {tokenData?.name}
+                    {/* {networkType === "Alys" && */}
+                      <>
+                      {tokenData && 
+                      <p className="text-profileTitle  text-white text-neutral20 font-bold">
+                         Name {tokenData?.name}
 
-                      </p><Input
+                      </p>}
+                      <Input
                           title="Supply"
                           text="Token supply"
                           value={supply}
@@ -475,7 +489,7 @@ const SingleToken = () => {
 
                           }}
                           type="number" /></>
-                    }
+                    {/* } */}
                   </div>
                 </div>
                 {/* <div className="flex flex-col gap-8 w-full">
@@ -529,18 +543,18 @@ const SingleToken = () => {
                   />
                 }
                 <div className="flex flex-row gap-6">
-                  <div className="flex flex-row gap-3">
+                  <div className="flex flex-col gap-3">
                     {networkType === "Coordinate" ?
                       <><p className="text-3xl text-neutral50 font-bold">
-                        {headline}
+                      Name :  {headline}
                       </p><p className="text-3xl text-neutral50 font-bold">
-                          {ticker}
+                      {supply} {ticker}
                         </p></> 
                       :
                       <><div className="h-16 w-16 rounded-full flex items-center justify-center font-bold 
                       text-neutral50 border-neutral50 border">
                         <p className="text-2xl text-neutral50 font-bold">
-                          {tokenData?.name.charAt(0).toUpperCase()}
+                           Name :  {tokenData?.name.charAt(0).toUpperCase()}
                         </p>
                       </div>
                         <div><p className="text-3xl text-neutral50 font-bold leading-7 mb-1.5">
@@ -571,9 +585,7 @@ const SingleToken = () => {
                         >
                           <Copy size="16" />
                         </button>
-                      </p><p className="text-xl text-neutral100 font-medium">
-                          Total supply: {supply}
-                        </p></>
+                      </p></>
                     }
                   </div>
                 </div>
