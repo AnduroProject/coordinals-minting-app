@@ -59,7 +59,7 @@ const SingleToken = () => {
   const [toaddress, setToaddress] = useState<string>("");
   const [isCopied, setIsCopied] = useState(false);
   const [txid, setTxid] = useState<string>("");
-
+  const [imgSrc, setImgSrc] = useState('');
 
   interface FormInputData {
     headline: string;
@@ -152,13 +152,15 @@ const SingleToken = () => {
 
   const handleDelete = (): void => {
     setImageUrl("")
+    setImgSrc('');
     setShowImage(false)
     setErrorMessage('');
   }
 
   const handleImageError = () => {
+    setImgSrc('/default_asset_image.png');
     setShowImage(false);
-    setErrorMessage('Please provide a valid image URL.');
+    //setErrorMessage('Please provide a valid image URL.');
   };
   const handleImageLoad = () => {
     setShowImage(true);
@@ -446,6 +448,7 @@ const SingleToken = () => {
                         value={imageUrl}
                         onChange={(e) => {
                           setImageUrl(e.target.value);
+                          setImgSrc(e.target.value);
                           setErrorMessage('');
                           setError("")
                         }}
@@ -456,17 +459,18 @@ const SingleToken = () => {
                           <div className="relative inline-block">
 
                             <img
-                              src={imageUrl}
+                              src={imgSrc}
                               alt="Token Logo Preview"
                               style={{
                                 maxWidth: '200px',
                                 maxHeight: '200px',
                                 objectFit: 'contain',
-                                display: showImage ? 'block' : 'none',
+                                //display: showImage ? 'block' : 'none',
                               }}
                               onLoad={handleImageLoad}
                               onError={handleImageError}
                             />
+                          
                             {showImage ? (
                               <button onClick={handleDelete} className="absolute -top-2.5 -right-2.5 bg-background rounded-full">
                                 <CloseCircle size={30} color="#F8F9FA" />
@@ -543,12 +547,13 @@ const SingleToken = () => {
               <div className="w-full flex flex-row items-center gap-8 justify-start">
                 {networkType === "Coordinate" &&
                   <img
-                    src={imageUrl}
+                    src={imgSrc}
                     alt="background"
                     width={0}
                     height={160}
                     sizes="100%"
                     className="w-[280px] h-[280px] object-cover rounded-3xl"
+
                   />
                 }
                 <div className="flex flex-row gap-6">
@@ -560,7 +565,7 @@ const SingleToken = () => {
                           Symbol : {ticker}
                         </p>
                         <p className="text-xl text-neutral50 font-bold">
-                        Supply :  {supply} 
+                          Supply :  {supply}
                         </p></>
                       <><p className="text-neutral100 text-xl flex flex-row items-center justify-center font-bold">
                         Tx Id : {convertToSubstring(txid, 6, 4)}
@@ -583,11 +588,11 @@ const SingleToken = () => {
                         </p>
                       </div>
                         <div><p className="text-xl text-neutral50 font-bold leading-7 mb-1.5">
-                       Symbol :  {tokenData?.symbol}
+                          Symbol :  {tokenData?.symbol}
                         </p>
-                        <p className="text-xl text-neutral50 font-bold leading-7 mb-1.5">
-                          Supply : {supply} 
-                        </p>
+                          <p className="text-xl text-neutral50 font-bold leading-7 mb-1.5">
+                            Supply : {supply}
+                          </p>
                           <p className="text-neutral100 text-xl flex flex-row font-bold">
                             Tx Id : {convertToSubstring(txid, 6, 4)}
                             <button

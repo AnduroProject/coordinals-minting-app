@@ -60,6 +60,8 @@ const SingleCollectible = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [txid, setTxid] = useState<string>("");
+  const [imgSrc, setImgSrc] = useState('');
+
 
   interface FormInputData {
     headline: string;
@@ -68,13 +70,14 @@ const SingleCollectible = () => {
   }
   const handleDelete = (): void => {
     setImageUrl("")
+    setImgSrc('');
     setShowImage(false)
     setErrorMessage('');
   }
 
   const handleImageError = () => {
+    setImgSrc('/default_asset_image.png');
     setShowImage(false);
-    setErrorMessage('Please provide a valid image URL.');
   };
   const handleImageLoad = () => {
     setShowImage(true);
@@ -380,6 +383,7 @@ const SingleCollectible = () => {
                       value={imageUrl}
                       onChange={(e) => {
                         setImageUrl(e.target.value);
+                        setImgSrc(e.target.value);
                         setErrorMessage('');
                         setError("")
                       }}
@@ -389,7 +393,7 @@ const SingleCollectible = () => {
                         <div className="relative inline-block">
 
                           <img
-                            src={imageUrl}
+                            src={imgSrc}
                             alt="Token Logo Preview"
                             style={{
                               maxWidth: '200px',
@@ -460,7 +464,7 @@ const SingleCollectible = () => {
               <div className="w-full flex flex-row items-center gap-8 justify-start">
                 {/* {networkType === "Coordinate" && */}
                 <img
-                  src={imageUrl}
+                  src={imgSrc}
                   //alt="background"
                   width={0}
                   height={160}
