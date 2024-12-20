@@ -9,7 +9,7 @@ import ButtonLg from "@/components/ui/buttonLg";
 import { useRouter } from "next/navigation";
 import ButtonOutline from "@/components/ui/buttonOutline";
 import { tokenData, TokenInfo } from "@/types";
-import { getContractInfo, getProvider, mintToken } from "@/utils/mint";
+import {  mintToken } from "@/utils/mint";
 import Layout from "@/components/layout/layout";
 import {
   ASSETTYPE,

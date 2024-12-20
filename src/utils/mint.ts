@@ -29,48 +29,39 @@ export const stringtoHex = (value: any) => {
   return hexString;
 };
 
-export function getProvider(apiUrl: any) {
-  try{
-    console.log("provider api url", apiUrl)
-    return new ethers.JsonRpcProvider(apiUrl)
-  }
-  catch(error) {
-    console.log("----error getprovider", error)
-    return false
-  }
-}
 
-export async function getContractInfo(contractAddress: any, abiFile: any) {
-  try {
 
-    const provider = getProvider(alysRPCUrl)
-    // const provider = await (alysRPCUrl)
-    // console.log("---provider", provider)
+// export async function getContractInfo(contractAddress: any, abiFile: any) {
+//   try {
 
-    if(!provider)
-    {
-      return false
-    }
-    const signer = new ethers.Wallet(privateKey, provider)
-    const nonces = await provider.getTransactionCount(signer.address, "pending")
-    console.log("----nonces", nonces)
-    const contract = new ethers.Contract(contractAddress, abiFile, signer);
-    console.log("----contract", contract)
+  
+//     // const provider = await (alysRPCUrl)
+//     // console.log("---provider", provider)
 
-    const gasPrice = (await provider.getFeeData()).gasPrice
-    console.log("----gasPrice", gasPrice)
+//     if(!provider)
+//     {
+//       return false
+//     }
+//     const signer = new ethers.Wallet(privateKey, provider)
+//     const nonces = await provider.getTransactionCount(signer.address, "pending")
+//     console.log("----nonces", nonces)
+//     const contract = new ethers.Contract(contractAddress, abiFile, signer);
+//     console.log("----contract", contract)
 
-    return {
-      contract,
-      gasPrice,
-      nonces,
-      signer
-    }
-  } catch (error) {
-    console.log("----error", error)
-    return false
-  }
-}
+//     const gasPrice = (await provider.getFeeData()).gasPrice
+//     console.log("----gasPrice", gasPrice)
+
+//     return {
+//       contract,
+//       gasPrice,
+//       nonces,
+//       signer
+//     }
+//   } catch (error) {
+//     console.log("----error", error)
+//     return false
+//   }
+// }
 
 export async function mintToken(
   data: tokenData,

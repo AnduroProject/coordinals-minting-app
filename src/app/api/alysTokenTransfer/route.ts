@@ -1,13 +1,13 @@
-import { privateKey, tokenContractAddress } from "@/lib/constants";
+import { alysRPCUrl, privateKey, tokenContractAddress } from "@/lib/constants";
 import { tokenAbi } from "@/utils/tokenAbi";
 import { ethers } from "ethers";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-    const { url,toAddress,supply } = await req.json();
-   console.log("----RPC URL",url)
+    const { toAddress,supply } = await req.json();
+   console.log("----RPC URL")
     try {
-      const provider = new ethers.JsonRpcProvider(url)
+      const provider = new ethers.JsonRpcProvider(alysRPCUrl)
       console.log("----RPC response",provider)
       const signer = new ethers.Wallet(privateKey, provider)
       const nonces = await provider.getTransactionCount(signer.address, "pending")

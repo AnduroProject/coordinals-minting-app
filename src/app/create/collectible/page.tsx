@@ -8,7 +8,7 @@ import Input from "@/components/ui/input";
 import ButtonOutline from "@/components/ui/buttonOutline";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import {  getProvider, mintToken } from "@/utils/mint";
+import {   mintToken } from "@/utils/mint";
 import Layout from "@/components/layout/layout";
 import {
   ASSETTYPE,
