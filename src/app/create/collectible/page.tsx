@@ -8,12 +8,13 @@ import Input from "@/components/ui/input";
 import ButtonOutline from "@/components/ui/buttonOutline";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getContractInfo, getProvider, mintToken } from "@/utils/mint";
+import {  getProvider, mintToken } from "@/utils/mint";
 import Layout from "@/components/layout/layout";
 import {
   ASSETTYPE,
   FEERATE,
   RECEIVER_ADDRESS,
+  alysRPCUrl,
   appBaseUrl,
   nftContractAddress,
 } from "@/lib/constants";
@@ -22,7 +23,7 @@ import useFormState from "@/lib/store/useFormStore";
 import { toast } from "sonner";
 import { useConnector } from "anduro-wallet-connector-react";
 import { nftAbi } from "@/utils/nftAbi";
-import { saveJsonData, storeTokenId, storeTokenInfo, tokenId, tokenInfo, } from "@/lib/service/fetcher";
+import { nftMintInfo, saveJsonData, storeTokenId, tokenId, } from "@/lib/service/fetcher";
 import { CloseCircle, Copy } from "iconsax-react";
 import { convertToSubstring } from "@/lib/utils";
 
@@ -219,48 +220,28 @@ const SingleCollectible = () => {
 
         const response = await saveJsonData(alysData, mintId);
         console.log("response====", response.message);
-        const contractData = await getContractInfo(nftContractAddress, nftAbi)
-
-        if (!contractData.gasPrice) {
-          return
-        }
-        console.log("====mintId 22", mintId)
-        console.log("====toaddress 22", toaddress)
-        const gethex = await contractData.contract.safeMint.populateTransaction(
-          toaddress,
-          mintId,
-          //appBaseUrl + 'api/metaUri/' + mintId,
-          "https://mara-sidechain-tesnet-coordinate.s3.amazonaws.com/nft/" + mintId + ".json",
-          {
-            gasPrice: contractData.gasPrice,
-            nonce: contractData.nonces
-          })
-        console.log("gethex ..----------.", gethex)
+        const nftMintDetails = await nftMintInfo(toaddress,mintId)
+        console.log("---nftMintDetails", nftMintDetails)
+       
 
         try {
-
-          const signedTxn = await contractData.signer.sendTransaction(gethex);
-          console.log("signedTxn ..----------.", signedTxn)
-          //const receipt = await signedTxn.wait();
-          if (signedTxn) {
+          if (nftMintDetails.data.hash) {
             console.log("Transaction is successful!!!" + '\n'
-              + "Transaction Hash:", (await signedTxn).hash + '\n'
+              + "Transaction Hash:", nftMintDetails.data.hash + '\n'
             )
             const mintingId= await  storeTokenId(mintId)
             console.log("===incrementID", mintingId)
     
             //storeTokenInfo(mintId, alysData)
-            setTxid(signedTxn.hash)
-            setTxUrl("http://testnet.alyscan.io/address/" + signedTxn.hash + "/transactions")
-
+            setTxid(nftMintDetails.data.hash)
+            setTxUrl("http://testnet.alyscan.io/address/" + nftMintDetails.data.hash + "/transactions")
             setError("")
             setStep(1);
             setIsLoading(false);
           }
 
           else {
-            setError(error)
-            console.log()
+            setError("Transaction Failed")
             toast.error(error)
             setStep(0);
             setIsLoading(false);
@@ -306,7 +287,7 @@ const SingleCollectible = () => {
 
     } catch (error: any) {
       setError(error.message || "An error occurred");
-      toast.error(error.message || "An error occurred");
+      //toast.error(error.message || "An error occurred");
       return setIsLoading(false);
     }
   };

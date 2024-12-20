@@ -17,6 +17,7 @@ import {
   RECEIVER_ADDRESS,
   tokenContractAddress,
   ownerAddress,
+  alysRPCUrl,
 } from "@/lib/constants";
 import Image from "next/image";
 import useFormState from "@/lib/store/useFormStore";
@@ -26,6 +27,7 @@ import { ethers, Transaction } from "ethers"
 import { tokenAbi } from "@/utils/tokenAbi";
 import { CloseCircle, Copy } from "iconsax-react";
 import { convertToSubstring } from "@/lib/utils";
+import { contractInfo, tokenTransferInfo } from "@/lib/service/fetcher";
 
 
 const SingleToken = () => {
@@ -104,49 +106,21 @@ const SingleToken = () => {
   }, [networkType]);
 
   React.useEffect(() => {
-    // alysTokenInfo(tokenContractAddress)
-    //   .then((tokenInfo) => {
-    //     console.log("Token Info:", tokenInfo);
-    //     console.log("Token Info supply:", tokenInfo.total_supply);
-    //     const Data: TokenInfo = {
-    //       //address: tokenInfo.address,
-    //       name: tokenInfo.name,
-    //       symbol: tokenInfo.symbol,
-    //       total_supply: tokenInfo.total_supply,
-    //     };
-    //     setTokenData(Data)
-    //   })
-
-    //   .catch((error) => {
-    //     console.error("Error fetching alys token info:", error);
-    //   });
-
-    getContractInfo(tokenContractAddress, tokenAbi)
-      .then(contract => {
-        console.log("===getContractInfo");
-        const { contract: tokenContract } = contract;
-
-        return Promise.all([
-          tokenContract.balanceOf(ownerAddress),
-          tokenContract.name(),
-          tokenContract.symbol()
-        ]);
-      })
-      .then(([balance, name, symbol]) => {
-        console.log("===balance", balance.toString());
-        console.log("===balance format", ethers.formatEther(balance));
-        const Data: TokenInfo = {
-          name: name,
-          symbol: symbol,
-          total_supply: ethers.formatEther(balance),
-        };
-        setTokenData(Data)
-        console.log("===Token Name:", name);
-        console.log("===Token Symbol:", symbol);
-      })
-      .catch(error => {
-        console.error("Error:", error);
-      });
+    
+    contractInfo(tokenContractAddress, tokenAbi)
+    .then((contractDetails) => {
+      console.log("Contract details fetched ", contractDetails);
+      const Data: TokenInfo = {
+              name: contractDetails.data.name,
+              symbol: contractDetails.data.symbol,
+              total_supply: ethers.formatEther(contractDetails.data.balance),
+            };
+            setTokenData(Data)
+    })
+    .catch((error) => {
+      console.error("Error fetching contract details:", error);
+    });
+   
   }, [tokenData?.total_supply]);
 
 
@@ -283,43 +257,24 @@ const SingleToken = () => {
 
     try {
       if (networkType === "Alys") {
-
         console.log("====contractAddress", tokenContractAddress)
-        const contractData = await getContractInfo(tokenContractAddress, tokenAbi)
-        console.log("----alys.contractData", contractData)
-
-        if (!contractData.gasPrice) {
-          return
-        }
-        console.log("----toaddress", toaddress)
-        console.log("----ethers.parseEther", ethers.parseEther(supply.toString()))
-
-
-        const gethex = await contractData.contract.transfer(
-          toaddress,
-          ethers.parseEther(supply.toString()),
-          {
-            chainId: "212121",
-            gasPrice: contractData.gasPrice,
-            nonce: contractData.nonces,
-          },
-        )
-        console.log("gethex ..----------.", gethex)
+          console.log("----toaddress", toaddress)
+        const tokenTranferDetails = await tokenTransferInfo(toaddress,supply)
+        console.log("---provider", tokenTranferDetails)
+        
 
         try {
-          if (gethex.hash) {
-            setTxid(gethex.hash)
-            setTxUrl("http://testnet.alyscan.io/address/" + gethex.hash + "/transactions")
+          if (tokenTranferDetails.data) {
+            setTxid(tokenTranferDetails.data.hash)
+            setTxUrl("http://testnet.alyscan.io/address/" + tokenTranferDetails.data.hash + "/transactions")
             setError("")
             setStep(1);
             setIsLoading(false);
           } else {
-            setError(error)
-            console.log("======errorrrr", error)
+            setError("Transaction Failed")
             //toast.error(error)
             setStep(0);
             setIsLoading(false);
-
           }
         } catch (error) {
           console.error("Error decoding data:", error);
@@ -587,9 +542,11 @@ const SingleToken = () => {
                           {tokenData?.name.charAt(0).toUpperCase()}
                         </p>
                       </div>
-                        <div><p className="text-xl text-neutral50 font-bold leading-7 mb-1.5">
+                    
+                        <div>  {tokenData && 
+                          <p className="text-xl text-neutral50 font-bold leading-7 mb-1.5">
                           Symbol :  {tokenData?.symbol}
-                        </p>
+                        </p>}
                           <p className="text-xl text-neutral50 font-bold leading-7 mb-1.5">
                             Supply : {supply}
                           </p>

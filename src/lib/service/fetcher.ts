@@ -72,57 +72,6 @@ export function saveJsonData(jsonData: any,tokenId:number) {
     });
 }
 
-export function nftInstance(tokenAddress: string) {
-  console.log("nftInstance===========",tokenAddress)
-  if (!tokenAddress) {
-    throw new Error("tokenAddress is missing");
-  }
-  return axios.post("/api/instance", { tokenAddress })
-  .then((response) =>  response.data.data)
-    .catch((error) => {
-      console.error("Error in getting instances:", error);
-      throw error;
-    }); 
-}
-
-export function alysTokenInfo(address: string) {
-  console.log("alysTokenInfo===========",address)
-  if (!address) {
-    throw new Error("tokenAddress is missing");
-  }
-  return axios.post("/api/tokenInfo", { address })
-  .then((response: any) =>  response.data.data)
-    .catch((error: any) => {
-      console.error("Error in getting instances:", error);
-      throw error;
-    }); 
-}
-export function tokenInfo() {
-
-  return axios.get("/api/database")
-  .then((response) =>  {
-    console.log("======response data",response.data.data)
-    return response.data;
-    })
-    .catch((error) => {
-      console.error("Error in getting token data:", error);
-      throw error;
-    }); 
-}
-export function storeTokenInfo(tokenId: number,metaData:any) {
-  console.log("tokenId===========",tokenId)
-  console.log("metaData===========",metaData)
-
-  if (!tokenId) {
-    throw new Error("tokenId is missing");
-  }
-  return axios.post("/api/database", { tokenId ,metaData})
-  .then((response) =>  response.data.data)
-    .catch((error) => {
-      console.error("Error in storing token data:", error);
-      throw error;
-    }); 
-}
 
 export function tokenId() {
 
@@ -147,6 +96,45 @@ export function storeTokenId(tokenId: number) {
   .then((response) =>  response)
     .catch((error) => {
       console.error("Error in storing token id:", error);
+      throw error;
+    }); 
+}
+export function tokenTransferInfo(toAddress:string,supply:any) {
+  console.log("provider url =======")
+
+  return axios.post("/api/alysTokenTransfer", {toAddress,supply})
+  .then((response) =>  {
+    console.log("====provider==response ",response)
+    return response.data;
+    })
+    .catch((error) => {
+      console.error("Error in getting provider Info :", error);
+      throw error;
+    }); 
+}
+export function contractInfo(tokenContractAddress:string,tokenAbi:any) {
+  console.log("contractInfo =======",tokenContractAddress)
+
+  return axios.post("/api/contractInfo", {tokenContractAddress,tokenAbi})
+  .then((response) =>  {
+    console.log("====provider==response ",response)
+    return response.data;
+    })
+    .catch((error) => {
+      console.error("Error in getting contract info :", error);
+      throw error;
+    }); 
+}
+export function nftMintInfo(toAddress:string,mintId:number) {
+  console.log("nftMintInfo  =======")
+
+  return axios.post("/api/alysNftMint", {toAddress,mintId})
+  .then((response) =>  {
+    console.log("====nftMintInfo==response ",response)
+    return response.data;
+    })
+    .catch((error) => {
+      console.error("Error in getting nftMint Info  :", error);
       throw error;
     }); 
 }

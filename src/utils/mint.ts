@@ -14,6 +14,7 @@ import { calculateSize, convertToSAT, getChainInstance, getNetwork, } from "./ca
 import { prepareInputs } from "./prepareInputs";
 import {
   fetchUtxos,
+  
 } from "@/lib/service/fetcher";
 import { alysRPCUrl, maraUrl, privateKey } from "@/lib/constants";
 import { ethers } from "ethers";
@@ -29,27 +30,45 @@ export const stringtoHex = (value: any) => {
 };
 
 export function getProvider(apiUrl: any) {
-  console.log("provider api url",apiUrl)
-  return new ethers.JsonRpcProvider(apiUrl)
+  try{
+    console.log("provider api url", apiUrl)
+    return new ethers.JsonRpcProvider(apiUrl)
+  }
+  catch(error) {
+    console.log("----error getprovider", error)
+    return false
+  }
 }
 
-export async function getContractInfo(contractAddress:any,abiFile:any){
-  const provider = getProvider(alysRPCUrl)
-  console.log("---provider", provider)
-  const signer = new ethers.Wallet(privateKey, provider)
-  const nonces = await provider.getTransactionCount(signer.address, "pending")
-  console.log("----nonces", nonces)
-  const contract = new ethers.Contract(contractAddress, abiFile, signer);
-  console.log("----contract", contract)
+export async function getContractInfo(contractAddress: any, abiFile: any) {
+  try {
 
-  const gasPrice = (await provider.getFeeData()).gasPrice
-  console.log("----gasPrice", gasPrice)
+    const provider = getProvider(alysRPCUrl)
+    // const provider = await (alysRPCUrl)
+    // console.log("---provider", provider)
 
-  return {
-    contract, 
-    gasPrice,
-    nonces,
-    signer
+    if(!provider)
+    {
+      return false
+    }
+    const signer = new ethers.Wallet(privateKey, provider)
+    const nonces = await provider.getTransactionCount(signer.address, "pending")
+    console.log("----nonces", nonces)
+    const contract = new ethers.Contract(contractAddress, abiFile, signer);
+    console.log("----contract", contract)
+
+    const gasPrice = (await provider.getFeeData()).gasPrice
+    console.log("----gasPrice", gasPrice)
+
+    return {
+      contract,
+      gasPrice,
+      nonces,
+      signer
+    }
+  } catch (error) {
+    console.log("----error", error)
+    return false
   }
 }
 
@@ -168,7 +187,7 @@ export async function mintToken(
 
     psbt.updateInput(i, {
       witnessUtxo: {
-        script: getChainInstance("sidechain").address.toOutputScript(address|| "", network),
+        script: getChainInstance("sidechain").address.toOutputScript(address || "", network),
         value: currentUtxo.value,
       },
     });
