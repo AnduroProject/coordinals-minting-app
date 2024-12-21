@@ -16,8 +16,7 @@ import {
   FEERATE,
   RECEIVER_ADDRESS,
   tokenContractAddress,
-  ownerAddress,
-  alysRPCUrl,
+  
 } from "@/lib/constants";
 import Image from "next/image";
 import useFormState from "@/lib/store/useFormStore";
@@ -200,8 +199,8 @@ const SingleToken = () => {
 
       return {
         isValid: false,
-        error: supply > 100
-          ? "Supply must be less than 100"
+        error: supply >= 100
+          ? "Supply must be less than or equal to 100 "
           : "Available supply " + Number(tokenData?.total_supply)
 
       }

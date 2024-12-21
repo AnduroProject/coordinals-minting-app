@@ -14,9 +14,7 @@ import {
   ASSETTYPE,
   FEERATE,
   RECEIVER_ADDRESS,
-  alysRPCUrl,
-  appBaseUrl,
-  nftContractAddress,
+
 } from "@/lib/constants";
 import { alysAssetData, tokenData } from "@/types";
 import useFormState from "@/lib/store/useFormStore";

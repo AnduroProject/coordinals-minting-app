@@ -1,7 +1,6 @@
 import * as coordinate from "chromajs-lib";
 
-import { rpcResponse, tokenData, utxo } from "@/types";
-import { deriveKeyFromMnemonic } from "@chainsafe/bls-keygen"
+import {  tokenData, utxo } from "@/types";
 
 const schnorr = require("bip-schnorr");
 const convert = schnorr.convert;
@@ -11,13 +10,11 @@ import BIP32Factory from "bip32";
 const bip32 = BIP32Factory(ecc);
 import * as chroma from "chromajs-lib"
 import { calculateSize, convertToSAT, getChainInstance, getNetwork, } from "./calculateSize";
-import { prepareInputs } from "./prepareInputs";
 import {
   fetchUtxos,
   
 } from "@/lib/service/fetcher";
-import { alysRPCUrl, maraUrl, privateKey } from "@/lib/constants";
-import { ethers } from "ethers";
+
 
 export const convertDataToSha256Hex = (value: any) => {
   return convert.hash(Buffer.from(value, "utf8")).toString("hex");
@@ -30,38 +27,6 @@ export const stringtoHex = (value: any) => {
 };
 
 
-
-// export async function getContractInfo(contractAddress: any, abiFile: any) {
-//   try {
-
-  
-//     // const provider = await (alysRPCUrl)
-//     // console.log("---provider", provider)
-
-//     if(!provider)
-//     {
-//       return false
-//     }
-//     const signer = new ethers.Wallet(privateKey, provider)
-//     const nonces = await provider.getTransactionCount(signer.address, "pending")
-//     console.log("----nonces", nonces)
-//     const contract = new ethers.Contract(contractAddress, abiFile, signer);
-//     console.log("----contract", contract)
-
-//     const gasPrice = (await provider.getFeeData()).gasPrice
-//     console.log("----gasPrice", gasPrice)
-
-//     return {
-//       contract,
-//       gasPrice,
-//       nonces,
-//       signer
-//     }
-//   } catch (error) {
-//     console.log("----error", error)
-//     return false
-//   }
-// }
 
 export async function mintToken(
   data: tokenData,
