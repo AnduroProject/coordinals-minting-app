@@ -8,7 +8,7 @@ import Input from "@/components/ui/input";
 import ButtonOutline from "@/components/ui/buttonOutline";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import {   mintToken } from "@/utils/mint";
+import { mintToken } from "@/utils/mint";
 import Layout from "@/components/layout/layout";
 import {
   ASSETTYPE,
@@ -114,7 +114,7 @@ const SingleCollectible = () => {
 
       }
     }
-    else{
+    else {
       setnetworkType("")
     }
 
@@ -206,41 +206,45 @@ const SingleCollectible = () => {
         console.log("network type,", networkType)
         console.log("====contractAddress",)
 
-        const token= await tokenId()
-        console.log("====TOKEN ID", token.tokenId)
-        console.log("====TOKEN ID type", typeof(token.tokenId))
+        const token = await tokenId()
+        console.log("====TOKEN ID", token)
+        console.log("====TOKEN ID type", typeof (token.tokenId))
 
 
-       mintId = token.tokenId + 1
-        console.log("====mintId", mintId )
-      
+        mintId = token.tokenId + 1
+        console.log("====mintId", mintId)
+
         console.log("====alysData", alysData)
 
         const response = await saveJsonData(alysData, mintId);
         console.log("response====", response.message);
-        const nftMintDetails = await nftMintInfo(toaddress,mintId)
+        const nftMintDetails = await nftMintInfo(toaddress, mintId)
         console.log("---nftMintDetails", nftMintDetails)
-       
+
 
         try {
           if (nftMintDetails.data.hash) {
             console.log("Transaction is successful!!!" + '\n'
               + "Transaction Hash:", nftMintDetails.data.hash + '\n'
             )
-            const mintingId= await  storeTokenId(mintId)
+            const mintingId = await storeTokenId(mintId)
             console.log("===incrementID", mintingId)
-    
-            //storeTokenInfo(mintId, alysData)
-            setTxid(nftMintDetails.data.hash)
-            setTxUrl("http://testnet.alyscan.io/address/" + nftMintDetails.data.hash + "/transactions")
-            setError("")
-            setStep(1);
-            setIsLoading(false);
+            if (mintingId.data.error) {
+              setError(mintingId.data.error)
+              setStep(0);
+              setIsLoading(false);
+            }else{
+              setTxid(nftMintDetails.data.hash)
+              setTxUrl("http://testnet.alyscan.io/tx/" + nftMintDetails.data.hash)
+              setError("")
+              setStep(1);
+              setIsLoading(false);
+            }
+          
           }
 
           else {
             setError("Transaction Failed")
-            toast.error(error)
             setStep(0);
             setIsLoading(false);
 
@@ -248,7 +252,6 @@ const SingleCollectible = () => {
         } catch (error: any) {
           setIsLoading(false)
           setError("Transaction Failed")
-
           console.error("Error decoding data:", error);
         }
       }
@@ -454,40 +457,40 @@ const SingleCollectible = () => {
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3">
                     <p className="text-xl text-neutral50 font-bold">
-                    Name:  {headline}
+                      Name:  {headline}
                     </p>
                     <p className="text-xl text-neutral50 font-bold">
-                    Symbol : {ticker}
+                      Symbol : {ticker}
                     </p>
                     <p className="text-xl text-neutral50 font-bold">
-                    Supply {1} 
+                      Supply {1}
                     </p>
                     <p className="text-xl text-neutral100 font-bold">
-                    Tx Id : {convertToSubstring(txid, 6, 4)}
-                    <button
-                      onClick={handleCopy}
-                      className={`text-brand p-1 hover:bg-gray-100 rounded ${isCopied ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                        }`}
-                      disabled={isCopied}
-                      aria-label="Copy transaction link"
-                    >
-                      <Copy size="16" />
-                    </button>
+                      Tx Id : {convertToSubstring(txid, 6, 4)}
+                      <button
+                        onClick={handleCopy}
+                        className={`text-brand p-1 hover:bg-gray-100 rounded ${isCopied ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                          }`}
+                        disabled={isCopied}
+                        aria-label="Copy transaction link"
+                      >
+                        <Copy size="16" />
+                      </button>
                     </p>
                   </div>
                 </div>
               </div>
               <div className="">
-               <p className="text-neutral100 text-lg2">
-                    <p className="text-neutral100 text-xl flex flex-row items-center justify-center">
+                <p className="text-neutral100 text-lg2">
+                  <p className="text-neutral100 text-xl flex flex-row items-center justify-center">
                     <a href={txUrl} target="_blank" className="text-brand">
                       {networkType === "Coordinate" ? (
                         <p>View on Coordinate </p>
                       ) : (
                         <p>View  on Alys</p>
                       )}                    </a>
-                      </p>
-               </p>
+                  </p>
+                </p>
               </div>
               <div className="flex flex-row gap-8">
                 <ButtonOutline

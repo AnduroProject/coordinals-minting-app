@@ -6,7 +6,7 @@ AWS.config.update({
     region:  process.env.AWS_REGION,
   }) 
 
-export async function  uploadToS3(tokenId: number, mintData: any) {
+export async function  uploadToS3(tokenId: any, mintData: any) {
     try {
         const payload: any = {
           Bucket: process.env.BUCKET_NAME,
@@ -27,7 +27,7 @@ export async function  uploadToS3(tokenId: number, mintData: any) {
           }
         };
       } catch (error) {
-        return { message: "Failed to save JSON file" };      
+        return { error: "Failed to save meta data" };      
       }    
 }
 
@@ -45,6 +45,6 @@ export async function  getFileFromS3(tokenId: string) {
         const mintData = JSON.parse(mintDataResponse.Body.toString('utf-8'))
         return mintData;
       } catch (error) {
-        return { message: "Failed to save JSON file" };      
+        return { error: "Failed to fetch meta data" };      
       }    
 }

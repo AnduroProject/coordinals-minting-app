@@ -265,7 +265,7 @@ const SingleToken = () => {
         try {
           if (tokenTranferDetails.data) {
             setTxid(tokenTranferDetails.data.hash)
-            setTxUrl("http://testnet.alyscan.io/address/" + tokenTranferDetails.data.hash + "/transactions")
+            setTxUrl("http://testnet.alyscan.io/tx/" + tokenTranferDetails.data.hash)
             setError("")
             setStep(1);
             setIsLoading(false);
