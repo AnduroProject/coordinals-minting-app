@@ -13,7 +13,8 @@ const bai_Jamjuree = Bai_Jamjuree({
 
 export const metadata: Metadata = {
   title: "Coordinals",
-  description: "Coordinals example app made for demo purpose",
+  description: "Coordinals minting app - For creating coordinate and Alys assets",
+
 };
 
 export default function RootLayout({
