@@ -3,11 +3,11 @@ var AWS = require('aws-sdk');
 import { uploadToS3 } from "@/lib/service/awshelper"
 
 
-
-
 export async function POST(req: Request) {
+  const { jsonData,tokenId } = await req.json();
+ 
   try {
-    const { jsonData,tokenId } = await req.json();
+ 
     let uploadResponse = await uploadToS3(tokenId, jsonData)  
     return NextResponse.json(uploadResponse, { status: 200 });
   } catch (error) {

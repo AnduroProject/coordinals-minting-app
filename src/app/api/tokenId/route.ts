@@ -1,16 +1,9 @@
 import { NextResponse } from "next/server";
-import fs from 'fs';
-import path from 'path';
 import { getFileFromS3, uploadToS3 } from "@/lib/service/awshelper";
 
-const tokenFilePath = path.join(process.cwd(), 'data', 'token.json');
 
-export async function GET(req: Request) {
-  try {
-    console.log("=======get in tokenID");
 
-    const mintData = await getFileFromS3("token_data")  
-    // return NextResponse.json(mintData);
+  // return NextResponse.json(mintData);
     // if (!fs.existsSync(tokenFilePath)) {
     //   return NextResponse.json({ error: "File not found" }, { status: 404 });
     // }
@@ -18,7 +11,12 @@ export async function GET(req: Request) {
     // const jsonData = JSON.parse(data);
 
     // console.log("=====jsonData", jsonData);
+export async function GET(req: Request) {
+  try {
+    console.log("=======get in tokenID");
 
+    const mintData = await getFileFromS3("token_data")  
+ 
     return NextResponse.json({ data: mintData }, { status: 200 });
   } catch (error: any) {
     console.error('Error reading token file:', error);
@@ -29,8 +27,8 @@ export async function GET(req: Request) {
 
 
 export async function POST(req: Request) {
+  const { tokenId } = await req.json();
   try {
-    const { tokenId } = await req.json();
     console.log("====token id to update", tokenId)
 
     let uploadResponse = await uploadToS3("token_data", { tokenId } )

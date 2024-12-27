@@ -111,19 +111,27 @@ export async function getTransactionHex(
 } */
 
 export async function getUtxos(address: string) {
-  const response = await axios.get(maraUrl + address);
+  try{
+    console.log("=====utxo api 22222")
 
-  const utxos: utxo[] = response.data.result;
+    const response = await axios.get(maraUrl + address);
 
-  utxos.forEach((utxo) => {
-    utxo.value = Number(utxo.value);
-    utxo.height = Number(utxo.height);
+    const utxos: utxo[] = response.data.result;
+  
+    utxos.forEach((utxo) => {
+      utxo.value = Number(utxo.value);
+      utxo.height = Number(utxo.height);
+  
+      console.log(utxo);
+    });
+    utxos.sort((a, b) => b.value - a.value);
+  
+    return utxos;
+  }catch(error){
+    return error;
 
-    console.log(utxo);
-  });
-  utxos.sort((a, b) => b.value - a.value);
-
-  return utxos;
+  }
+  
 }
 
 

@@ -8,6 +8,7 @@ import HeaderItem from "../ui/headerItem";
 import { WALLET_URL } from "@/lib/constants";
 import { useConnector } from "anduro-wallet-connector-react";
 import { toast } from "sonner";
+import { disconnectCookie } from "@/lib/service/fetcher";
 
 const routesData = [
   {
@@ -31,6 +32,7 @@ export default function Header() {
     const result = await disconnect();
     console.log("*******Disconnect Result", result);
     if (result.status === true) {
+      disconnectCookie()
       setWalletAddress("");
       localStorage.removeItem("isWalletConnected")
       localStorage.removeItem("chainId")
@@ -197,7 +199,7 @@ export default function Header() {
               </Link>
             </h1>
             <div className="flex flex-row overflow-hidden items-center gap-4">
-              <div className="flex flex-row gap-2 text-neutral00">
+              {/* <div className="flex flex-row gap-2 text-neutral00">
                 {routesData.map((item, index) => (
                   <HeaderItem
                     key={index}
@@ -205,7 +207,7 @@ export default function Header() {
                     handleNav={() => router.push(item.pageUrl)}
                   />
                 ))}
-              </div>
+              </div> */}
               {walletAddress === "" ? (
                 <Button
                   variant={"outline"}

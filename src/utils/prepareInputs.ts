@@ -1,7 +1,6 @@
 import { utxo } from "@/types";
 import { inputSize } from "@/lib/constants";
 import { getUtxos } from "./libs";
-import { fetchUtxos } from "@/lib/service/fetcher";
 import { toast } from "sonner";
 
 export async function prepareInputs(

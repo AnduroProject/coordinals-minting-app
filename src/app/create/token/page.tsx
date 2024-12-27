@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useContext, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import Banner from "@/components/section/banner";
 import Header from "@/components/layout/header";
 import Input from "@/components/ui/input";
@@ -18,15 +18,15 @@ import {
   tokenContractAddress,
   
 } from "@/lib/constants";
-import Image from "next/image";
 import useFormState from "@/lib/store/useFormStore";
 import { toast } from "sonner";
 import { useConnector } from "anduro-wallet-connector-react";
-import { ethers, Transaction } from "ethers"
+import { ethers } from "ethers"
 import { tokenAbi } from "@/utils/tokenAbi";
 import { CloseCircle, Copy } from "iconsax-react";
 import { convertToSubstring } from "@/lib/utils";
 import { contractInfo, tokenTransferInfo } from "@/lib/service/fetcher";
+import axios from "axios";
 
 
 const SingleToken = () => {
@@ -61,7 +61,8 @@ const SingleToken = () => {
   const [isCopied, setIsCopied] = useState(false);
   const [txid, setTxid] = useState<string>("");
   const [imgSrc, setImgSrc] = useState('');
-
+  const [csrfToken, setCsrfToken] = useState(null);
+  const fetchCalled = useRef(false);
   interface FormInputData {
     headline: string;
     ticker: string;
@@ -105,6 +106,27 @@ const SingleToken = () => {
   }, [networkType]);
 
   React.useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await axios.get("/api/auth");
+        console.log("fetchCsrfToken.", response);
+        setCsrfToken(response.data.csrfToken);
+      } catch (error) {
+        console.error("Failed to fetch CSRF token:", error);
+      }
+    };
+
+    // if (!fetchCalled.current && csrfToken === null) {
+    //   fetchCalled.current = true; 
+    //   fetchCsrfToken();
+    // }
+    if (networkType !== "") {
+      fetchCsrfToken();
+    }
+  }, [networkType]);
+
+
+  React.useEffect(() => {
     
     contractInfo(tokenContractAddress, tokenAbi)
     .then((contractDetails) => {
@@ -120,7 +142,7 @@ const SingleToken = () => {
       console.error("Error fetching contract details:", error);
     });
    
-  }, [tokenData?.total_supply]);
+  }, [tokenData?.total_supply,csrfToken]);
 
 
   const handleDelete = (): void => {
@@ -192,7 +214,7 @@ const SingleToken = () => {
       }
     }
     console.log("Token supply:", Number(tokenData?.total_supply));
-    console.log("Token supplysupply:", supply);
+    console.log("Token supply supply:", supply);
 
     if ((supply > Number(tokenData?.total_supply) && networkType === "Alys") ||
       (supply > 100 && networkType === "Alys")) {

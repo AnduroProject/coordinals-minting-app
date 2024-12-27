@@ -1,9 +1,7 @@
 "use client";
 
 import axios from "axios";
-import { apiurl } from "../constants";
-import { error } from "console";
-import path from "path";
+
 
 enum COLLECTION_STATUS {
   PENDING = "PENDING",
@@ -30,9 +28,13 @@ export interface CollectionType {
 }
 
 export function fetchUtxos(address: string) {
-  return axios.post("/api/utxo", { address }).then((response) => {
+  return axios.post("/api/utxo", { address },).then((response) => {
     return response.data.data;
-  });
+  })
+  .catch((error) => {
+    console.error("Error in fetching utxo:", error);
+    throw error;
+  }); 
 }
 
 export function fetchTransactionHex(
@@ -45,6 +47,15 @@ export function fetchTransactionHex(
     .then((response) => {
       return response.data.data;
     });
+}
+
+
+
+export function disconnectCookie() {
+  return axios.post("/api/auth", ).then((response) => {
+    console.log("RESPONSE",response)
+    return response;
+  });
 }
 
 export function fetchBlockHash(height: number) {
@@ -64,7 +75,7 @@ export function sendTransactionHelper(transactionHex: string) {
 export function saveJsonData(jsonData: any,tokenId:number) {
   console.log("tokenId== save=========",tokenId)
 
-  return axios.post("/api/metaData", { jsonData, tokenId })
+  return axios.post("/api/metaData", { jsonData, tokenId})
     .then((response) => response.data)
     .catch((error) => {
       console.error("Error saving JSON:", error);
@@ -92,16 +103,17 @@ export function storeTokenId(tokenId: number) {
   if (!tokenId) {
     throw new Error("tokenId is missing");
   }
-  return axios.post("/api/tokenId", { tokenId })
+  return axios.post("/api/tokenId", { tokenId})
   .then((response) =>  response)
     .catch((error) => {
       console.error("Error in storing token id:", error);
       throw error;
     }); 
 }
+
+
 export function tokenTransferInfo(toAddress:string,supply:any) {
   console.log("provider url =======")
-
   return axios.post("/api/alysTokenTransfer", {toAddress,supply})
   .then((response) =>  {
     console.log("====provider==response ",response)
@@ -112,8 +124,8 @@ export function tokenTransferInfo(toAddress:string,supply:any) {
       throw error;
     }); 
 }
+
 export function contractInfo(tokenContractAddress:string,tokenAbi:any) {
-  console.log("contractInfo =======",tokenContractAddress)
 
   return axios.post("/api/contractInfo", {tokenContractAddress,tokenAbi})
   .then((response) =>  {

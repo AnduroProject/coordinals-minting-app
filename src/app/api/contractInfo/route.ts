@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
     const { tokenContractAddress, tokenAbi } = await req.json();
     console.log("----RPC tokenContractAddress", tokenContractAddress)
+   
     try {
         const provider = new ethers.JsonRpcProvider(alysRPCUrl)
         console.log("----RPC response", provider)
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
         return NextResponse.json({
             status: 500,
             data: null,
-            message: error,
+            message: "Error in fetching data",
         });
     }
 }

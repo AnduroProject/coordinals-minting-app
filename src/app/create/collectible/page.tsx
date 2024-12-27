@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Header from "@/components/layout/header";
 import Banner from "@/components/section/banner";
 import ButtonLg from "@/components/ui/buttonLg";
@@ -24,6 +24,7 @@ import { nftAbi } from "@/utils/nftAbi";
 import { nftMintInfo, saveJsonData, storeTokenId, tokenId, } from "@/lib/service/fetcher";
 import { CloseCircle, Copy } from "iconsax-react";
 import { convertToSubstring } from "@/lib/utils";
+import axios from "axios";
 
 const stepperData = ["Upload", "Confirm"];
 const SingleCollectible = () => {
@@ -60,7 +61,8 @@ const SingleCollectible = () => {
   const [isCopied, setIsCopied] = useState(false);
   const [txid, setTxid] = useState<string>("");
   const [imgSrc, setImgSrc] = useState('');
-
+  const [csrfToken, setCsrfToken] = useState(null);
+    const fetchCalled = useRef(false);
 
   interface FormInputData {
     headline: string;
@@ -95,6 +97,26 @@ const SingleCollectible = () => {
       setTimeout(() => setIsCopied(false), 3000);
     });
   };
+
+  React.useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await axios.get("/api/auth");
+        console.log("fetchCsrfToken.", response);
+        setCsrfToken(response.data.csrfToken);
+      } catch (error) {
+        console.error("Failed to fetch CSRF token:", error);
+      }
+    };  
+    if (networkType !== "") {
+      fetchCsrfToken();
+    }
+
+    // if (!fetchCalled.current && csrfToken === null) {
+    //   fetchCalled.current = true; 
+    
+    // }
+  }, [networkType]);
 
   React.useEffect(() => {
     console.log("network type.", networkType);
