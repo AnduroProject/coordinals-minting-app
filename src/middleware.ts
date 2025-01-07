@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
   console.log("++ USER TOKEN:", userToken);
 
   // Check if the token is missing
-  if (!userToken) {
+  if (!userToken || userToken === undefined) {
     return NextResponse.json({ error: "Authorization failed" }, { status: 403 });
   }
 

@@ -6,7 +6,7 @@ export async function GET() {
   const token = generateRandomString(32);
   console.log("====csrf token",token)
   // Set CSRF token as an HTTP-only cookie
-  const response = NextResponse.json({ csrfToken: token });
+  const response = NextResponse.json({ authToken: token });
   response.cookies.set("XSRF-TOKEN", token, { httpOnly: true });
 
   return response;

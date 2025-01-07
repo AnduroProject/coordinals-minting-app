@@ -110,7 +110,7 @@ const SingleToken = () => {
       try {
         const response = await axios.get("/api/auth");
         console.log("fetchCsrfToken.", response);
-        setCsrfToken(response.data.csrfToken);
+        setCsrfToken(response.data.authToken);
       } catch (error) {
         console.error("Failed to fetch CSRF token:", error);
       }
