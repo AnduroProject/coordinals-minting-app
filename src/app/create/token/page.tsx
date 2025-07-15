@@ -31,7 +31,6 @@ import axios from "axios";
 
 const SingleToken = () => {
   const router = useRouter();
-
   const { signAndSendTransaction, walletState } =
     React.useContext<any>(useConnector);
   const {
@@ -45,6 +44,8 @@ const SingleToken = () => {
     setImageUrl,
     setTxUrl,
     txUrl,
+    decimal,
+    setDecimal,
     reset,
   } = useFormState();
 
@@ -72,10 +73,17 @@ const SingleToken = () => {
 
   React.useEffect(() => {
     reset()
-    console.log("==addres", localStorage.getItem("address"))
     setToaddress(localStorage.getItem("address") || "")
   }, [walletState]);
 
+  // React.useEffect(() => {
+  //   if (networkType === "Coordinate") {
+  //     setDecimal(8);
+  //   } else if (networkType === "Alys") {
+  //     setDecimal(18);
+  //   }
+  // }, [networkType]);
+  
   React.useEffect(() => {
     if (walletState.connectionState == "disconnected") {
       setError("Wallet is not connected.");
@@ -84,7 +92,6 @@ const SingleToken = () => {
       setError("");
     }
     const chainId = localStorage.getItem("chainId")
-    console.log("NETWORKTYPE chainId", chainId)
 
     const walletconnection = localStorage.getItem("isWalletConnected")
     if (walletconnection === "true") {
@@ -97,11 +104,11 @@ const SingleToken = () => {
     }
     else {
       setnetworkType("")
+      router.push("/")
     }
   }, [walletState]);
 
   React.useEffect(() => {
-    console.log("NETWORKTYPE", networkType)
 
   }, [networkType]);
 
@@ -109,7 +116,6 @@ const SingleToken = () => {
     const fetchCsrfToken = async () => {
       try {
         const response = await axios.get("/api/auth");
-        console.log("fetchCsrfToken.", response);
         setCsrfToken(response.data.authToken);
       } catch (error) {
         console.error("Failed to fetch CSRF token:", error);
@@ -127,21 +133,25 @@ const SingleToken = () => {
 
 
   React.useEffect(() => {
-    
+    if(networkType === "Alys"){
     contractInfo(tokenContractAddress, tokenAbi)
     .then((contractDetails) => {
-      console.log("Contract details fetched ", contractDetails);
+     // console.log("Contract details fetched ", contractDetails);
       const Data: TokenInfo = {
               name: contractDetails.data.name,
               symbol: contractDetails.data.symbol,
-              total_supply: ethers.formatEther(contractDetails.data.balance),
+              total_supply: contractDetails.data.balance,
+              //ethers.parseUnits(contractDetails.data.balance.toString(),contractDetails.decimals),
+
+            //  total_supply: ethers.formatEther(contractDetails.data.balance),
+              decimal : contractDetails.data.decimals,
             };
             setTokenData(Data)
     })
     .catch((error) => {
       console.error("Error fetching contract details:", error);
     });
-   
+  }
   }, [tokenData?.total_supply,csrfToken]);
 
 
@@ -157,6 +167,15 @@ const SingleToken = () => {
     setShowImage(false);
     //setErrorMessage('Please provide a valid image URL.');
   };
+
+  const handleTokenDecimalChange = (value: any) => {
+    console.log("---value",value)
+    if (!/^\d+$/.test(value) && value.toString().trim() !== "") {
+      return
+    }
+    setDecimal(value.trim())
+  }
+
   const handleImageLoad = () => {
     setShowImage(true);
     setErrorMessage('');
@@ -171,9 +190,9 @@ const SingleToken = () => {
 
   const validateForm = (inputData: FormInputData): { isValid: boolean; error?: string } => {
     const { headline, ticker, imageUrl, supply } = inputData;
-    console.log("type oif no====", typeof (supply))
-    console.log("==netwoektypw", networkType)
-
+    console.log("type of no====", typeof (supply))
+    console.log("==network type", networkType)
+    let supply_range = 21 * 1e14 // 2100000000000000
     if (networkType === "Coordinate") {
 
       if (headline.trim().length === 0) {
@@ -197,8 +216,19 @@ const SingleToken = () => {
       if (imageUrl.trim() === "") {
         return { isValid: false, error: "Image is not provided." };
       }
+      if (decimal <= 0 || decimal >= 9) {
+        return { isValid: false, 
+          error: "The token decimal should be greater than 0 and less than 9." }
+      }
+      
     }
-
+  
+    // if (networkType === "Alys") {
+    //   if (decimal < 0 || decimal >= 19) {
+    //     return { isValid: false, 
+    //       error: "The token decimal should be greater than 0 and less than 19." }
+    //   }
+    // }
     if (supply <= 0) {
       console.log("supply====")
       return {
@@ -213,25 +243,55 @@ const SingleToken = () => {
         error: "Max supply is 2100000000000000",
       }
     }
+    const numericSupply = Number(supply);
+    console.log("==supply test===",supply)
+    console.log("=numericSupply===",numericSupply)
+
+    if (
+      isNaN(numericSupply) ||
+      !Number.isInteger(numericSupply)
+    
+    ) {
+      return {
+        isValid: false,
+        error: "Supply must be an integer between 1 and 100",
+      };
+    }
+
+    if (supply * 10 ** decimal > supply_range && networkType === "Coordinate")
+    {  
+      let supplyLimit = supply_range
+      supplyLimit = supply_range / 10 ** decimal
+      return {
+        isValid: false,
+        error:  "Given that supply is out of range, supply should be less than or equal to"
+           +  Number(supplyLimit),
+      }
+    } 
+
+  
+  
+
+    
+    console.log("TOKEN CALCUl:", supply * 10 ** tokenData?.decimal)
+    //Number(tokenData?.total_supply));
     console.log("Token supply:", Number(tokenData?.total_supply));
     console.log("Token supply supply:", supply);
 
-    if ((supply > Number(tokenData?.total_supply) && networkType === "Alys") ||
-      (supply > 100 && networkType === "Alys")) {
-
+    if ((supply *10 ** tokenData?.decimal > Number(tokenData?.total_supply) && networkType === "Alys") ||
+      (supply > 100 && networkType === "Alys")) 
+      {
       return {
         isValid: false,
-        error: supply >= 100
-          ? "Supply must be less than or equal to 100 "
-          : "Available supply " + Number(tokenData?.total_supply)
-
+        error: supply > 100
+          ? "Supply must be less than or equal to 100"
+          :"Provided supply is higher than available"
+          // : "Available supply" + Number(tokenData?.total_supply)
       }
     }
 
-
     if (errorMessage) {
       return { isValid: false };
-
     }
     return { isValid: true };
   };
@@ -241,14 +301,13 @@ const SingleToken = () => {
     event.preventDefault();
     setIsLoading(true);
 
-
     const inputData: FormInputData = {
       headline,
       ticker,
       imageUrl,
       supply
     };
-
+    console.log("===supply",supply)
 
     const validationResult = validateForm(inputData);
 
@@ -273,13 +332,16 @@ const SingleToken = () => {
       headline,
       ticker,
       supply,
+      precision:decimal
     };
 
 
     try {
       if (networkType === "Alys") {
         console.log("====contractAddress", tokenContractAddress)
-          console.log("----toaddress", toaddress)
+          console.log("----toaddress", toaddress)          
+          console.log("----supply to transfer", supply)
+
         const tokenTranferDetails = await tokenTransferInfo(toaddress,supply)
         console.log("---provider", tokenTranferDetails)
         
@@ -308,7 +370,8 @@ const SingleToken = () => {
           const result = await signAndSendTransaction({
             hex: transactionResult,
             transactionType: "normal",
-          }); console.log("🚀 ~ sendTransactionresult ~ res:", result);
+          }); 
+          console.log("🚀 ~ sendTransactionresult ~ res:", result);
 
           if (result && result.error) {
             const errorMessage = typeof result.error === "string"
@@ -323,7 +386,7 @@ const SingleToken = () => {
           } else {
             setError("")
             setTxid(result.result)
-            setTxUrl("https://testnet.coordiscan.io/tx/" + result.result)
+            setTxUrl("https://testnet.coordiscan.io/tx/"+ result.result)
             setStep(1);
             setIsLoading(false);
           }
@@ -332,10 +395,9 @@ const SingleToken = () => {
       }
     } catch (error: any) {
       console.log("🚀 ~ handleSubmit ~ error:", error);
-      if (error.message.includes('insufficient funds')) {
+      if (error.message.includes('Insufficient funds')) {
         const err = 'Insufficient funds for this transaction';
         setError(err)
-
       } else {
         setError("Transaction Failed");
         //toast.error(error.message || "An error occurred");
@@ -406,6 +468,12 @@ const SingleToken = () => {
                           setError("")
                         }}
                       />
+                      <Input
+                        title="Decimal"
+                        text="Decimal"
+                        value={decimal}
+                        onChange={(event: any) => handleTokenDecimalChange(event.target.value)}
+                      />
                       {/* NaN erro */}
                       <Input
                         title="Supply"
@@ -419,8 +487,8 @@ const SingleToken = () => {
                         type="number"
                       />
                       <Input
-                        title="Token  image url"
-                        text="Token  image url"
+                        title="Token image url"
+                        text="Token image url"
                         value={imageUrl}
                         onChange={(e) => {
                           setImageUrl(e.target.value);
@@ -466,7 +534,6 @@ const SingleToken = () => {
                         {tokenData &&
                           <p className="text-profileTitle  text-white text-neutral20 font-bold">
                             Name :  {tokenData?.name}
-
                           </p>}
                         <Input
                           title="Supply"
@@ -477,7 +544,14 @@ const SingleToken = () => {
                             setSupply(value === "" ? 1 : parseInt(value, 10));
 
                           }}
-                          type="number" /></>
+                          type="number" />
+                          {/* <Input
+                        title="Decimal"
+                        text="Decimal"
+                        value={decimal}
+                        onChange={(event: any) => handleTokenDecimalChange(event.target.value)}
+                      /> */}
+                      </>
                     }
                   </div>
                 </div>
@@ -533,7 +607,7 @@ const SingleToken = () => {
                   />
                 }
                 <div className="flex flex-row gap-6">
-                  {networkType === "Coordinate" ?
+                  {networkType === "Coordinate" &&
                     <div className="flex flex-col gap-3">
                       <><p className="text-xl text-neutral50 font-bold">
                         Name :  {headline}
@@ -555,7 +629,8 @@ const SingleToken = () => {
                         </button>
                       </p></>
                     </div>
-                    :
+}
+{networkType === "Alys" &&
                     <div className="flex flex-row gap-3">
                       <><div className="h-16 w-16 rounded-full flex items-center justify-center font-bold 
                       text-neutral50 border-neutral50 border">
@@ -592,11 +667,12 @@ const SingleToken = () => {
               <div className="flex flex-row items-center justify-center">
                 <p className="text-neutral100 text-xl flex flex-row items-center justify-center">
                   <a href={txUrl} target="_blank" className="text-brand">
-                    {networkType === "Coordinate" ? (
+                    {networkType === "Coordinate" && 
                       <p>View on Coordinate </p>
-                    ) : (
+                    } 
+                    {networkType === "Alys" &&
                       <p>View  on Alys</p>
-                    )}
+                    }
                   </a>
                 </p>
               </div>

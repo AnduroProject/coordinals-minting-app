@@ -32,12 +32,9 @@ export async function mintToken(
   data: tokenData,
   feeRate: number,
 ) {
-  console.log("=====minting token====")
-  console.log("=====minting token data====", data)
 
 
   const walletxpub = localStorage.getItem("xpubkey") || "";
-  console.log("===walletxpub", walletxpub)
   const acc = bip32.fromBase58(walletxpub, coordinate.networks.testnet);
   const node = acc.derive(0)
   const destNode = acc.derive(2);
@@ -48,7 +45,6 @@ export async function mintToken(
   const psbt = new coordinate.Psbt({
     network: coordinate.networks.testnet,
   });
-
   // Set transaction version and asset-specific data
   psbt.setVersion(10);
   psbt.assettype = data.assetType;
@@ -56,12 +52,30 @@ export async function mintToken(
   psbt.ticker = stringtoHex(data.ticker);
   psbt.payload = payloadHex;
   psbt.payloaddata = stringtoHex(opreturnData);
-  if (data.assetType === 0) psbt.setPrecisionType(8);
+  if (data.assetType === 0) psbt.setPrecisionType(Number(data?.precision) || 8);
 
+  const result = await fetchUtxos(walletxpub);
+  let unspents: utxo[] = [];
 
+  if (result.success) {
+    unspents = result.data; 
+  //  console.log("UTXO fetch error:", unspents);
+    // Handle error UI or fallback
+  } else {
+   // console.error("UTXOs fetch error::", result.error);
+    throw { message:result.error};
+  }
+  
   // Fetch available UTXOs for the given xpub
-  let unspents: utxo[] = await fetchUtxos(walletxpub);
-  console.log("🚀 ~ utxos: 111", unspents);
+  //let unspents: utxo[] = await fetchUtxos(walletxpub);
+  // try {
+  //   const utxos = await fetchUtxos(walletxpub);
+  //   console.log("Fetched UTXOs:", utxos);
+  // } catch (err:any) {
+  //   console.error("Failed to fetch UTXOs:", err.message);
+  // }
+  
+ // console.log("🚀 ~ utxos: 111", unspents);
 
   unspents.sort((a, b) => b.value - a.value);
   const utxos: utxo[] = []
@@ -75,10 +89,8 @@ export async function mintToken(
       utxos.push(unspent)
     }
   }
-  console.log("🚀 ~ utxos:", utxos);
 
   if (utxos.length === 0) {
-    console.log("====222")
     throw { message: "Insufficient funds" };
   }
   const outputs: Array<{ address: string; value: number }> = [];
@@ -93,40 +105,41 @@ export async function mintToken(
     network: coordinate.networks.testnet,
   }).address;
 
-  console.log("===controllerAddress=", controllerAddress)
 
   const toAddress = coordinate.payments.p2wpkh({
     pubkey: destNode.publicKey,
     network: coordinate.networks.testnet,
   }).address;
-  console.log("===toAddress=", toAddress)
 
   if (!controllerAddress || !toAddress)
     throw new Error("Address does not exists.");
 
+  let   supplyValue = data.supply * 10 ** Number(data?.precision )|| 8
+
   outputs.push({ address: controllerAddress, value: 10 ** 8 });
-  outputs.push({ address: toAddress, value: data.supply });
+  if (data.assetType === 0) {
+    outputs.push({ address: toAddress, value: supplyValue });
+
+  }else{
+    outputs.push({ address: toAddress, value: data.supply });
+
+  }
 
   outputs.forEach(output => {
     psbt.addOutput(output);
   });
-  console.log("===psbt output=", outputs)
 
 
   for (let i = 0; i < utxos.length; i++) {
     const currentUtxo = utxos[i];
-    console.log("====current utxo", currentUtxo);
 
     // Add the UTXO to selected inputs
     selectedUtxos.push(currentUtxo);
     totalInputValue += currentUtxo.value;
-    console.log("Intermediate Selected UTXOs:", [...selectedUtxos]);
 
     // Add the input to the PSBT
     const network = getNetwork("test", "sidechain");
-    console.log("====network", network);
-    console.log("==== chroma.address", getChainInstance("sidechain").address);
-    console.log("==== chroma", currentUtxo.derviation_index);
+  
 
 
     psbt.addInput({
@@ -139,7 +152,6 @@ export async function mintToken(
       pubkey: testNode.publicKey,
       network: coordinate.networks.testnet,
     }).address;
-    console.log("===testNode addresss=", toAddress)
 
     psbt.updateInput(i, {
       witnessUtxo: {
@@ -153,13 +165,11 @@ export async function mintToken(
     // Calculate the size and fee
     const vbytes = await calculateSize(psbt, outputs, data);
     requiredAmount = vbytes * feeRate;
-    console.log("===requiredAmount=", requiredAmount);
-    console.log("===totalInputValue=", totalInputValue);
+
 
 
     if (totalInputValue >= requiredAmount) {
       changeAmount = totalInputValue - requiredAmount;
-      console.log("Change Amount:", changeAmount);
 
       if (changeAmount > convertToSAT(0.00001)) {
         outputs.push({ address: toAddress, value: changeAmount });
@@ -173,7 +183,7 @@ export async function mintToken(
           psbt.addOutput({ address: toAddress || "", value: changeAmount });
         }
         else {
-          console.log("Change output is too small; skipping it.");
+          //console.log("Change output is too small; skipping it.");
         }
       }
       break;
@@ -184,9 +194,7 @@ export async function mintToken(
     }
   }
 
-  console.log("Selected UTXOs:", selectedUtxos);
-  console.log("Change Amount:", changeAmount);
-
+  
 
   try {
     //saveUsedUtxo(utxos.txid);

@@ -1,23 +1,24 @@
 export const rpcUrl = "http://seed3.coordinate.mara.technology",
   rpcPort = 18332;
 
-export const maraUrl =
-  "http://btc-testnet-wallet.mara.technology:9130/unspents/list?address=&xpub=";
+  export const maraUrl = "http://35.175.57.220:9130/unspents/list?address=&xpub=";
+  //"http://192.168.1.140:4001/unspents/list?address=&xpub=";
+
 
 //export const apiurl= "http://192.168.1.112:4001/unspents/whitelist";
-export const apiurl= "http://btc-testnet-wallet.mara.technology:9130/unspents/whitelist";
-  
+//export const apiurl= "http://btc-testnet-wallet.mara.technology:9130/unspents/whitelist";
+//export const apiurl= "http://192.168.1.140:4001/unspents/whitelist";
+
+ 
 export const alysBaseURL = "http://testnet.alyscan.io/api/v2/tokens";
 export const appBaseUrl = "http://localhost:3000/";
-
-export const nftContractAddress= "0xFacAFE6C3A7A70E26f8859f9dFf557197B1936CF"
-export const tokenContractAddress="0xbB31Ea1ee792747Ee06b17902AA3C5554a41A06f"
+export const nftContractAddress= "0xE62017E5D7C2583F16dB70573a7aaDdf415567fC"
+export const tokenContractAddress="0x7Ab32181Bbecb72CE6a74D28737D08d4C25313EB"
 export const ownerAddress= "0x4009B868c9b432fA876b605edF2894963B0712FA"
 
 export const privateKey= "45dbead334d96a6936ba761a45441a01ecd35301e57884c22c24070928359b7b"
-export const alysRPCUrl = "http://btcalys.xyz:8545"
-export const fileSizeLimit = 3145728; //3MB in binary
-export const S3_BASE_URL = ""
+export const alysRPCUrl = "http://testnet.alyscan.io:8545"
+
 
 //native segwit
 export const outputSize = 31,
@@ -35,13 +36,13 @@ export const MOCK_MENOMIC = process.env.NEXT_PUBLIC_MOCK_MENOMIC ?? "";
 
 export const RECEIVER_ADDRESS = process.env.NEXT_PUBLIC_RECEIVER_ADDRESS ?? "";
 
-export const RPC_USERNAME = "marachain";
-export const RPC_PASSWORD = "marachain";
+export const RPC_USERNAME = "maracoordinate";
+export const RPC_PASSWORD = "GPdDdwv9HpjU7XWSN9LO8Ge1";
 
 export const FEERATE = 10;
 
 export const WALLET_URL =
-  "chrome-extension://khebhoaoppjeidmdkpdglmlhghnooijn/index.html";
+  "chrome-extension://mcfacbenbacpbeolcicbjdcliedflene/index.html";
 
 export const exampleJson = [
   {

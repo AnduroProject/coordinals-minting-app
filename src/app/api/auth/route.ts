@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 export async function GET() {
   //const token = tokens.create(secret);
   const token = generateRandomString(32);
-  console.log("====csrf token",token)
   // Set CSRF token as an HTTP-only cookie
   const response = NextResponse.json({ authToken: token });
   response.cookies.set("XSRF-TOKEN", token, { httpOnly: true });
@@ -21,7 +20,6 @@ function generateRandomString(length: number) {
 }
 
 export async function POST() {
-  console.log("====csrf remove")
 
   const response = NextResponse.json({ message: "Disconnected successfully" });
   response.cookies.set("XSRF-TOKEN", "", { httpOnly: true, expires: new Date(0), path: "/" });

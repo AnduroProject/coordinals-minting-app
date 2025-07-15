@@ -19,12 +19,12 @@ export async function prepareInputs(
   const inputs: utxo[] = [];
   let totalAmount = 0,
     index = 0;
-    console.log("====requiredAmount in prepare",requiredAmount)
+   // console.log("====requiredAmount in prepare",requiredAmount)
 
   while (totalAmount < requiredAmount) {
 
     if (index > utxos.length -1) {
-      console.log("====index",index)
+     // console.log("====index",index)
 
       throw new Error("Insufficient balance.");
       //toast.error("Insufficient balance.")
@@ -35,7 +35,7 @@ export async function prepareInputs(
     totalAmount += utxos[index].value;
     index++;
     requiredAmount += inputSize * feeRate;
-    console.log("====requiredAmount final in prepare",requiredAmount)
+   // console.log("====requiredAmount final in prepare",requiredAmount)
 
   }
   return {

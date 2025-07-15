@@ -19,6 +19,8 @@ interface FormState {
   setCollectionId: (collectionId: string) => void;
   supply: number;
   setSupply: (supply: number) => void;
+  decimal :number;
+  setDecimal :(decimal: number) => void;
   imageUrl: string;
   setImageUrl: (imageUrl: string) => void;
   txUrl: string;
@@ -39,6 +41,8 @@ const useFormState = create<FormState>((set) => ({
   setImageMime: (imageMime) => set({ imageMime }),
   supply: 1,
   setSupply: (supply) => set({ supply }),
+  decimal:0,
+  setDecimal:(decimal) => set({ decimal }),
   imageUrl: "",
   setImageUrl: (imageUrl) => set({ imageUrl }),
   description: "",

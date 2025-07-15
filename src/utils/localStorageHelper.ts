@@ -13,7 +13,7 @@ export function checkUsedUtxo(txid: string): boolean {
   if (typeof window === "undefined") return false;
 
   const usedUtxoString = localStorage.getItem(USED_UTXO_KEY);
-  console.log("🚀 ~ checkUsedUtxo ~ usedUtxoString:", usedUtxoString);
+ // console.log("🚀 ~ checkUsedUtxo ~ usedUtxoString:", usedUtxoString);
   if (!usedUtxoString) return false;
 
   const usedUtxo = JSON.parse(usedUtxoString);

@@ -86,7 +86,6 @@ const SingleCollectible = () => {
   };
   React.useEffect(() => {
     reset()
-    console.log("==addres", localStorage.getItem("address"))
     setToaddress(localStorage.getItem("address") || "")
   }, [walletState]);
 
@@ -102,7 +101,6 @@ const SingleCollectible = () => {
     const fetchCsrfToken = async () => {
       try {
         const response = await axios.get("/api/auth");
-        console.log("fetchCsrfToken.", response);
         setCsrfToken(response.data.authToken);
       } catch (error) {
         console.error("Failed to fetch CSRF token:", error);
@@ -119,7 +117,6 @@ const SingleCollectible = () => {
   }, [networkType]);
 
   React.useEffect(() => {
-    console.log("network type.", networkType);
     if (walletState.connectionState == "disconnected") {
       setError("Wallet is not connected.");
     }
@@ -138,6 +135,8 @@ const SingleCollectible = () => {
     }
     else {
       setnetworkType("")
+            router.push("/")
+
     }
 
   }, [walletState]);
@@ -225,32 +224,17 @@ const SingleCollectible = () => {
 
       // Call the mintToken function with the required data
       if (networkType === "Alys") {
-        console.log("network type,", networkType)
-        console.log("====contractAddress",)
-
         const token = await tokenId()
-        console.log("====TOKEN ID", token)
-        console.log("====TOKEN ID type", typeof (token.tokenId))
-
-
         mintId = token.tokenId + 1
-        console.log("====mintId", mintId)
-
-        console.log("====alysData", alysData)
-
         const response = await saveJsonData(alysData, mintId);
-        console.log("response====", response.message);
         const nftMintDetails = await nftMintInfo(toaddress, mintId)
-        console.log("---nftMintDetails", nftMintDetails)
-
 
         try {
           if (nftMintDetails.data.hash) {
-            console.log("Transaction is successful!!!" + '\n'
-              + "Transaction Hash:", nftMintDetails.data.hash + '\n'
-            )
+            // console.log("Transaction is successful!!!" + '\n'
+            //   + "Transaction Hash:", nftMintDetails.data.hash + '\n'
+            // )
             const mintingId = await storeTokenId(mintId)
-            console.log("===incrementID", mintingId)
             if (mintingId.data.error) {
               setError(mintingId.data.error)
               setStep(0);
@@ -274,20 +258,21 @@ const SingleCollectible = () => {
         } catch (error: any) {
           setIsLoading(false)
           setError("Transaction Failed")
-          console.error("Error decoding data:", error);
+          //console.error("Error decoding data:", error);
         }
       }
       else {
 
         const transactionResult = await mintToken(data, FEERATE);
-        console.log("🚀 ~ transactionResult:", transactionResult);
+        //console.log("🚀 ~ transactionResult:", transactionResult);
         if (transactionResult) {
           const result = await signAndSendTransaction({
             hex: transactionResult,
             transactionType: "normal",
 
-          }); console.log("🚀 ~ signAndSendTransaction  ~ res:", result);
-          console.log("🚀 ~   ~ res:", result.result);
+          }); 
+          //console.log("🚀 ~ signAndSendTransaction  ~ res:", result);
+         // console.log("🚀 ~   ~ res:", result.result);
 
           if (result && result.error) {
             const errorMessage = typeof result.error === "string"
@@ -506,11 +491,11 @@ const SingleCollectible = () => {
                 <p className="text-neutral100 text-lg2">
                   <p className="text-neutral100 text-xl flex flex-row items-center justify-center">
                     <a href={txUrl} target="_blank" className="text-brand">
-                      {networkType === "Coordinate" ? (
+                      {networkType === "Coordinate" &&
                         <p>View on Coordinate </p>
-                      ) : (
+ }  {networkType === "Alys" &&
                         <p>View  on Alys</p>
-                      )}                    </a>
+                      }                    </a>
                   </p>
                 </p>
               </div>

@@ -41,7 +41,7 @@ export async function  getFileFromS3(tokenId: string) {
         const s3 = new AWS.S3()
         const mintDataPromise = s3.getObject(payload).promise()
         const mintDataResponse = await mintDataPromise  
-        console.log('mintDataResponse', mintDataResponse)
+        // console.log('mintDataResponse', mintDataResponse)
         const mintData = JSON.parse(mintDataResponse.Body.toString('utf-8'))
         return mintData;
       } catch (error) {

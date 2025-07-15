@@ -7,12 +7,11 @@ import type { NextRequest } from 'next/server'
 
 
 export function middleware(request: NextRequest) {
-  console.log("===== MIDDLEWARE");
-  console.log("Middleware executed for:", request.url);
+  // console.log("===== MIDDLEWARE");
+  // console.log("Middleware executed for:", request.url);
   // Extract CSRF token from the cookie
   const userToken = request.cookies.get('XSRF-TOKEN')?.value;
 
-  console.log("++ USER TOKEN:", userToken);
 
   // Check if the token is missing
   if (!userToken || userToken === undefined) {

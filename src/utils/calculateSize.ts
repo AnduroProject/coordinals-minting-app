@@ -33,15 +33,12 @@ export async function calculateSize(
   // segwit address input size
 
     transactionSize += inputSize * psbt.data.inputs.length
-    console.log("====psbt.data.inputs.length",psbt.data.inputs.length)
-    console.log("====psbt.data.outputs.length",outputs.length)
-    console.log("====psbt.",data)
+
 
     for (let index = 0; index < outputs.length; index++) {
       transactionSize += 31
       
     }  
-    console.log("====psbt.data.")
 
       transactionSize += 2 // default size for asset type
       transactionSize += Buffer.from(data.headline, "utf8").byteLength
@@ -54,7 +51,6 @@ export async function calculateSize(
           , "base64").byteLength
         
       }
-  console.log("====outputSize",transactionSize)
   return transactionSize;
 }
 

@@ -27,15 +27,25 @@ export interface CollectionType {
   mintedCount: number;
 }
 
-export function fetchUtxos(address: string) {
-  return axios.post("/api/utxo", { address },).then((response) => {
-    return response.data.data;
-  })
-  .catch((error) => {
+
+export async function fetchUtxos(address: string): Promise<{ success: true, data: any } | { success: false, error: string }> {
+  try {
+    const response = await axios.post("/api/utxo", { address });
+
+    const name = response.data?.data?.name;
+
+    if (name === "Error") {
+      return { success: false, error: "Something went wrong" };
+    }
+
+    return { success: true, data: response.data.data };
+    
+  } catch (error) {
     console.error("Error in fetching utxo:", error);
-    throw error;
-  }); 
+    return { success: false, error: "Network or server error occurred" };
+  }
 }
+
 
 export function fetchTransactionHex(
   txId: string,
@@ -53,7 +63,6 @@ export function fetchTransactionHex(
 
 export function disconnectCookie() {
   return axios.post("/api/auth", ).then((response) => {
-    console.log("RESPONSE",response)
     return response;
   });
 }
@@ -72,15 +81,15 @@ export function sendTransactionHelper(transactionHex: string) {
     });
 }
 
-export function saveJsonData(jsonData: any,tokenId:number) {
-  console.log("tokenId== save=========",tokenId)
+export async function saveJsonData(jsonData: any,tokenId:number) {
 
-  return axios.post("/api/metaData", { jsonData, tokenId})
-    .then((response) => response.data)
-    .catch((error) => {
-      console.error("Error saving JSON:", error);
-      throw error;
-    });
+  try {
+    const response = await axios.post("/api/metaData", { jsonData, tokenId });
+    return response.data;
+  } catch (error) {
+    console.error("Error saving JSON:", error);
+    throw error;
+  }
 }
 
 
@@ -88,7 +97,6 @@ export function tokenId() {
 
   return axios.get("/api/tokenId")
   .then((response) =>  {
-    console.log("======response data",response.data)
     return response.data.data;
     })
     .catch((error) => {
@@ -98,7 +106,6 @@ export function tokenId() {
 }
 
 export function storeTokenId(tokenId: number) {
-  console.log("tokenId====store=======",tokenId)
  
   if (!tokenId) {
     throw new Error("tokenId is missing");
@@ -112,24 +119,20 @@ export function storeTokenId(tokenId: number) {
 }
 
 
-export function tokenTransferInfo(toAddress:string,supply:any) {
-  console.log("provider url =======")
-  return axios.post("/api/alysTokenTransfer", {toAddress,supply})
-  .then((response) =>  {
-    console.log("====provider==response ",response)
+export async function tokenTransferInfo(toAddress:string,supply:any) {
+  try {
+    const response = await axios.post("/api/alysTokenTransfer", { toAddress, supply });
     return response.data;
-    })
-    .catch((error) => {
-      console.error("Error in getting provider Info :", error);
-      throw error;
-    }); 
+  } catch (error) {
+    console.error("Error in getting provider Info :", error);
+    throw error;
+  } 
 }
 
 export function contractInfo(tokenContractAddress:string,tokenAbi:any) {
 
   return axios.post("/api/contractInfo", {tokenContractAddress,tokenAbi})
   .then((response) =>  {
-    console.log("====provider==response ",response)
     return response.data;
     })
     .catch((error) => {
@@ -137,16 +140,13 @@ export function contractInfo(tokenContractAddress:string,tokenAbi:any) {
       throw error;
     }); 
 }
-export function nftMintInfo(toAddress:string,mintId:number) {
-  console.log("nftMintInfo  =======")
+export async function nftMintInfo(toAddress:string,mintId:number) {
 
-  return axios.post("/api/alysNftMint", {toAddress,mintId})
-  .then((response) =>  {
-    console.log("====nftMintInfo==response ",response)
+  try {
+    const response = await axios.post("/api/alysNftMint", { toAddress, mintId });
     return response.data;
-    })
-    .catch((error) => {
-      console.error("Error in getting nftMint Info  :", error);
-      throw error;
-    }); 
+  } catch (error) {
+    console.error("Error in getting nftMint Info  :", error);
+    throw error;
+  } 
 }

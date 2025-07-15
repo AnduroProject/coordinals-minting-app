@@ -1,7 +1,6 @@
 import axios from "axios";
 import { utxo } from "@/types";
 import {
-  apiurl,
   alysBaseURL,
   maraUrl,
   RPC_PASSWORD,
@@ -42,7 +41,6 @@ export async function getBlockHash(height: number) {
     id: "curltest",
     params: [height],
   };
-  console.log("===response getBlockHash")
 
 
   const response = await axios.post(`${rpcUrl}:${rpcPort}`, body, {
@@ -50,7 +48,8 @@ export async function getBlockHash(height: number) {
       username: RPC_USERNAME ?? "",
       password: RPC_PASSWORD ?? "",
     },
-  }); console.log("===response getBlockHash response")
+  }); 
+  //console.log("===response getBlockHash response")
 
 
   return response.data;
@@ -112,7 +111,6 @@ export async function getTransactionHex(
 
 export async function getUtxos(address: string) {
   try{
-    console.log("=====utxo api 22222")
 
     const response = await axios.get(maraUrl + address);
 
@@ -139,9 +137,7 @@ export async function getUtxos(address: string) {
 export async function fetchTokenInstances(tokenAddress: string) {
    try {
     const url = `${alysBaseURL}/${tokenAddress}/instances`;
-    console.log("__URL", url)
     const response = await axios.get(url);
-    console.log("====response",response)
     return response.data;
   } catch (error:any) {
     console.error("Error fetching token instances:", error.response?.data);
@@ -150,21 +146,21 @@ export async function fetchTokenInstances(tokenAddress: string) {
 }
 
 
-export async function wishlist(params: any) {
-  const WHITELIST_ADDRESS = "unspents/whitelist"
-  try {
-    const response = await axios.post(apiurl, params, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    return response.data;
+// export async function wishlist(params: any) {
+//   const WHITELIST_ADDRESS = "unspents/whitelist"
+//   try {
+//     const response = await axios.post(apiurl, params, {
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//     });
+//     return response.data;
 
-  } catch (error) {
-    console.log("🚀 ~ wishlist ~ error:", error);
+//   } catch (error) {
+//     console.log("🚀 ~ wishlist ~ error:", error);
 
-  }
-}
+//   }
+// }
 
 export async function sendTransactionToRpc(transactionHex: string) {
   const body = {

@@ -13,13 +13,11 @@ import { getFileFromS3, uploadToS3 } from "@/lib/service/awshelper";
     // console.log("=====jsonData", jsonData);
 export async function GET(req: Request) {
   try {
-    console.log("=======get in tokenID");
 
     const mintData = await getFileFromS3("token_data")  
- 
     return NextResponse.json({ data: mintData }, { status: 200 });
   } catch (error: any) {
-    console.error('Error reading token file:', error);
+    // console.error('Error reading token file:', error);
     return NextResponse.json({ error: 'Failed to read token file' }, { status: 500 });
   }
 }
@@ -29,7 +27,6 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const { tokenId } = await req.json();
   try {
-    console.log("====token id to update", tokenId)
 
     let uploadResponse = await uploadToS3("token_data", { tokenId } )
 
@@ -38,11 +35,10 @@ export async function POST(req: Request) {
     // }
 
     // fs.writeFileSync(tokenFilePath, JSON.stringify({ tokenId }, null, 2));
-    console.log("uploadResponse", uploadResponse);
 
     return NextResponse.json({ message: "Token id updated successfully" }, { status: 200 });
   } catch (error) {
-    console.error("Error writing JSON file:", error);
+    //console.error("Error writing JSON file:", error);
     return NextResponse.json({ error: "Failed to update token id" }, { status: 500 });
   }
 }

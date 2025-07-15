@@ -11,7 +11,6 @@ export async function GET(
 
     const { mintId } = params;
 
-    console.log("inside metauri post mintId",mintId)
     if (!mintId) {
       return NextResponse.json({ error: "Mint ID is required" }, { status: 400 });    
     } 

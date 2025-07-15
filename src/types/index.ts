@@ -5,6 +5,7 @@ export type tokenData = {
   headline: string;
   ticker: string;
   supply: number;
+  precision?:number
 };
 export type alysAssetData = {
   name: string;
@@ -17,7 +18,8 @@ export type TokenInfo ={
   //address: string;
   name: string;
   symbol: string;
-  total_supply:string
+  total_supply:any
+  decimal:any
 }
 
 export type collectionData = {

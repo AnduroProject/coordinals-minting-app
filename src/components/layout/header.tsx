@@ -30,7 +30,7 @@ export default function Header() {
 
   const handleDisconnectionAction = async () => {
     const result = await disconnect();
-    console.log("*******Disconnect Result", result);
+   // console.log("*******Disconnect Result", result);
     if (result.status === true) {
       disconnectCookie()
       setWalletAddress("");
@@ -44,10 +44,10 @@ export default function Header() {
     }
   };
   const handleNetworkInfo = async () => {
-    console.log("******INITIALIZE RESULT inside")
+   // console.log("******INITIALIZE RESULT inside")
 
     const result = await networkInfo()
-    console.log("*******INITIALIZE RESULT", result)
+   // console.log("*******INITIALIZE RESULT", result)
 
     if (result.status === true) {
       localStorage.setItem("isWalletConnected", "true")
@@ -59,8 +59,8 @@ export default function Header() {
       toast.success(`Successfully connected`);
       //  localStorage.setItem("chainId", chain.toString())
       setIsWalletConnected("true")
-      console.log("wallet addres", walletAddress)
-      console.log(" result.result.chaiI", result.result.chainId)
+     // console.log("wallet addres", walletAddress)
+     // console.log(" result.result.chaiI", result.result.chainId)
     }
     else {
       localStorage.removeItem("isWalletConnected")
@@ -71,19 +71,14 @@ export default function Header() {
   }
 
   React.useEffect(() => {
-    console.log("walletAddress--------", walletAddress);
+   // console.log("walletAddress--------", walletAddress);
   }, [walletAddress]);
 
 
 
   React.useEffect(() => {
-    console.log("Connector Network Information", networkState);
-    console.log("Connector Wallet Information", walletState);
+   
     const walletconnection = localStorage.getItem("isWalletConnected")
-    console.log("======walletconnection ", walletconnection)
-    console.log("======address wallet ", walletAddress)
-
-
     if (walletState.connectionState == "disconnected" && walletconnection === "true") {
       setWalletAddress("");
       localStorage.removeItem("isWalletConnected")
@@ -91,7 +86,7 @@ export default function Header() {
 
     } else if (walletState.connectionState == "connected") {
 
-      console.log(" CHAIN", (Number(localStorage.getItem("chainId"))))
+      //console.log(" CHAIN", (Number(localStorage.getItem("chainId"))))
       const id = (Number(localStorage.getItem("chainId")))
       if (id === 6) {
         setWalletAddress(walletState.address);
@@ -105,7 +100,7 @@ export default function Header() {
 
   const openNetworkPopup = async () => {
     try {
-      console.log("====chainIDDD", chainId)
+     // console.log("====chainIDDD", chainId)
       if (Number(localStorage.getItem("chainId")) != 0) {
         setIsOpenNetworkPopup(false)
         handleNetworkInfo()
@@ -117,33 +112,33 @@ export default function Header() {
       toast.error(`Error when connecting wallet`);
       setIsConnecting(false);
       setWalletAddress("");
-      console.log(error);
+      //console.log(error);
     }
   };
 
   const handleLogin = async () => {
     try {
-      console.log("=========login chain", chainId)
+   //   console.log("=========login chain", chainId)
       if (chainId > 0) {
         //  setError("")
-        console.log("======wallet url", WALLET_URL, chainId)
+       // console.log("======wallet url", WALLET_URL, chainId)
         const response = await connect({
           chainId: chainId,
           walletURL: WALLET_URL,
         });
 
-        console.log("🚀 ~ handleLogin ~ response:", response);
+      //  console.log("🚀 ~ handleLogin ~ response:", response);
         if (response.status == true) {
           setIsOpenNetworkPopup(false)
 
-          console.log(
-            "🚀 ~ handleLogin ~ response.result.accountPublicKey:",
-            response.result.accountPublicKey,
-          );
-          console.log("cCHAIN ID", chainId)
+          // console.log(
+          //   "🚀 ~ handleLogin ~ response.result.accountPublicKey:",
+          //   response.result.accountPublicKey,
+          // );
+         // console.log("cCHAIN ID", chainId)
           if (chainId === 6) {
             const walletAddress = response.result.address;
-            console.log("walletAddress", walletAddress)
+          //  console.log("walletAddress", walletAddress)
             setWalletAddress(walletAddress);
 
             localStorage.setItem("connectedAddress", walletAddress);
@@ -178,7 +173,7 @@ export default function Header() {
       toast.error(`Error when connecting wallet`);
       setIsConnecting(false);
       setWalletAddress("");
-      console.log(error);
+      //console.log(error);
     }
   };
 
