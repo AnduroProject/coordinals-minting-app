@@ -42,7 +42,7 @@ export const RPC_PASSWORD = "GPdDdwv9HpjU7XWSN9LO8Ge1";
 export const FEERATE = 10;
 
 export const WALLET_URL =
-  "chrome-extension://mcfacbenbacpbeolcicbjdcliedflene/index.html";
+  "chrome-extension://khebhoaoppjeidmdkpdglmlhghnooijn/index.html";
 
 export const exampleJson = [
   {

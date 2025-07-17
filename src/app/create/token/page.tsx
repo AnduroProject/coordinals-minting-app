@@ -169,7 +169,6 @@ const SingleToken = () => {
   };
 
   const handleTokenDecimalChange = (value: any) => {
-    console.log("---value",value)
     if (!/^\d+$/.test(value) && value.toString().trim() !== "") {
       return
     }
@@ -190,8 +189,7 @@ const SingleToken = () => {
 
   const validateForm = (inputData: FormInputData): { isValid: boolean; error?: string } => {
     const { headline, ticker, imageUrl, supply } = inputData;
-    console.log("type of no====", typeof (supply))
-    console.log("==network type", networkType)
+  
     let supply_range = 21 * 1e14 // 2100000000000000
     if (networkType === "Coordinate") {
 
@@ -230,7 +228,6 @@ const SingleToken = () => {
     //   }
     // }
     if (supply <= 0) {
-      console.log("supply====")
       return {
         isValid: false,
         error: "Provide valid supply",
@@ -244,8 +241,7 @@ const SingleToken = () => {
       }
     }
     const numericSupply = Number(supply);
-    console.log("==supply test===",supply)
-    console.log("=numericSupply===",numericSupply)
+   
 
     if (
       isNaN(numericSupply) ||
@@ -273,10 +269,7 @@ const SingleToken = () => {
   
 
     
-    console.log("TOKEN CALCUl:", supply * 10 ** tokenData?.decimal)
     //Number(tokenData?.total_supply));
-    console.log("Token supply:", Number(tokenData?.total_supply));
-    console.log("Token supply supply:", supply);
 
     if ((supply *10 ** tokenData?.decimal > Number(tokenData?.total_supply) && networkType === "Alys") ||
       (supply > 100 && networkType === "Alys")) 
@@ -307,7 +300,6 @@ const SingleToken = () => {
       imageUrl,
       supply
     };
-    console.log("===supply",supply)
 
     const validationResult = validateForm(inputData);
 
@@ -338,12 +330,8 @@ const SingleToken = () => {
 
     try {
       if (networkType === "Alys") {
-        console.log("====contractAddress", tokenContractAddress)
-          console.log("----toaddress", toaddress)          
-          console.log("----supply to transfer", supply)
-
+     
         const tokenTranferDetails = await tokenTransferInfo(toaddress,supply)
-        console.log("---provider", tokenTranferDetails)
         
 
         try {
@@ -371,7 +359,7 @@ const SingleToken = () => {
             hex: transactionResult,
             transactionType: "normal",
           }); 
-          console.log("🚀 ~ sendTransactionresult ~ res:", result);
+          //console.log("🚀 ~ sendTransactionresult ~ res:", result);
 
           if (result && result.error) {
             const errorMessage = typeof result.error === "string"
@@ -394,7 +382,7 @@ const SingleToken = () => {
         }
       }
     } catch (error: any) {
-      console.log("🚀 ~ handleSubmit ~ error:", error);
+     // console.log("🚀 ~ handleSubmit ~ error:", error);
       if (error.message.includes('Insufficient funds')) {
         const err = 'Insufficient funds for this transaction';
         setError(err)
