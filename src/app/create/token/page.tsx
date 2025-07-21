@@ -653,7 +653,7 @@ const SingleToken = () => {
                 </div>
               </div>
               <div className="flex flex-row items-center justify-center">
-                <p className="text-neutral100 text-xl flex flex-row items-center justify-center">
+                <div className="text-neutral100 text-xl flex flex-row items-center justify-center">
                   <a href={txUrl} target="_blank" className="text-brand">
                     {networkType === "Coordinate" && 
                       <p>View on Coordinate </p>
@@ -662,7 +662,7 @@ const SingleToken = () => {
                       <p>View  on Alys</p>
                     }
                   </a>
-                </p>
+                </div>
               </div>
               <div className="flex flex-row gap-8">
                 <ButtonOutline

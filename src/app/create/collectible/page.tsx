@@ -488,16 +488,16 @@ const SingleCollectible = () => {
                 </div>
               </div>
               <div className="">
-                <p className="text-neutral100 text-lg2">
-                  <p className="text-neutral100 text-xl flex flex-row items-center justify-center">
+                <div className="text-neutral100 text-lg2">
+                  <div className="text-neutral100 text-xl flex flex-row items-center justify-center">
                     <a href={txUrl} target="_blank" className="text-brand">
                       {networkType === "Coordinate" &&
                         <p>View on Coordinate </p>
  }  {networkType === "Alys" &&
                         <p>View  on Alys</p>
                       }                    </a>
-                  </p>
-                </p>
+                  </div>
+                </div>
               </div>
               <div className="flex flex-row gap-8">
                 <ButtonOutline
