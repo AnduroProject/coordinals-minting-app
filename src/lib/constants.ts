@@ -8,8 +8,6 @@ export const rpcUrl = "http://seed3.coordinate.mara.technology",
 //export const apiurl= "http://192.168.1.112:4001/unspents/whitelist";
 //export const apiurl= "http://btc-testnet-wallet.mara.technology:9130/unspents/whitelist";
 //export const apiurl= "http://192.168.1.140:4001/unspents/whitelist";
-
- 
 export const alysBaseURL = "http://testnet.alyscan.io/api/v2/tokens";
 export const appBaseUrl = "http://localhost:3000/";
 export const nftContractAddress= "0xE62017E5D7C2583F16dB70573a7aaDdf415567fC"
