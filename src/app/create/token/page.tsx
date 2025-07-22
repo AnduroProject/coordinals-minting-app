@@ -104,7 +104,9 @@ const SingleToken = () => {
     }
     else {
       setnetworkType("")
-      router.push("/")
+     if (step ===1) {
+       router.push("/")
+      }
     }
   }, [walletState]);
 

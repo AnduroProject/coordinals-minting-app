@@ -125,6 +125,7 @@ const SingleCollectible = () => {
     }
     const chainId = localStorage.getItem("chainId")
     const walletconnection = localStorage.getItem("isWalletConnected")
+
     if (walletconnection === "true") {
       if (chainId === "5") {
         setnetworkType("Coordinate")
@@ -135,8 +136,9 @@ const SingleCollectible = () => {
     }
     else {
       setnetworkType("")
-            router.push("/")
-
+      if (step ===1) {
+       router.push("/")
+      }
     }
 
   }, [walletState]);
