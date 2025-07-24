@@ -1,8 +1,8 @@
-import { getUtxos } from "@/utils/libs";
-import { NextResponse } from "next/server";
+import { getUtxos } from '@/utils/libs';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
-  console.log("=====utxo api")
+  console.log('=====utxo api');
   const { address } = await req.json();
   try {
     const response = await getUtxos(address);
@@ -15,4 +15,3 @@ export async function POST(req: Request) {
     });
   }
 }
-

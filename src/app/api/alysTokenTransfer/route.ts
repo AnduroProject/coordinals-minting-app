@@ -1,38 +1,44 @@
-import { alysRPCUrl, privateKey, tokenContractAddress } from "@/lib/constants";
-import { tokenAbi } from "@/utils/tokenAbi";
-import { ethers } from "ethers";
-import { NextResponse } from "next/server";
+import { alysRPCUrl, privateKey, tokenContractAddress } from '@/lib/constants';
+import { tokenAbi } from '@/utils/tokenAbi';
+import { ethers } from 'ethers';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
-    const { toAddress,supply } = await req.json();
-    try {
-      const provider = new ethers.JsonRpcProvider(alysRPCUrl)
-      const signer = new ethers.Wallet(privateKey, provider)
-      const nonces = await provider.getTransactionCount(signer.address, "pending")
-      const contract = new ethers.Contract(tokenContractAddress, tokenAbi, signer);
-  
-      const gasPrice = (await provider.getFeeData()).gasPrice
-      
-       const  value = ethers.parseUnits(supply.toString(), 8)
+  const { toAddress, supply } = await req.json();
+  try {
+    const provider = new ethers.JsonRpcProvider(alysRPCUrl);
+    const signer = new ethers.Wallet(privateKey, provider);
+    const nonces = await provider.getTransactionCount(
+      signer.address,
+      'pending',
+    );
+    const contract = new ethers.Contract(
+      tokenContractAddress,
+      tokenAbi,
+      signer,
+    );
 
-      const gethex = await contract.transfer(
-        toAddress,
-        value,
-        //ethers.parseEther(supply.toString()),
-        {
-          chainId: "727272",
-          gasPrice: gasPrice,
-          nonce: nonces,
-        },
-      )
+    const gasPrice = (await provider.getFeeData()).gasPrice;
 
-      return NextResponse.json({ status: 200, data: gethex, message: null });
-    } catch (error) {
-      return NextResponse.json({
-        status: 500,
-        data: null,
-        message: error,
-      });
-    }
+    const value = ethers.parseUnits(supply.toString(), 8);
+
+    const gethex = await contract.transfer(
+      toAddress,
+      value,
+      //ethers.parseEther(supply.toString()),
+      {
+        chainId: '727272',
+        gasPrice: gasPrice,
+        nonce: nonces,
+      },
+    );
+
+    return NextResponse.json({ status: 200, data: gethex, message: null });
+  } catch (error) {
+    return NextResponse.json({
+      status: 500,
+      data: null,
+      message: error,
+    });
   }
-  
+}

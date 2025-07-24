@@ -1,36 +1,35 @@
-"use client";
+'use client';
 
-import React, { useRef, useState } from "react";
-import Header from "@/components/layout/header";
-import Banner from "@/components/section/banner";
-import ButtonLg from "@/components/ui/buttonLg";
-import Input from "@/components/ui/input";
-import ButtonOutline from "@/components/ui/buttonOutline";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { mintToken } from "@/utils/mint";
-import Layout from "@/components/layout/layout";
+import React, { useRef, useState } from 'react';
+import Header from '@/components/layout/header';
+import Banner from '@/components/section/banner';
+import ButtonLg from '@/components/ui/buttonLg';
+import Input from '@/components/ui/input';
+import ButtonOutline from '@/components/ui/buttonOutline';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { mintToken } from '@/utils/mint';
+import Layout from '@/components/layout/layout';
+import { ASSETTYPE, FEERATE, RECEIVER_ADDRESS } from '@/lib/constants';
+import { alysAssetData, tokenData } from '@/types';
+import useFormState from '@/lib/store/useFormStore';
+import { toast } from 'sonner';
+import { useConnector } from 'anduro-wallet-connector-react';
+import { nftAbi } from '@/utils/nftAbi';
 import {
-  ASSETTYPE,
-  FEERATE,
-  RECEIVER_ADDRESS,
+  nftMintInfo,
+  saveJsonData,
+  storeTokenId,
+  tokenId,
+} from '@/lib/service/fetcher';
+import { CloseCircle, Copy } from 'iconsax-react';
+import { convertToSubstring } from '@/lib/utils';
+import axios from 'axios';
 
-} from "@/lib/constants";
-import { alysAssetData, tokenData } from "@/types";
-import useFormState from "@/lib/store/useFormStore";
-import { toast } from "sonner";
-import { useConnector } from "anduro-wallet-connector-react";
-import { nftAbi } from "@/utils/nftAbi";
-import { nftMintInfo, saveJsonData, storeTokenId, tokenId, } from "@/lib/service/fetcher";
-import { CloseCircle, Copy } from "iconsax-react";
-import { convertToSubstring } from "@/lib/utils";
-import axios from "axios";
-
-const stepperData = ["Upload", "Confirm"];
+const stepperData = ['Upload', 'Confirm'];
 const SingleCollectible = () => {
   const router = useRouter();
-  const [networkType, setnetworkType] =
-    React.useState<string>("")
+  const [networkType, setnetworkType] = React.useState<string>('');
   const { walletState, signAndSendTransaction, mintAlysAsset } =
     React.useContext<any>(useConnector);
 
@@ -50,19 +49,19 @@ const SingleCollectible = () => {
     reset,
   } = useFormState();
 
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState<string>('');
   const [step, setStep] = useState<number>(0);
   const [response, setResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [toaddress, setToaddress] = useState<string>("");
+  const [toaddress, setToaddress] = useState<string>('');
 
-  const [showImage, setShowImage] = React.useState(false)
+  const [showImage, setShowImage] = React.useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isCopied, setIsCopied] = useState(false);
-  const [txid, setTxid] = useState<string>("");
+  const [txid, setTxid] = useState<string>('');
   const [imgSrc, setImgSrc] = useState('');
   const [csrfToken, setCsrfToken] = useState(null);
-    const fetchCalled = useRef(false);
+  const fetchCalled = useRef(false);
 
   interface FormInputData {
     headline: string;
@@ -70,11 +69,11 @@ const SingleCollectible = () => {
     imageUrl: string;
   }
   const handleDelete = (): void => {
-    setImageUrl("")
+    setImageUrl('');
     setImgSrc('');
-    setShowImage(false)
+    setShowImage(false);
     setErrorMessage('');
-  }
+  };
 
   const handleImageError = () => {
     setImgSrc('/default_asset_image.png');
@@ -85,14 +84,14 @@ const SingleCollectible = () => {
     setErrorMessage('');
   };
   React.useEffect(() => {
-    reset()
-    setToaddress(localStorage.getItem("address") || "")
-  }, [walletState]);
+    reset();
+    setToaddress(localStorage.getItem('address') || '');
+  }, [walletState, reset]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(txid).then(() => {
       setIsCopied(true);
-      toast.success("Copied!");
+      toast.success('Copied!');
       setTimeout(() => setIsCopied(false), 3000);
     });
   };
@@ -100,85 +99,82 @@ const SingleCollectible = () => {
   React.useEffect(() => {
     const fetchCsrfToken = async () => {
       try {
-        const response = await axios.get("/api/auth");
+        const response = await axios.get('/api/auth');
         setCsrfToken(response.data.authToken);
       } catch (error) {
-        console.error("Failed to fetch CSRF token:", error);
+        console.error('Failed to fetch CSRF token:', error);
       }
-    };  
-    if (networkType !== "") {
+    };
+    if (networkType !== '') {
       fetchCsrfToken();
     }
 
     // if (!fetchCalled.current && csrfToken === null) {
-    //   fetchCalled.current = true; 
-    
+    //   fetchCalled.current = true;
+
     // }
   }, [networkType]);
 
   React.useEffect(() => {
-    if (walletState.connectionState == "disconnected") {
-      setError("Wallet is not connected.");
+    console.log('======router check');
+    if (walletState.connectionState == 'disconnected') {
+      setError('Wallet is not connected.');
+    } else {
+      setError('');
     }
-    else {
-      setError("");
-    }
-    const chainId = localStorage.getItem("chainId")
-    const walletconnection = localStorage.getItem("isWalletConnected")
+    const chainId = localStorage.getItem('chainId');
+    const walletconnection = localStorage.getItem('isWalletConnected');
 
-    if (walletconnection === "true") {
-      if (chainId === "5") {
-        setnetworkType("Coordinate")
-      } else if (chainId === "6") {
-        setnetworkType("Alys")
-
+    if (walletconnection === 'true') {
+      if (chainId === '5') {
+        setnetworkType('Coordinate');
+      } else if (chainId === '6') {
+        setnetworkType('Alys');
+      }
+    } else {
+      setnetworkType('');
+      if (step === 1) {
+        router.push('/');
       }
     }
-    else {
-      setnetworkType("")
-      if (step ===1) {
-       router.push("/")
-      }
-    }
+  }, [walletState, step, router]);
 
-  }, [walletState]);
-
-
-
-  const validateForm = (inputData: FormInputData): { isValid: boolean; error?: string } => {
+  const validateForm = (
+    inputData: FormInputData,
+  ): { isValid: boolean; error?: string } => {
     const { headline, ticker, imageUrl } = inputData;
 
     if (headline.trim().length === 0) {
-      return { isValid: false, error: "Headline is not provided." };
+      return { isValid: false, error: 'Headline is not provided.' };
     }
     if (headline.trim().length > 50) {
-      return { isValid: false, error: "Headline should be 50 characters long." };
+      return {
+        isValid: false,
+        error: 'Headline should be 50 characters long.',
+      };
     }
     if (ticker.trim().length === 0) {
-      return { isValid: false, error: "Ticker is not provided." };
+      return { isValid: false, error: 'Ticker is not provided.' };
     }
     if (ticker.trim().length > 7) {
-      return { isValid: false, error: "Ticker should be 7 characters long." };
+      return { isValid: false, error: 'Ticker should be 7 characters long.' };
     }
     if (/[^a-zA-Z]/.test(ticker)) {
       return {
         isValid: false,
-        error: "Ticker  contains special characters, numbers, or spaces that are not allowed",
-      }
+        error:
+          'Ticker  contains special characters, numbers, or spaces that are not allowed',
+      };
     }
-    if (imageUrl.trim() === "") {
-      return { isValid: false, error: "Image is not provided." };
+    if (imageUrl.trim() === '') {
+      return { isValid: false, error: 'Image is not provided.' };
     }
     if (errorMessage) {
       return { isValid: false };
-
     }
 
     return { isValid: true };
   };
-
-
-
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -191,13 +187,11 @@ const SingleCollectible = () => {
     };
     const validationResult = validateForm(inputData);
     if (!validationResult.isValid) {
-      setError(validationResult.error || "Provide valid data");
+      setError(validationResult.error || 'Provide valid data');
       setIsLoading(false);
       return;
-    }
-
-    else {
-      setError("");
+    } else {
+      setError('');
     }
 
     const opReturnValues = [
@@ -220,107 +214,96 @@ const SingleCollectible = () => {
       symbol: ticker,
       image: imageUrl,
       supply: 1,
-
     };
     try {
-
       // Call the mintToken function with the required data
-      if (networkType === "Alys") {
-        const token = await tokenId()
-        mintId = token.tokenId + 1
+      if (networkType === 'Alys') {
+        const token = await tokenId();
+        mintId = token.tokenId + 1;
         const response = await saveJsonData(alysData, mintId);
-        const nftMintDetails = await nftMintInfo(toaddress, mintId)
+        const nftMintDetails = await nftMintInfo(toaddress, mintId);
 
         try {
           if (nftMintDetails.data.hash) {
             // console.log("Transaction is successful!!!" + '\n'
             //   + "Transaction Hash:", nftMintDetails.data.hash + '\n'
             // )
-            const mintingId = await storeTokenId(mintId)
+            const mintingId = await storeTokenId(mintId);
             if (mintingId.data.error) {
-              setError(mintingId.data.error)
+              setError(mintingId.data.error);
               setStep(0);
               setIsLoading(false);
-            }else{
-              setTxid(nftMintDetails.data.hash)
-              setTxUrl("http://testnet.alyscan.io/tx/" + nftMintDetails.data.hash)
-              setError("")
+            } else {
+              setTxid(nftMintDetails.data.hash);
+              setTxUrl(
+                'http://testnet.alyscan.io/tx/' + nftMintDetails.data.hash,
+              );
+              setError('');
               setStep(1);
               setIsLoading(false);
             }
-          
-          }
-
-          else {
-            setError("Transaction Failed")
+          } else {
+            setError('Transaction Failed');
             setStep(0);
             setIsLoading(false);
-
           }
         } catch (error: any) {
-          setIsLoading(false)
-          setError("Transaction Failed")
+          setIsLoading(false);
+          setError('Transaction Failed');
           //console.error("Error decoding data:", error);
         }
-      }
-      else {
-
+      } else {
         const transactionResult = await mintToken(data, FEERATE);
         //console.log("🚀 ~ transactionResult:", transactionResult);
         if (transactionResult) {
           const result = await signAndSendTransaction({
             hex: transactionResult,
-            transactionType: "normal",
-
-          }); 
+            transactionType: 'normal',
+          });
           //console.log("🚀 ~ signAndSendTransaction  ~ res:", result);
-         // console.log("🚀 ~   ~ res:", result.result);
+          // console.log("🚀 ~   ~ res:", result.result);
 
           if (result && result.error) {
-            const errorMessage = typeof result.error === "string"
-              ? result.error
-              : result.error.result || "An error occurred";
-            setError(errorMessage)
-            toast.error(errorMessage)
+            const errorMessage =
+              typeof result.error === 'string'
+                ? result.error
+                : result.error.result || 'An error occurred';
+            setError(errorMessage);
+            toast.error(errorMessage);
             setStep(0);
             setIsLoading(false);
           } else {
-            setError("")
+            setError('');
             setStep(1);
-            setTxid(result.result)
-            setTxUrl("https://testnet.coordiscan.io/tx/" + result.result)
+            setTxid(result.result);
+            setTxUrl('https://testnet.coordiscan.io/tx/' + result.result);
             setIsLoading(false);
-
           }
         }
       }
-
     } catch (error: any) {
-      setError(error.message || "An error occurred");
+      setError(error.message || 'An error occurred');
       //toast.error(error.message || "An error occurred");
       return setIsLoading(false);
     }
   };
 
-
   const triggerRefresh = () => {
     setStep(0);
     //reset();
-    router.push("/create/collectible");
+    router.push('/create/collectible');
     reset();
-
   };
 
   const getTitle = (step: any, networktype: any) => {
     if (step === 0) {
-      if (networktype === "Coordinate" || networktype === "Alys") return "Create Collectible";
-
+      if (networktype === 'Coordinate' || networktype === 'Alys')
+        return 'Create Collectible';
+    } else if (step === 1) {
+      if (networktype === 'Coordinate' || networktype === 'Alys')
+        return 'Collectible created successfully';
     }
-    else if (step === 1) {
-      if (networktype === "Coordinate" || networktype === "Alys") return "Collectible created successfully";
-
-    }
-    return ""
+    return '';
   };
   return (
     <Layout>
@@ -328,7 +311,7 @@ const SingleCollectible = () => {
         <div className="w-full flex flex-col items-center gap-16 z-50">
           <Banner
             title={getTitle(step, networkType)}
-            image={"/background-2.png"}
+            image={'/background-2.png'}
             setStep={step}
             stepperData={stepperData}
           />
@@ -354,7 +337,6 @@ const SingleCollectible = () => {
                       text="Collectable name"
                       value={headline}
                       onChange={(e) => setHeadline(e.target.value)}
-
                     />
 
                     <Input
@@ -362,10 +344,9 @@ const SingleCollectible = () => {
                       text="Collectable ticker"
                       value={ticker}
                       onChange={(e) => {
-                        setTicker(e.target.value)
-                        setError("")
+                        setTicker(e.target.value);
+                        setError('');
                       }}
-
                     />
 
                     <Input
@@ -376,13 +357,12 @@ const SingleCollectible = () => {
                         setImageUrl(e.target.value);
                         setImgSrc(e.target.value);
                         setErrorMessage('');
-                        setError("")
+                        setError('');
                       }}
                     />
                     <div className="mt-2.5">
                       {imageUrl && (
                         <div className="relative inline-block">
-
                           <img
                             src={imgSrc}
                             alt="Token Logo Preview"
@@ -396,7 +376,10 @@ const SingleCollectible = () => {
                             onError={handleImageError}
                           />
                           {showImage ? (
-                            <button onClick={handleDelete} className="absolute -top-2.5 -right-2.5 bg-background rounded-full">
+                            <button
+                              onClick={handleDelete}
+                              className="absolute -top-2.5 -right-2.5 bg-background rounded-full"
+                            >
                               <CloseCircle size={30} color="#F8F9FA" />
                             </button>
                           ) : (
@@ -427,25 +410,25 @@ const SingleCollectible = () => {
                     )}
                   </div>
                 } */}
-                {
-                  walletState.connectionState == "connected" ?
-                    <div className="w-full flex flex-row gap-8">
-                      <ButtonOutline
-                        title="Back"
-                        onClick={() => {
-                          router.push("/")
-                          reset();
-                        }}
-                      />
-                      <ButtonLg
-                        type="submit"
-                        isSelected={true}
-                        isLoading={isLoading}
-                        disabled={isLoading}
-                      >
-                        {isLoading ? "...loading" : "Continue"}
-                      </ButtonLg>
-                    </div> : null}
+                {walletState.connectionState == 'connected' ? (
+                  <div className="w-full flex flex-row gap-8">
+                    <ButtonOutline
+                      title="Back"
+                      onClick={() => {
+                        router.push('/');
+                        reset();
+                      }}
+                    />
+                    <ButtonLg
+                      type="submit"
+                      isSelected={true}
+                      isLoading={isLoading}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? '...loading' : 'Continue'}
+                    </ButtonLg>
+                  </div>
+                ) : null}
               </div>
               <div className="text-red-500">{error}</div>
             </form>
@@ -456,7 +439,7 @@ const SingleCollectible = () => {
                 {/* {networkType === "Coordinate" && */}
                 <img
                   src={imgSrc}
-                  //alt="background"
+                  alt="background"
                   width={0}
                   height={160}
                   sizes="100%"
@@ -466,7 +449,7 @@ const SingleCollectible = () => {
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3">
                     <p className="text-xl text-neutral50 font-bold">
-                      Name:  {headline}
+                      Name: {headline}
                     </p>
                     <p className="text-xl text-neutral50 font-bold">
                       Symbol : {ticker}
@@ -478,8 +461,11 @@ const SingleCollectible = () => {
                       Tx Id : {convertToSubstring(txid, 6, 4)}
                       <button
                         onClick={handleCopy}
-                        className={`text-brand p-1 hover:bg-gray-100 rounded ${isCopied ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                          }`}
+                        className={`text-brand p-1 hover:bg-gray-100 rounded ${
+                          isCopied
+                            ? 'cursor-not-allowed opacity-50'
+                            : 'cursor-pointer'
+                        }`}
                         disabled={isCopied}
                         aria-label="Copy transaction link"
                       >
@@ -493,18 +479,18 @@ const SingleCollectible = () => {
                 <div className="text-neutral100 text-lg2">
                   <div className="text-neutral100 text-xl flex flex-row items-center justify-center">
                     <a href={txUrl} target="_blank" className="text-brand">
-                      {networkType === "Coordinate" &&
+                      {networkType === 'Coordinate' && (
                         <p>View on Coordinate </p>
- }  {networkType === "Alys" &&
-                        <p>View  on Alys</p>
-                      }                    </a>
+                      )}{' '}
+                      {networkType === 'Alys' && <p>View on Alys</p>}{' '}
+                    </a>
                   </div>
                 </div>
               </div>
               <div className="flex flex-row gap-8">
                 <ButtonOutline
                   title="Go home"
-                  onClick={() => router.push("/")}
+                  onClick={() => router.push('/')}
                 />
                 <ButtonLg
                   type="submit"

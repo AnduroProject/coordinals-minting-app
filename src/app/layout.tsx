@@ -1,20 +1,20 @@
-import WalletConnecProvider from "@/components/provider/wallet-connect-provider";
-import type { Metadata } from "next";
-import { Bai_Jamjuree } from "next/font/google";
-import "./globals.css";
+import WalletConnecProvider from '@/components/provider/wallet-connect-provider';
+import type { Metadata } from 'next';
+import { Bai_Jamjuree } from 'next/font/google';
+import './globals.css';
 // import WalletConnecProvider from "@/components/layout/wallet-connect-provider";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from '@/components/ui/toaster';
 
 const bai_Jamjuree = Bai_Jamjuree({
-  weight: ["400", "700"],
-  style: "normal",
-  subsets: ["latin"],
+  weight: ['400', '700'],
+  style: 'normal',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Coordinals",
-  description: "Coordinals minting app - For creating coordinate and Alys assets",
-
+  title: 'Coordinals',
+  description:
+    'Coordinals minting app - For creating coordinate and Alys assets',
 };
 
 export default function RootLayout({

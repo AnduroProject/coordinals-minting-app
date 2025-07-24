@@ -1,44 +1,37 @@
-import * as coordinate from "chromajs-lib";
+import * as coordinate from 'chromajs-lib';
 
-import {  tokenData, utxo } from "@/types";
+import { tokenData, utxo } from '@/types';
 
-const schnorr = require("bip-schnorr");
+const schnorr = require('bip-schnorr');
 const convert = schnorr.convert;
-import ecc from "@bitcoinerlab/secp256k1";
-import * as bip39 from "bip39";
-import BIP32Factory from "bip32";
+import ecc from '@bitcoinerlab/secp256k1';
+import * as bip39 from 'bip39';
+import BIP32Factory from 'bip32';
 const bip32 = BIP32Factory(ecc);
-import * as chroma from "chromajs-lib"
-import { calculateSize, convertToSAT, getChainInstance, getNetwork, } from "./calculateSize";
+import * as chroma from 'chromajs-lib';
 import {
-  fetchUtxos,
-  
-} from "@/lib/service/fetcher";
-
+  calculateSize,
+  convertToSAT,
+  getChainInstance,
+  getNetwork,
+} from './calculateSize';
+import { fetchUtxos } from '@/lib/service/fetcher';
 
 export const convertDataToSha256Hex = (value: any) => {
-  return convert.hash(Buffer.from(value, "utf8")).toString("hex");
+  return convert.hash(Buffer.from(value, 'utf8')).toString('hex');
 };
 
 export const stringtoHex = (value: any) => {
-  const buffer = Buffer.from(value, "utf8");
-  const hexString = buffer.toString("hex");
+  const buffer = Buffer.from(value, 'utf8');
+  const hexString = buffer.toString('hex');
   return hexString;
 };
 
-
-
-export async function mintToken(
-  data: tokenData,
-  feeRate: number,
-) {
-
-
-  const walletxpub = localStorage.getItem("xpubkey") || "";
+export async function mintToken(data: tokenData, feeRate: number) {
+  const walletxpub = localStorage.getItem('xpubkey') || '';
   const acc = bip32.fromBase58(walletxpub, coordinate.networks.testnet);
-  const node = acc.derive(0)
+  const node = acc.derive(0);
   const destNode = acc.derive(2);
-
 
   const opreturnData = JSON.stringify(data.opReturnValues);
   const payloadHex = convertDataToSha256Hex(opreturnData);
@@ -58,14 +51,14 @@ export async function mintToken(
   let unspents: utxo[] = [];
 
   if (result.success) {
-    unspents = result.data; 
-  //  console.log("UTXO fetch error:", unspents);
+    unspents = result.data;
+    //  console.log("UTXO fetch error:", unspents);
     // Handle error UI or fallback
   } else {
-   // console.error("UTXOs fetch error::", result.error);
-    throw { message:result.error};
+    // console.error("UTXOs fetch error::", result.error);
+    throw { message: result.error };
   }
-  
+
   // Fetch available UTXOs for the given xpub
   //let unspents: utxo[] = await fetchUtxos(walletxpub);
   // try {
@@ -74,24 +67,21 @@ export async function mintToken(
   // } catch (err:any) {
   //   console.error("Failed to fetch UTXOs:", err.message);
   // }
-  
- // console.log("🚀 ~ utxos: 111", unspents);
+
+  // console.log("🚀 ~ utxos: 111", unspents);
 
   unspents.sort((a, b) => b.value - a.value);
-  const utxos: utxo[] = []
+  const utxos: utxo[] = [];
   for (let i = 0; i < unspents.length; i++) {
-    const unspent = unspents[i]
-    if (!unspent.coinbase) utxos.push(unspent)
-    if (
-      unspent.coinbase &&
-      unspent.confirmations >= 10
-    ) {
-      utxos.push(unspent)
+    const unspent = unspents[i];
+    if (!unspent.coinbase) utxos.push(unspent);
+    if (unspent.coinbase && unspent.confirmations >= 10) {
+      utxos.push(unspent);
     }
   }
 
   if (utxos.length === 0) {
-    throw { message: "Insufficient funds" };
+    throw { message: 'Insufficient funds' };
   }
   const outputs: Array<{ address: string; value: number }> = [];
 
@@ -99,12 +89,11 @@ export async function mintToken(
   let requiredAmount = 0;
   let selectedUtxos: utxo[] = [];
   let totalInputValue = 0;
-  let changeAmount = 0
+  let changeAmount = 0;
   const controllerAddress = coordinate.payments.p2wpkh({
     pubkey: node.publicKey,
     network: coordinate.networks.testnet,
   }).address;
-
 
   const toAddress = coordinate.payments.p2wpkh({
     pubkey: destNode.publicKey,
@@ -112,23 +101,20 @@ export async function mintToken(
   }).address;
 
   if (!controllerAddress || !toAddress)
-    throw new Error("Address does not exists.");
+    throw new Error('Address does not exists.');
 
-  let   supplyValue = data.supply * 10 ** Number(data?.precision )|| 8
+  let supplyValue = data.supply * 10 ** Number(data?.precision) || 8;
 
   outputs.push({ address: controllerAddress, value: 10 ** 8 });
   if (data.assetType === 0) {
     outputs.push({ address: toAddress, value: supplyValue });
-
-  }else{
+  } else {
     outputs.push({ address: toAddress, value: data.supply });
-
   }
 
-  outputs.forEach(output => {
+  outputs.forEach((output) => {
     psbt.addOutput(output);
   });
-
 
   for (let i = 0; i < utxos.length; i++) {
     const currentUtxo = utxos[i];
@@ -138,14 +124,11 @@ export async function mintToken(
     totalInputValue += currentUtxo.value;
 
     // Add the input to the PSBT
-    const network = getNetwork("test", "sidechain");
-  
-
+    const network = getNetwork('test', 'sidechain');
 
     psbt.addInput({
       hash: currentUtxo.txid,
       index: currentUtxo.vout,
-
     });
     const testNode = acc.derive(currentUtxo.derviation_index);
     const address = coordinate.payments.p2wpkh({
@@ -155,18 +138,18 @@ export async function mintToken(
 
     psbt.updateInput(i, {
       witnessUtxo: {
-        script: getChainInstance("sidechain").address.toOutputScript(address || "", network),
+        script: getChainInstance('sidechain').address.toOutputScript(
+          address || '',
+          network,
+        ),
         value: currentUtxo.value,
       },
     });
     ///script: getChainInstance(networkType || "").address.toOutputScript(address, network),
 
-
     // Calculate the size and fee
     const vbytes = await calculateSize(psbt, outputs, data);
     requiredAmount = vbytes * feeRate;
-
-
 
     if (totalInputValue >= requiredAmount) {
       changeAmount = totalInputValue - requiredAmount;
@@ -180,9 +163,8 @@ export async function mintToken(
 
         changeAmount = totalInputValue - updatedRequiredAmount;
         if (changeAmount > convertToSAT(0.00001)) {
-          psbt.addOutput({ address: toAddress || "", value: changeAmount });
-        }
-        else {
+          psbt.addOutput({ address: toAddress || '', value: changeAmount });
+        } else {
           //console.log("Change output is too small; skipping it.");
         }
       }
@@ -193,8 +175,6 @@ export async function mintToken(
       throw { message: "Insufficient funds: You don't have enough funds" };
     }
   }
-
-  
 
   try {
     //saveUsedUtxo(utxos.txid);

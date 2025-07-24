@@ -1,7 +1,7 @@
-import { USED_UTXO_KEY } from "@/lib/constants";
+import { USED_UTXO_KEY } from '@/lib/constants';
 
 export function saveUsedUtxo(txid: string) {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     localStorage.setItem(
       USED_UTXO_KEY,
       JSON.stringify({ txid, timestamp: Date.now() }),
@@ -10,10 +10,10 @@ export function saveUsedUtxo(txid: string) {
 }
 
 export function checkUsedUtxo(txid: string): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === 'undefined') return false;
 
   const usedUtxoString = localStorage.getItem(USED_UTXO_KEY);
- // console.log("🚀 ~ checkUsedUtxo ~ usedUtxoString:", usedUtxoString);
+  // console.log("🚀 ~ checkUsedUtxo ~ usedUtxoString:", usedUtxoString);
   if (!usedUtxoString) return false;
 
   const usedUtxo = JSON.parse(usedUtxoString);
@@ -25,7 +25,7 @@ export function checkUsedUtxo(txid: string): boolean {
 }
 
 export function getSavedUtxo(): string | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
 
   const usedUtxoString = localStorage.getItem(USED_UTXO_KEY);
   if (!usedUtxoString) return null;

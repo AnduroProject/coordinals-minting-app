@@ -1,34 +1,31 @@
-import { NextResponse } from "next/server";
-import { getFileFromS3, uploadToS3 } from "@/lib/service/awshelper";
+import { NextResponse } from 'next/server';
+import { getFileFromS3, uploadToS3 } from '@/lib/service/awshelper';
 
+// return NextResponse.json(mintData);
+// if (!fs.existsSync(tokenFilePath)) {
+//   return NextResponse.json({ error: "File not found" }, { status: 404 });
+// }
+// const data = fs.readFileSync(tokenFilePath, "utf-8");
+// const jsonData = JSON.parse(data);
 
-
-  // return NextResponse.json(mintData);
-    // if (!fs.existsSync(tokenFilePath)) {
-    //   return NextResponse.json({ error: "File not found" }, { status: 404 });
-    // }
-    // const data = fs.readFileSync(tokenFilePath, "utf-8");
-    // const jsonData = JSON.parse(data);
-
-    // console.log("=====jsonData", jsonData);
+// console.log("=====jsonData", jsonData);
 export async function GET(req: Request) {
   try {
-
-    const mintData = await getFileFromS3("token_data")  
+    const mintData = await getFileFromS3('token_data');
     return NextResponse.json({ data: mintData }, { status: 200 });
   } catch (error: any) {
     // console.error('Error reading token file:', error);
-    return NextResponse.json({ error: 'Failed to read token file' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to read token file' },
+      { status: 500 },
+    );
   }
 }
-
-
 
 export async function POST(req: Request) {
   const { tokenId } = await req.json();
   try {
-
-    let uploadResponse = await uploadToS3("token_data", { tokenId } )
+    let uploadResponse = await uploadToS3('token_data', { tokenId });
 
     // if (!fs.existsSync(tokenFilePath)) {
     //   return NextResponse.json({ error: "File not found" }, { status: 404 });
@@ -36,9 +33,15 @@ export async function POST(req: Request) {
 
     // fs.writeFileSync(tokenFilePath, JSON.stringify({ tokenId }, null, 2));
 
-    return NextResponse.json({ message: "Token id updated successfully" }, { status: 200 });
+    return NextResponse.json(
+      { message: 'Token id updated successfully' },
+      { status: 200 },
+    );
   } catch (error) {
     //console.error("Error writing JSON file:", error);
-    return NextResponse.json({ error: "Failed to update token id" }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update token id' },
+      { status: 500 },
+    );
   }
 }

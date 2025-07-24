@@ -9,7 +9,7 @@ export { address, crypto, networks, payments, script };
 export { Block } from './block';
 export type { TaggedHashPrefix } from './crypto';
 
-export  type{
+export type {
   Psbt,
   PsbtTxInput,
   PsbtTxOutput,

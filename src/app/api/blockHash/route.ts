@@ -1,5 +1,5 @@
-import { getBlockHash } from "@/utils/libs";
-import { NextResponse } from "next/server";
+import { getBlockHash } from '@/utils/libs';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   const { height } = await req.json();

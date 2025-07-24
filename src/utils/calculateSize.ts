@@ -1,9 +1,9 @@
-import { BIP32Interface } from "bip32";
-import * as coordinate from "chromajs-lib";
-import { Psbt } from "chromajs-lib";
-import { inputSize, outputSize } from "@/lib/constants";
-import { tokenData, utxo } from "@/types";
-import * as chroma from "chromajs-lib"
+import { BIP32Interface } from 'bip32';
+import * as coordinate from 'chromajs-lib';
+import { Psbt } from 'chromajs-lib';
+import { inputSize, outputSize } from '@/lib/constants';
+import { tokenData, utxo } from '@/types';
+import * as chroma from 'chromajs-lib';
 // export async function calculateSize(
 //   psbt: Psbt,
 //   acc: BIP32Interface,
@@ -27,55 +27,49 @@ export async function calculateSize(
   psbt: Psbt,
   outputs: Array<{ address: string; value: number }>,
   data: tokenData,
-  
 ) {
-  let transactionSize = 11
+  let transactionSize = 11;
   // segwit address input size
 
-    transactionSize += inputSize * psbt.data.inputs.length
+  transactionSize += inputSize * psbt.data.inputs.length;
 
+  for (let index = 0; index < outputs.length; index++) {
+    transactionSize += 31;
+  }
 
-    for (let index = 0; index < outputs.length; index++) {
-      transactionSize += 31
-      
-    }  
-
-      transactionSize += 2 // default size for asset type
-      transactionSize += Buffer.from(data.headline, "utf8").byteLength
-      transactionSize += Buffer.from(data.ticker, "utf8").byteLength
-          if(data.assetType === 0 || data.assetType === 1){
-        transactionSize += Buffer.from(data.opReturnValues[0].image_url
-          , "utf8").byteLength
-      }else {
-        transactionSize += Buffer.from(data.opReturnValues[0].image_data
-          , "base64").byteLength
-        
-      }
+  transactionSize += 2; // default size for asset type
+  transactionSize += Buffer.from(data.headline, 'utf8').byteLength;
+  transactionSize += Buffer.from(data.ticker, 'utf8').byteLength;
+  if (data.assetType === 0 || data.assetType === 1) {
+    transactionSize += Buffer.from(
+      data.opReturnValues[0].image_url,
+      'utf8',
+    ).byteLength;
+  } else {
+    transactionSize += Buffer.from(
+      data.opReturnValues[0].image_data,
+      'base64',
+    ).byteLength;
+  }
   return transactionSize;
 }
 
 export const convertToSAT = (value: number): number => {
-  return Math.round(value * 10 ** 8)
-}
+  return Math.round(value * 10 ** 8);
+};
 
 export const getChainInstance = (networkType: any) => {
-return chroma
-  
-}
+  return chroma;
+};
 
 export const getNetwork = (networkMode: string, networkType: string) => {
-     console.log("network mode -network type",networkMode,networkType)
+  console.log('network mode -network type', networkMode, networkType);
 
-  if (networkMode === "test") {
-    return getChainInstance(networkType).networks.testnet
+  if (networkMode === 'test') {
+    return getChainInstance(networkType).networks.testnet;
   }
-  if (networkMode === "main") {
-    return getChainInstance(networkType).networks.bitcoin
+  if (networkMode === 'main') {
+    return getChainInstance(networkType).networks.bitcoin;
   }
-  return getChainInstance(networkType).networks.regtest
-}
-
-
-
-
-
+  return getChainInstance(networkType).networks.regtest;
+};

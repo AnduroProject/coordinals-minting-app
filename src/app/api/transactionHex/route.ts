@@ -1,5 +1,5 @@
-import { getTransactionHex } from "@/utils/libs";
-import { NextResponse } from "next/server";
+import { getTransactionHex } from '@/utils/libs';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   const { txId, verbose, blockHash } = await req.json();

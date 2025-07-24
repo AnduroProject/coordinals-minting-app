@@ -1,6 +1,6 @@
-import { sendTransactionToRpc } from "@/utils/libs";
+import { sendTransactionToRpc } from '@/utils/libs';
 
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   const { transactionHex } = await req.json();

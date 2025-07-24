@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { UseConnectorProvider } from "anduro-wallet-connector-react";
-import { WALLET_URL } from "@/lib/constants";
+import { UseConnectorProvider } from 'anduro-wallet-connector-react';
+import { WALLET_URL } from '@/lib/constants';
 // import { WALLETURL } from "../config/config";
 
 UseConnectorProvider;

@@ -5,22 +5,21 @@ export type tokenData = {
   headline: string;
   ticker: string;
   supply: number;
-  precision?:number
+  precision?: number;
 };
 export type alysAssetData = {
   name: string;
   symbol: string;
   image: any;
-  supply :number;
-
+  supply: number;
 };
-export type TokenInfo ={
+export type TokenInfo = {
   //address: string;
   name: string;
   symbol: string;
-  total_supply:any
-  decimal:any
-}
+  total_supply: any;
+  decimal: any;
+};
 
 export type collectionData = {
   address: string;
@@ -41,10 +40,8 @@ export type utxo = {
   height: number;
   derviation_index: number;
   confirmations: number;
-  unspent_type:number
-
+  unspent_type: number;
 };
-
 
 export type rpcResponse = {
   result: string;

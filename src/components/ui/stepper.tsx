@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface StepperProps {
   step: number;
@@ -14,15 +14,15 @@ const Stepper: React.FC<StepperProps> = ({ step, title, currentStep }) => {
           className={`h-9 w-9 rounded-full flex items-center justify-center font-bold 
                       ${
                         currentStep === step
-                          ? "bg-brand text-neutral600"
-                          : "text-neutral50 border-neutral50 border"
+                          ? 'bg-brand text-neutral600'
+                          : 'text-neutral50 border-neutral50 border'
                       }`}
         >
           {step + 1}
         </div>
         <p
           className={`text-lg2 font-bold ${
-            currentStep === step ? "text-brand" : "text-neutral50"
+            currentStep === step ? 'text-brand' : 'text-neutral50'
           } `}
         >
           {title}
