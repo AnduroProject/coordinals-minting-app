@@ -87,6 +87,7 @@ const SingleToken = () => {
       setError('Wallet is not connected.');
     } else {
       setError('');
+      setIsLoading(false);
     }
     const chainId = localStorage.getItem('chainId');
 

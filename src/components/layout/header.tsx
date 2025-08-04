@@ -44,7 +44,6 @@ export default function Header() {
   };
 
   const handleNetworkInfo = React.useCallback(async () => {
-
     const result = await networkInfo();
     if (result.status === true) {
       localStorage.setItem('isWalletConnected', 'true');
