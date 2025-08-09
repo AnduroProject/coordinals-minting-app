@@ -1,6 +1,5 @@
-import React from "react";
-import Image from "next/image";
-import { CloseSquare, DocumentText1 } from "iconsax-react";
+import React from 'react';
+import { CloseSquare, DocumentText1 } from 'iconsax-react';
 
 interface cardProps {
   onDelete: () => void;

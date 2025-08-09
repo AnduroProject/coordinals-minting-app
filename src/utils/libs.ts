@@ -1,55 +1,66 @@
-import axios from "axios";
-import { utxo } from "@/types";
+import axios from 'axios';
+import { utxo } from '@/types';
 import {
+  alysBaseURL,
   maraUrl,
   RPC_PASSWORD,
   RPC_USERNAME,
   rpcPort,
   rpcUrl,
-} from "@/lib/constants";
+} from '@/lib/constants';
 
+/**
+ * This function is used to get the block count using RPC
+ */
 export async function getBlockCount() {
   const body = {
-    jsonrpc: "1.0",
-    method: "getblockcount",
-    id: "curltest",
+    jsonrpc: '1.0',
+    method: 'getblockcount',
+    id: 'curltest',
     params: [],
   };
 
   try {
     const response = await axios.post(`${rpcUrl}:${rpcPort}`, body, {
       auth: {
-        username: RPC_USERNAME ?? "",
-        password: RPC_PASSWORD ?? "",
+        username: RPC_USERNAME ?? '',
+        password: RPC_PASSWORD ?? '',
       },
     });
 
     const rpc = response.data;
-
-    console.log(rpc.result);
   } catch (e) {
     console.log(e);
   }
 }
 
+/**
+ * This function is used to get the block hash using RPC
+ * @param height -height
+ */
 export async function getBlockHash(height: number) {
   const body = {
-    jsonrpc: "1.0",
-    method: "getblockhash",
-    id: "curltest",
+    jsonrpc: '1.0',
+    method: 'getblockhash',
+    id: 'curltest',
     params: [height],
   };
 
   const response = await axios.post(`${rpcUrl}:${rpcPort}`, body, {
     auth: {
-      username: RPC_USERNAME ?? "",
-      password: RPC_PASSWORD ?? "",
+      username: RPC_USERNAME ?? '',
+      password: RPC_PASSWORD ?? '',
     },
   });
-
   return response.data;
 }
 
+/**
+ * This function is used to get the transaction hex using RPC
+ * @param txId -txId
+ * @param verbose -verbose
+ * @param blockHash -blockHash
+ */
 export async function getTransactionHex(
   txId: string,
   verbose: boolean,
@@ -59,83 +70,76 @@ export async function getTransactionHex(
   if (!blockHash) params = [txId];
 
   const body = {
-    jsonrpc: "1.0",
-    method: "getrawtransaction",
-    id: "curltest",
+    jsonrpc: '1.0',
+    method: 'getrawtransaction',
+    id: 'curltest',
     params: params,
   };
 
   const response = await axios.post(`${rpcUrl}:${rpcPort}`, body, {
     auth: {
-      username: RPC_USERNAME ?? "",
-      password: RPC_PASSWORD ?? "",
+      username: RPC_USERNAME ?? '',
+      password: RPC_PASSWORD ?? '',
     },
   });
 
   return response.data;
 }
 
-/* export async function getUtxos(address: string) {
-  const body = {
-    jsonrpc: "1.0",
-    method: "scantxoutset",
-    id: "curltest",
-    params: ["start", [{ desc: `addr(${address})` }]],
-  };
-  // try {
-  const response = await axios.post(`${rpcUrl}:${rpcPort}`, body, {
-    auth: {
-      username: RPC_PASSWORDE,
-      password: process.env.RPC_PASSWORD ??"",
-    },
-  });
-
-  const utxos: utxo[] = response.data.result.unspents;
-
-  if (utxos.length === 0) throw new Error("No utxo found.");
-
-  utxos.sort((a, b) => b.amount - a.amount);
-  utxos.forEach((utxo) => (utxo.amount = utxo.amount * 10 ** 8));
-
-  return utxos;
-  // } catch (error) {
-  //   console.log("🚀 ~ getUtxos ~ error:", error);
-  //   throw new Error(error);
-  // }
-} */
-
+/**
+ * This function is used to get  unspents for transaction
+ * @param address -address
+ */
 export async function getUtxos(address: string) {
-  const response = await axios.get(maraUrl + address);
+  try {
+    const response = await axios.get(maraUrl + address);
 
-  const utxos: utxo[] = response.data.result;
+    const utxos: utxo[] = response.data.result;
 
-  utxos.forEach((utxo) => {
-    utxo.value = Number(utxo.value);
-    utxo.height = Number(utxo.height);
+    utxos.forEach((utxo) => {
+      utxo.value = Number(utxo.value);
+      utxo.height = Number(utxo.height);
+    });
+    utxos.sort((a, b) => b.value - a.value);
 
-    console.log(utxo);
-  });
-  utxos.sort((a, b) => b.value - a.value);
-
-  return utxos;
+    return utxos;
+  } catch (error) {
+    return error;
+  }
 }
 
+/**
+ * This function is used to fetch the token instances for the given token address
+ * @param tokenAddress -tokenAddress
+ */
+export async function fetchTokenInstances(tokenAddress: string) {
+  try {
+    const url = `${alysBaseURL}/${tokenAddress}/instances`;
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching token instances:', error.response?.data);
+    return error;
+  }
+}
+/**
+ * This function is used to send the transaction using RPC
+ * @param transactionHex -transactionHex
+ */
 export async function sendTransactionToRpc(transactionHex: string) {
   const body = {
-    jsonrpc: "1.0",
-    method: "sendrawtransaction",
-    id: "curltest",
+    jsonrpc: '1.0',
+    method: 'sendrawtransaction',
+    id: 'curltest',
     params: [transactionHex, 0, []],
   };
 
   const response = await axios.post(`${rpcUrl}:${rpcPort}`, body, {
     auth: {
-      username: RPC_USERNAME ?? "",
-      password: RPC_PASSWORD ?? "",
+      username: RPC_USERNAME ?? '',
+      password: RPC_PASSWORD ?? '',
     },
   });
-
-  console.log(response.data);
 
   return response.data;
 }

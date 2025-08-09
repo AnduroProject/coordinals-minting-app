@@ -7,8 +7,9 @@ import * as script from './script';
 export { address, crypto, networks, payments, script };
 
 export { Block } from './block';
-export { TaggedHashPrefix } from './crypto';
-export {
+export type { TaggedHashPrefix } from './crypto';
+
+export type {
   Psbt,
   PsbtTxInput,
   PsbtTxOutput,
@@ -20,13 +21,13 @@ export {
 export { OPS as opcodes } from './ops';
 export { Transaction } from './transaction';
 
-export { Network } from './networks';
-export {
+export type { Network } from './networks';
+export type {
   Payment,
   PaymentCreator,
   PaymentOpts,
   Stack,
   StackElement,
 } from './payments';
-export { Input as TxInput, Output as TxOutput } from './transaction';
+export type { Input as TxInput, Output as TxOutput } from './transaction';
 export { initEccLib } from './ecc_lib';

@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import Image from "next/image";
-import Stepper from "../ui/stepper";
-import { useStateStep } from "@/lib/store/stepStore";
+import React from 'react';
+import Image from 'next/image';
+import Stepper from '../ui/stepper';
+import { useStateStep } from '@/lib/store/stepStore';
 
 interface bannerProps {
   title: string;
@@ -41,7 +41,9 @@ const Banner: React.FC<bannerProps> = ({
                   title={item}
                   currentStep={setStep}
                 />
-                {index !== stepperData.length -1 && <div className="w-8 h-0.5 bg-neutral50"/>}
+                {index !== stepperData.length - 1 && (
+                  <div className="w-8 h-0.5 bg-neutral50" />
+                )}
               </React.Fragment>
             ))}
           </div>

@@ -536,7 +536,7 @@ describe('bitcoinjs-lib (transaction with taproot)', () => {
           depth: 3,
           leafVersion: LEAF_VERSION_TAPSCRIPT,
           script: bitcoin.script.fromASM(`OP_ADD OP_${index * 2} OP_EQUAL`),
-        } as TapLeaf),
+        }) as TapLeaf,
     );
     const scriptTree = tapTreeFromList(leaves);
 

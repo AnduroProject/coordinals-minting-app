@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Header from "@/components/layout/header";
-import Image from "next/image";
-import Options from "@/components/section/options";
-import { Gallery, Stop, BuyCrypto } from "iconsax-react";
-import ButtonLg from "@/components/ui/buttonLg";
-import Layout from "@/components/layout/layout";
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import Header from '@/components/layout/header';
+import Image from 'next/image';
+import Options from '@/components/section/options';
+import { Gallery, Stop, BuyCrypto } from 'iconsax-react';
+import ButtonLg from '@/components/ui/buttonLg';
+import Layout from '@/components/layout/layout';
+import { Button } from '@/components/ui/button';
 
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
 const Create = () => {
   const router = useRouter();
@@ -36,36 +37,28 @@ const Create = () => {
 
   const data = [
     {
-      id: 1,
-      icon: Gallery,
-      title: "Collection",
-      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      pageUrl: "/create/collection",
-    },
-    {
       id: 2,
       icon: Stop,
-      title: "Single Collectible",
-      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      pageUrl: "/create/collectible",
+      title: 'Single Collectible',
+      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      pageUrl: '/create/collectible',
     },
     {
       id: 3,
       icon: BuyCrypto,
-      title: "Token",
-      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      pageUrl: "/create/token",
+      title: 'Token',
+      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      pageUrl: '/create/token',
     },
   ];
 
   return (
     <Layout>
-      <div className="flex h-full w-full flex-col justify-start items-center pb-[148px]">
-        <Header />
+      <div className="flex h-full w-full flex-col justify-start items-center pb-20">
         <div className="flex flex-col items-center w-full gap-12 mt-[42.5px] z-50">
           <div className="relative w-full h-40 flex justify-center max-w-[1216px]">
             <Image
-              src={"/background.png"}
+              src={'/background.png'}
               alt="background"
               width={0}
               height={160}
@@ -96,7 +89,11 @@ const Create = () => {
               />
             ))}
           </div>
-          <ButtonLg isSelected={selectedOption !== null} onClick={handleNav}>
+          <ButtonLg
+            type="button"
+            isSelected={selectedOption !== null}
+            onClick={handleNav}
+          >
             Continue
           </ButtonLg>
         </div>

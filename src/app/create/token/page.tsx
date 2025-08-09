@@ -1,31 +1,35 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Banner from "@/components/section/banner";
-import Header from "@/components/layout/header";
-import Input from "@/components/ui/input";
-import ButtonLg from "@/components/ui/buttonLg";
-import { useRouter } from "next/navigation";
-import ButtonOutline from "@/components/ui/buttonOutline";
-import { tokenData } from "@/types";
-import { mintToken } from "@/utils/mint";
-import Layout from "@/components/layout/layout";
+import React, { useState } from 'react';
+import Banner from '@/components/section/banner';
+import Input from '@/components/ui/input';
+import ButtonLg from '@/components/ui/buttonLg';
+import { useRouter } from 'next/navigation';
+import ButtonOutline from '@/components/ui/buttonOutline';
+import { tokenData, TokenInfo } from '@/types';
+import { mintToken } from '@/utils/mint';
+import Layout from '@/components/layout/layout';
 import {
+  ALYS_EXPLORER,
   ASSETTYPE,
+  COORDINATE_EXPLORER,
   FEERATE,
   RECEIVER_ADDRESS,
-  MOCK_MENOMIC,
-} from "@/lib/constants";
-import Image from "next/image";
-import useFormState from "@/lib/store/useFormStore";
-import { toast } from "sonner";
-import { useConnector } from "anduro-wallet-connector-react";
+  tokenContractAddress,
+} from '@/lib/constants';
+import useFormState from '@/lib/store/useFormStore';
+import { toast } from 'sonner';
+import { useConnector } from 'anduro-wallet-connector-react';
+import { tokenAbi } from '@/utils/tokenAbi';
+import { CloseCircle, Copy } from 'iconsax-react';
+import { convertToSubstring } from '@/lib/utils';
+import { contractInfo, tokenTransferInfo } from '@/lib/service/fetcher';
+import axios from 'axios';
 
 const SingleToken = () => {
   const router = useRouter();
-  const { signAndSendTransaction, signTransaction, sign } =
+  const { signAndSendTransaction, walletState } =
     React.useContext<any>(useConnector);
-
   const {
     ticker,
     setTicker,
@@ -37,31 +41,259 @@ const SingleToken = () => {
     setImageUrl,
     setTxUrl,
     txUrl,
+    decimal,
+    setDecimal,
     reset,
   } = useFormState();
 
-  // const [ticker, setTicker] = useState<string>("");
   const [step, setStep] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState<string>('');
+  const [networkType, setnetworkType] = React.useState<string>('');
+  const [showImage, setShowImage] = React.useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [tokenData, setTokenData] = useState<TokenInfo | null>(null);
+  const [toaddress, setToaddress] = useState<string>('');
+  const [isCopied, setIsCopied] = useState(false);
+  const [txid, setTxid] = useState<string>('');
+  const [imgSrc, setImgSrc] = useState('');
+  const [csrfToken, setCsrfToken] = useState(null);
 
+  interface FormInputData {
+    headline: string;
+    ticker: string;
+    imageUrl: string;
+    supply: number;
+  }
+
+  React.useEffect(() => {
+    reset();
+    setToaddress(localStorage.getItem('address') || '');
+  }, [walletState, reset]);
+
+  React.useEffect(() => {
+    if (walletState.connectionState == 'disconnected') {
+      setError('Wallet is not connected.');
+    } else {
+      setError('');
+      setIsLoading(false);
+    }
+    const chainId = localStorage.getItem('chainId');
+
+    const walletconnection = localStorage.getItem('isWalletConnected');
+    if (walletconnection === 'true') {
+      if (chainId === '5') {
+        setnetworkType('Coordinate');
+      } else if (chainId === '6') {
+        setnetworkType('Alys');
+      }
+    } else {
+      setnetworkType('');
+      if (step === 1) {
+        router.push('/');
+      }
+    }
+  }, [walletState, router, step]);
+
+  React.useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await axios.get('/api/auth');
+        setCsrfToken(response.data.authToken);
+      } catch (error) {
+        console.error('Failed to fetch CSRF token:', error);
+      }
+    };
+    if (networkType !== '') {
+      fetchCsrfToken();
+    }
+  }, [networkType]);
+
+  React.useEffect(() => {
+    if (networkType === 'Alys') {
+      contractInfo(tokenContractAddress, tokenAbi)
+        .then((contractDetails) => {
+          const Data: TokenInfo = {
+            name: contractDetails.data.name,
+            symbol: contractDetails.data.symbol,
+            total_supply: contractDetails.data.balance,
+            decimal: contractDetails.data.decimals,
+          };
+          setTokenData(Data);
+        })
+        .catch((error) => {
+          console.error('Error fetching contract details:', error);
+        });
+    }
+  }, [tokenData?.total_supply, csrfToken, networkType]);
+
+  /**
+   * This function is used to handle delete action
+   */
+  const handleDelete = (): void => {
+    setImageUrl('');
+    setImgSrc('');
+    setShowImage(false);
+    setErrorMessage('');
+  };
+
+  /**
+   * This function is used to handle error for image
+   */
+  const handleImageError = () => {
+    setImgSrc('/default_asset_image.png');
+    setShowImage(false);
+  };
+
+  /**
+   * This function is used to handle decimal changes
+   * @param value -value
+   */
+  const handleTokenDecimalChange = (value: any) => {
+    if (!/^\d+$/.test(value) && value.toString().trim() !== '') {
+      return;
+    }
+    setDecimal(value.trim());
+  };
+
+  /**
+   * This function is used to handle load the image
+   */
+  const handleImageLoad = () => {
+    setShowImage(true);
+    setErrorMessage('');
+  };
+
+  /**
+   * This function is used to handle the copy action
+   */
+  const handleCopy = () => {
+    navigator.clipboard.writeText(txid).then(() => {
+      setIsCopied(true);
+      toast.success('Copied!');
+      setTimeout(() => setIsCopied(false), 3000);
+    });
+  };
+
+  /**
+   * This function is used to validate the form inputs
+   * @param inputData -inputData
+   */
+  const validateForm = (
+    inputData: FormInputData,
+  ): { isValid: boolean; error?: string } => {
+    const { headline, ticker, imageUrl, supply } = inputData;
+
+    let supply_range = 21 * 1e14; // 2100000000000000
+    if (networkType === 'Coordinate') {
+      if (headline.trim().length === 0) {
+        return { isValid: false, error: 'Headline is not provided.' };
+      }
+      if (headline.trim().length > 50) {
+        return {
+          isValid: false,
+          error: 'Headline should be 50 characters long.',
+        };
+      }
+      if (ticker.trim().length === 0) {
+        return { isValid: false, error: 'Ticker is not provided.' };
+      }
+      if (ticker.trim().length > 7) {
+        return { isValid: false, error: 'Ticker should be 7 characters long.' };
+      }
+      if (/[^a-zA-Z]/.test(ticker)) {
+        return {
+          isValid: false,
+          error:
+            'Ticker  contains special characters, numbers, or spaces that are not allowed',
+        };
+      }
+      if (imageUrl.trim() === '') {
+        return { isValid: false, error: 'Image is not provided.' };
+      }
+      if (decimal <= 0 || decimal >= 9) {
+        return {
+          isValid: false,
+          error: 'The token decimal should be greater than 0 and less than 9.',
+        };
+      }
+    }
+    if (supply <= 0) {
+      return {
+        isValid: false,
+        error: 'Provide valid supply',
+      };
+    }
+    if (supply > 2100000000000000 && networkType === 'Coordinate') {
+      return {
+        isValid: false,
+        error: 'Max supply is 2100000000000000',
+      };
+    }
+    const numericSupply = Number(supply);
+
+    if (isNaN(numericSupply) || !Number.isInteger(numericSupply)) {
+      return {
+        isValid: false,
+        error: 'Supply must be an integer between 1 and 100',
+      };
+    }
+
+    if (supply * 10 ** decimal > supply_range && networkType === 'Coordinate') {
+      let supplyLimit = supply_range;
+      supplyLimit = supply_range / 10 ** decimal;
+      return {
+        isValid: false,
+        error:
+          'Given that supply is out of range, supply should be less than or equal to' +
+          Number(supplyLimit),
+      };
+    }
+    if (
+      (supply * 10 ** tokenData?.decimal > Number(tokenData?.total_supply) &&
+        networkType === 'Alys') ||
+      (supply > 100 && networkType === 'Alys')
+    ) {
+      return {
+        isValid: false,
+        error:
+          supply > 100
+            ? 'Supply must be less than or equal to 100'
+            : 'Provided supply is higher than available',
+      };
+    }
+
+    if (errorMessage) {
+      return { isValid: false };
+    }
+    return { isValid: true };
+  };
+
+  /**
+   * This function is used to handle form submission
+   *  @param event -event
+   */
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    setError("");
+    setError('');
     event.preventDefault();
     setIsLoading(true);
 
-    if (!imageUrl) {
-      setIsLoading(false);
-      setError("Image not provided.");
-      return;
-    }
+    const inputData: FormInputData = {
+      headline,
+      ticker,
+      imageUrl,
+      supply,
+    };
 
-    if (!headline) {
-      setError("headline not provided.");
+    const validationResult = validateForm(inputData);
+
+    if (!validationResult.isValid) {
+      setError(validationResult.error || 'Provide valid data');
       setIsLoading(false);
       return;
+    } else {
+      setError('');
     }
-
     const opReturnValues = [
       {
         image_url: imageUrl,
@@ -75,70 +307,100 @@ const SingleToken = () => {
       headline,
       ticker,
       supply,
+      precision: decimal,
     };
 
-    if (supply == 0) {
-      setError("Supply can not be 0.");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!supply) {
-      setError("Supply can not be empty");
-      setIsLoading(false);
-      return;
-    }
-
-    if (supply == 2100000000000000) {
-      setError("Max amount of supply is 2100000000000000");
-      setIsLoading(false);
-      return;
-    }
-
-    if (data.ticker.length > 7) {
-      setIsLoading(false);
-      setError("Invalid ticker. Need to be no longer than 7 character long");
-      return;
-    }
     try {
-      // console.log("🚀 ~ handleSubmit ~ res:", res);
-      // Call the mintToken function with the required data
-      const transactionResult = await mintToken(data, MOCK_MENOMIC, FEERATE);
+      if (networkType === 'Alys') {
+        const tokenTranferDetails = await tokenTransferInfo(toaddress, supply);
 
-      if (transactionResult && transactionResult.error == false) {
-        setError(transactionResult.message || "An error occurred"); // Set the error state
-        toast.error(transactionResult.message || "An error occurred");
-        setIsLoading(false);
+        try {
+          if (tokenTranferDetails.data) {
+            setTxid(tokenTranferDetails.data.hash);
+            setTxUrl(ALYS_EXPLORER + 'tx/' + tokenTranferDetails.data.hash);
+            setError('');
+            setStep(1);
+            setIsLoading(false);
+          } else {
+            setError('Transaction Failed');
+            setStep(0);
+            setIsLoading(false);
+          }
+        } catch (error) {
+          console.error('Error decoding data:', error);
+        }
       } else {
-        setError("");
-        setIsLoading(false);
-        // setTxUrl(`https://testnet.coordiscan.io/tx/${mintResponse.result}`);
-        setStep(1);
+        // Call the mintToken function with the required data
+        const transactionResult = await mintToken(data, FEERATE);
+        if (transactionResult) {
+          const result = await signAndSendTransaction({
+            hex: transactionResult,
+            transactionType: 'normal',
+          });
+
+          if (result && result.error) {
+            const errorMessage =
+              typeof result.error === 'string'
+                ? result.error
+                : result.error.result || 'An error occurred';
+
+            setError(errorMessage);
+            toast.error(errorMessage);
+            setStep(0);
+            setIsLoading(false);
+          } else {
+            setError('');
+            setTxid(result.result);
+            setTxUrl(COORDINATE_EXPLORER + 'tx/' + result.result);
+            setStep(1);
+            setIsLoading(false);
+          }
+        }
       }
-    } catch (error) {
-      console.log("🚀 ~ handleSubmit ~ error:", error);
-      setError(error.message || "An error occurred"); // Set the error state
-      toast.error(error.message || "An error occurred");
-      setIsLoading(false);
+    } catch (error: any) {
+      if (error.message.includes('Insufficient funds')) {
+        const err = 'Insufficient funds for this transaction';
+        setError(err);
+      } else {
+        setError('Transaction Failed');
+        setIsLoading(false);
+      }
     }
   };
 
+  /**
+   * This function is used to reset the page
+   */
   const triggerRefresh = () => {
     setStep(0);
     reset();
-    router.push("/create");
+    router.push('/create/token');
   };
 
-  const stepperData = ["Upload", "Confirm"];
+  /**
+   * This function is used to show the page title
+   * @param step -step
+   * @param networktype -networktype
+   */
+  const getTitle = (step: any, networktype: any) => {
+    if (step === 0) {
+      if (networktype === 'Coordinate') return 'Create Token';
+      if (networktype === 'Alys') return 'Transfer Token';
+    } else if (step === 1) {
+      if (networktype === 'Coordinate') return 'Token created successfully';
+      if (networktype === 'Alys') return 'Token transfered successfully';
+    }
+    return '';
+  };
+  const stepperData = ['Upload', 'Confirm'];
 
   return (
     <Layout>
       <div className="flex flex-col w-full h-full pb-[148px]">
-        <Header />
         <div className="flex flex-col items-center gap-16 z-50">
           <Banner
-            title="Create token"
-            image={"/background-2.png"}
+            title={getTitle(step, networkType)}
+            image={'/background-2.png'}
             setStep={step}
             stepperData={stepperData}
           />
@@ -146,103 +408,230 @@ const SingleToken = () => {
             <form onSubmit={handleSubmit}>
               <div className="w-[592px] items-start flex flex-col gap-16">
                 <div className="flex flex-col w-full gap-8">
-                  <p className="text-profileTitle text-neutral50 font-bold">
-                    Details
+                  <p className="text-profileTitle  text-white text-neutral20 font-bold">
+                    {networkType} Token
                   </p>
+                  <div className="input_padd"></div>
                   <div className="w-full gap-6 flex flex-col">
-                    <Input
-                      title="Name"
-                      text="Collectible name"
-                      value={headline}
-                      onChange={(e) => setHeadline(e.target.value)}
-                    />
-                    <Input
-                      title="Ticker"
-                      text="Collectible ticker"
-                      value={ticker}
-                      onChange={(e) => setTicker(e.target.value)}
-                    />
-                    {/* NaN erro */}
-                    <Input
-                      title="Supply"
-                      text="Collectible supply"
-                      value={supply}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setSupply(value === "" ? 0 : parseInt(value, 10));
-                      }}
-                      type="number"
-                    />
-                    <Input
-                      title="Token logo image url"
-                      text="Collectible logo image"
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                    />
+                    {(networkType === 'Coordinate' || networkType === '') && (
+                      <>
+                        <Input
+                          title="Name"
+                          text="Token name"
+                          value={headline}
+                          onChange={(e) => setHeadline(e.target.value)}
+                        />
+                        <Input
+                          title="Ticker"
+                          text="Token ticker"
+                          value={ticker}
+                          onChange={(e) => {
+                            setTicker(e.target.value);
+                            setError('');
+                          }}
+                        />
+                        <Input
+                          title="Decimal"
+                          text="Decimal"
+                          value={decimal}
+                          onChange={(event: any) =>
+                            handleTokenDecimalChange(event.target.value)
+                          }
+                        />
+                        {/* NaN erro */}
+                        <Input
+                          title="Supply"
+                          text="Token supply"
+                          value={supply}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setSupply(value === '' ? 1 : parseInt(value, 10));
+                          }}
+                          type="number"
+                        />
+                        <Input
+                          title="Token image url"
+                          text="Token image url"
+                          value={imageUrl}
+                          onChange={(e) => {
+                            setImageUrl(e.target.value);
+                            setImgSrc(e.target.value);
+                            setErrorMessage('');
+                            setError('');
+                          }}
+                        />
+                        <div className="mt-2.5">
+                          {imageUrl && (
+                            <div className="relative inline-block">
+                              <img
+                                src={imgSrc}
+                                alt="Token Logo Preview"
+                                style={{
+                                  maxWidth: '200px',
+                                  maxHeight: '200px',
+                                  objectFit: 'contain',
+                                }}
+                                onLoad={handleImageLoad}
+                                onError={handleImageError}
+                              />
+
+                              {showImage ? (
+                                <button
+                                  onClick={handleDelete}
+                                  className="absolute -top-2.5 -right-2.5 bg-background rounded-full"
+                                >
+                                  <CloseCircle size={30} color="#F8F9FA" />
+                                </button>
+                              ) : (
+                                errorMessage && (
+                                  <p className="text-red-500">{errorMessage}</p>
+                                )
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                    {networkType === 'Alys' && (
+                      <>
+                        {tokenData && (
+                          <p className="text-profileTitle  text-white text-neutral20 font-bold">
+                            Name : {tokenData?.name}
+                          </p>
+                        )}
+                        <Input
+                          title="Supply"
+                          text="Token supply"
+                          value={supply}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setSupply(value === '' ? 1 : parseInt(value, 10));
+                          }}
+                          type="number"
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
-                {/* <div className="flex flex-col gap-8 w-full">
-                  <p className="text-profileTitle text-neutral50 font-bold">
-                    Token logo (Optional)
-                  </p>
-                  {imageBase64 ? (
-                    <UploadFile image={imageBase64} onDelete={handleDelete} />
-                  ) : (
-                    <UploadFile
-                      text="Accepted file types: WEBP (recommended), JPEG, PNG, SVG, and GIF."
-                      handleImageUpload={handleImageUpload}
+                {walletState.connectionState == 'connected' ? (
+                  <div className="flex flex-row gap-8 justify-between w-full">
+                    <ButtonOutline
+                      title="Back"
+                      onClick={() => {
+                        router.push('/');
+                        reset();
+                      }}
                     />
-                  )}
-                </div> */}
-                <div className="flex flex-row gap-8 justify-between w-full">
-                  <ButtonOutline
-                    title="Back"
-                    onClick={() => router.push("/")}
-                  />
-                  <ButtonLg
-                    type="submit"
-                    isSelected={true}
-                    isLoading={isLoading}
-                    // disabled={isLoading}
-                  >
-                    {isLoading ? "...loading" : "Continue"}
-                  </ButtonLg>
-                </div>
+                    <ButtonLg
+                      type="submit"
+                      isSelected={true}
+                      isLoading={isLoading}
+                    >
+                      {isLoading ? '...loading' : 'Continue'}
+                    </ButtonLg>
+                  </div>
+                ) : null}
               </div>
               {error && <div className="text-red-500">{error}</div>}
             </form>
           )}
           {step == 1 && (
-            <div className="w-[800px] flex flex-col gap-16">
+            <div className="w-full max-w-[800px] flex flex-col gap-10 px-4">
               <div className="w-full flex flex-row items-center gap-8 justify-start">
-                <img
-                  src={imageUrl}
-                  alt="background"
-                  width={0}
-                  height={160}
-                  sizes="100%"
-                  className="w-[280px] h-[280px] object-cover rounded-3xl"
-                />
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col gap-3">
-                    <p className="text-3xl text-neutral50 font-bold">
-                      ${ticker}
-                    </p>
-                    <p className="text-xl text-neutral100 font-medium">
-                      Total supply:{supply}
-                    </p>
-                  </div>
-                  <p className="text-neutral100 text-lg2">
-                    <a href={txUrl} target="_blank" className="text-blue-600">
-                      {txUrl}
-                    </a>
-                  </p>
+                {networkType === 'Coordinate' && (
+                  <img
+                    src={imgSrc}
+                    alt="background"
+                    width={0}
+                    height={160}
+                    sizes="100%"
+                    className="w-[280px] h-[280px] object-cover rounded-3xl"
+                  />
+                )}
+                <div className="flex flex-row gap-6">
+                  {networkType === 'Coordinate' && (
+                    <div className="flex flex-col gap-3">
+                      <>
+                        <p className="text-xl text-neutral50 font-bold">
+                          Name : {headline}
+                        </p>
+                        <p className="text-xl text-neutral50 font-bold">
+                          Symbol : {ticker}
+                        </p>
+                        <p className="text-xl text-neutral50 font-bold">
+                          Supply : {supply}
+                        </p>
+                      </>
+                      <>
+                        <p className="text-neutral100 text-xl flex flex-row items-center justify-center font-bold">
+                          Tx Id : {convertToSubstring(txid, 6, 4)}
+                          <button
+                            onClick={handleCopy}
+                            className={`text-brand p-1 hover:bg-gray-100 rounded ${isCopied ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                            disabled={isCopied}
+                            aria-label="Copy transaction link"
+                          >
+                            <Copy size="16" />
+                          </button>
+                        </p>
+                      </>
+                    </div>
+                  )}
+                  {networkType === 'Alys' && (
+                    <div className="flex flex-row gap-3">
+                      <>
+                        <div
+                          className="h-16 w-16 rounded-full flex items-center justify-center font-bold 
+                      text-neutral50 border-neutral50 border"
+                        >
+                          <p className="text-2xl text-neutral50 font-bold">
+                            {tokenData?.name.charAt(0).toUpperCase()}
+                          </p>
+                        </div>
+
+                        <div>
+                          {' '}
+                          {tokenData && (
+                            <p className="text-xl text-neutral50 font-bold leading-7 mb-1.5">
+                              Symbol : {tokenData?.symbol}
+                            </p>
+                          )}
+                          <p className="text-xl text-neutral50 font-bold leading-7 mb-1.5">
+                            Supply : {supply}
+                          </p>
+                          <p className="text-neutral100 text-xl flex flex-row font-bold">
+                            Tx Id : {convertToSubstring(txid, 6, 4)}
+                            <button
+                              onClick={handleCopy}
+                              className={`text-brand p-1 hover:bg-gray-100 rounded ${
+                                isCopied
+                                  ? 'cursor-not-allowed opacity-50'
+                                  : 'cursor-pointer'
+                              }`}
+                              disabled={isCopied}
+                              aria-label="Copy transaction link"
+                            >
+                              <Copy size="16" />
+                            </button>
+                          </p>
+                        </div>
+                      </>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-row items-center justify-center">
+                <div className="text-neutral100 text-xl flex flex-row items-center justify-center">
+                  <a href={txUrl} target="_blank" className="text-brand">
+                    {networkType === 'Coordinate' && <p>View on Coordinate </p>}
+                    {networkType === 'Alys' && <p>View on Alys</p>}
+                  </a>
                 </div>
               </div>
               <div className="flex flex-row gap-8">
                 <ButtonOutline
                   title="Go home"
-                  onClick={() => router.push("/")}
+                  onClick={() => router.push('/')}
                 />
                 <ButtonLg
                   type="submit"
@@ -250,9 +639,8 @@ const SingleToken = () => {
                   isLoading={isLoading}
                   disabled={isLoading}
                   onClick={() => triggerRefresh()}
-                  // onClick={() => router.reload()}
                 >
-                  Create again
+                  Create
                 </ButtonLg>
               </div>
             </div>

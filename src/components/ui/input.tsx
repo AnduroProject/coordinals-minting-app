@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface InputProps {
   title: string;
@@ -7,7 +7,11 @@ interface InputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   type?: string;
 }
-
+interface FormInputData {
+  headline: string;
+  ticker: string;
+  imageUrl: string;
+}
 const Input: React.FC<InputProps> = ({
   title,
   text,
@@ -19,7 +23,7 @@ const Input: React.FC<InputProps> = ({
     <div className="flex flex-col w-full gap-3">
       <p className="font-medium text-lg2 text-neutral50">{title}</p>
       <input
-        type={type ?? "text"}
+        type={type ?? 'text'}
         placeholder={text}
         className="px-5 py-3.5 bg-background border rounded-xl border-neutral50 text-lg2 placeholder-neutral200 text-neutral-50 w-full"
         value={value}
