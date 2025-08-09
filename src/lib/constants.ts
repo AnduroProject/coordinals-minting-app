@@ -36,6 +36,8 @@ export const FEERATE = 10;
 
 export const WALLET_URL =
   'chrome-extension://khebhoaoppjeidmdkpdglmlhghnooijn/index.html';
+export const COORDINATE_EXPLORER = 'https://devnet.coordiscan.io/';
+export const ALYS_EXPLORER = ' http://testnet.alyscan.io/';
 
 export const exampleJson = [
   {

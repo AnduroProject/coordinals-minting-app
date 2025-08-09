@@ -8,7 +8,13 @@ import ButtonOutline from '@/components/ui/buttonOutline';
 import { useRouter } from 'next/navigation';
 import { mintToken } from '@/utils/mint';
 import Layout from '@/components/layout/layout';
-import { ASSETTYPE, FEERATE, RECEIVER_ADDRESS } from '@/lib/constants';
+import {
+  ALYS_EXPLORER,
+  ASSETTYPE,
+  COORDINATE_EXPLORER,
+  FEERATE,
+  RECEIVER_ADDRESS,
+} from '@/lib/constants';
 import { alysAssetData, tokenData } from '@/types';
 import useFormState from '@/lib/store/useFormStore';
 import { toast } from 'sonner';
@@ -182,6 +188,7 @@ const SingleCollectible = () => {
 
   /**
    * This function is used to handle form submission
+   * @param event -event
    */
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -238,9 +245,7 @@ const SingleCollectible = () => {
               setIsLoading(false);
             } else {
               setTxid(nftMintDetails.data.hash);
-              setTxUrl(
-                'http://testnet.alyscan.io/tx/' + nftMintDetails.data.hash,
-              );
+              setTxUrl(ALYS_EXPLORER + 'tx/' + nftMintDetails.data.hash);
               setError('');
               setStep(1);
               setIsLoading(false);
@@ -274,7 +279,7 @@ const SingleCollectible = () => {
             setError('');
             setStep(1);
             setTxid(result.result);
-            setTxUrl('https://testnet.coordiscan.io/tx/' + result.result);
+            setTxUrl(COORDINATE_EXPLORER + 'tx/' + result.result);
             setIsLoading(false);
           }
         }
@@ -296,6 +301,8 @@ const SingleCollectible = () => {
 
   /**
    * This function is used to show the page title
+   * @param step -step
+   * @param networktype -networktype
    */
   const getTitle = (step: any, networktype: any) => {
     if (step === 0) {

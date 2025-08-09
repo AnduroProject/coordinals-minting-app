@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 import { CloseSquare, DocumentText1 } from 'iconsax-react';
 
 interface cardProps {

@@ -36,6 +36,7 @@ export async function uploadToS3(tokenId: any, mintData: any) {
 
 /**
  * This function is used to get the file from s3 bucket
+ * @param tokenId -tokenId
  */
 
 export async function getFileFromS3(tokenId: string) {

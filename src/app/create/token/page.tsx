@@ -10,7 +10,9 @@ import { tokenData, TokenInfo } from '@/types';
 import { mintToken } from '@/utils/mint';
 import Layout from '@/components/layout/layout';
 import {
+  ALYS_EXPLORER,
   ASSETTYPE,
+  COORDINATE_EXPLORER,
   FEERATE,
   RECEIVER_ADDRESS,
   tokenContractAddress,
@@ -270,6 +272,7 @@ const SingleToken = () => {
 
   /**
    * This function is used to handle form submission
+   *  @param event -event
    */
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     setError('');
@@ -315,9 +318,7 @@ const SingleToken = () => {
         try {
           if (tokenTranferDetails.data) {
             setTxid(tokenTranferDetails.data.hash);
-            setTxUrl(
-              'http://testnet.alyscan.io/tx/' + tokenTranferDetails.data.hash,
-            );
+            setTxUrl(ALYS_EXPLORER + 'tx/' + tokenTranferDetails.data.hash);
             setError('');
             setStep(1);
             setIsLoading(false);
@@ -351,7 +352,7 @@ const SingleToken = () => {
           } else {
             setError('');
             setTxid(result.result);
-            setTxUrl('https://testnet.coordiscan.io/tx/' + result.result);
+            setTxUrl(COORDINATE_EXPLORER + 'tx/' + result.result);
             setStep(1);
             setIsLoading(false);
           }
@@ -379,6 +380,8 @@ const SingleToken = () => {
 
   /**
    * This function is used to show the page title
+   * @param step -step
+   * @param networktype -networktype
    */
   const getTitle = (step: any, networktype: any) => {
     if (step === 0) {

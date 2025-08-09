@@ -2,7 +2,6 @@
 import React, { useContext, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { WALLET_URL } from '@/lib/constants';
 import { useConnector } from 'anduro-wallet-connector-react';

@@ -37,6 +37,7 @@ export async function getBlockCount() {
 
 /**
  * This function is used to get the block hash using RPC
+ * @param height -height
  */
 export async function getBlockHash(height: number) {
   const body = {
