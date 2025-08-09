@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
-var AWS = require('aws-sdk');
 import { uploadToS3 } from '@/lib/service/awshelper';
 
+/**
+ * This function is used to upload the metadata for asset
+ * @param req- req
+ */
 export async function POST(req: Request) {
   const { jsonData, tokenId } = await req.json();
 

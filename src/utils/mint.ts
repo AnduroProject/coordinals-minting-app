@@ -1,14 +1,10 @@
 import * as coordinate from 'chromajs-lib';
-
 import { tokenData, utxo } from '@/types';
-
 const schnorr = require('bip-schnorr');
 const convert = schnorr.convert;
 import ecc from '@bitcoinerlab/secp256k1';
-import * as bip39 from 'bip39';
 import BIP32Factory from 'bip32';
 const bip32 = BIP32Factory(ecc);
-import * as chroma from 'chromajs-lib';
 import {
   calculateSize,
   convertToSAT,
@@ -17,16 +13,29 @@ import {
 } from './calculateSize';
 import { fetchUtxos } from '@/lib/service/fetcher';
 
+/**
+ * This function is used to convert given data to hex format
+ * @param value -value
+ */
 export const convertDataToSha256Hex = (value: any) => {
   return convert.hash(Buffer.from(value, 'utf8')).toString('hex');
 };
 
+/**
+ * This function is used to convert given string to hex format
+ * @param value -value
+ */
 export const stringtoHex = (value: any) => {
   const buffer = Buffer.from(value, 'utf8');
   const hexString = buffer.toString('hex');
   return hexString;
 };
 
+/**
+ * This function is used to handle the token minting
+ * @param data -data
+ * @param feeRate -feeRate
+ */
 export async function mintToken(data: tokenData, feeRate: number) {
   const walletxpub = localStorage.getItem('xpubkey') || '';
   const acc = bip32.fromBase58(walletxpub, coordinate.networks.testnet);
@@ -52,24 +61,9 @@ export async function mintToken(data: tokenData, feeRate: number) {
 
   if (result.success) {
     unspents = result.data;
-    //  console.log("UTXO fetch error:", unspents);
-    // Handle error UI or fallback
   } else {
-    // console.error("UTXOs fetch error::", result.error);
     throw { message: result.error };
   }
-
-  // Fetch available UTXOs for the given xpub
-  //let unspents: utxo[] = await fetchUtxos(walletxpub);
-  // try {
-  //   const utxos = await fetchUtxos(walletxpub);
-  //   console.log("Fetched UTXOs:", utxos);
-  // } catch (err:any) {
-  //   console.error("Failed to fetch UTXOs:", err.message);
-  // }
-
-  // console.log("🚀 ~ utxos: 111", unspents);
-
   unspents.sort((a, b) => b.value - a.value);
   const utxos: utxo[] = [];
   for (let i = 0; i < unspents.length; i++) {
@@ -145,8 +139,6 @@ export async function mintToken(data: tokenData, feeRate: number) {
         value: currentUtxo.value,
       },
     });
-    ///script: getChainInstance(networkType || "").address.toOutputScript(address, network),
-
     // Calculate the size and fee
     const vbytes = await calculateSize(psbt, outputs, data);
     requiredAmount = vbytes * feeRate;
@@ -157,15 +149,13 @@ export async function mintToken(data: tokenData, feeRate: number) {
       if (changeAmount > convertToSAT(0.00001)) {
         outputs.push({ address: toAddress, value: changeAmount });
 
-        //Recalculate size and fee after adding the change output**
+        //Recalculate size and fee after adding the change output
         const updatedVbytes = await calculateSize(psbt, outputs, data);
         const updatedRequiredAmount = updatedVbytes * feeRate;
 
         changeAmount = totalInputValue - updatedRequiredAmount;
         if (changeAmount > convertToSAT(0.00001)) {
           psbt.addOutput({ address: toAddress || '', value: changeAmount });
-        } else {
-          //console.log("Change output is too small; skipping it.");
         }
       }
       break;
@@ -177,7 +167,6 @@ export async function mintToken(data: tokenData, feeRate: number) {
   }
 
   try {
-    //saveUsedUtxo(utxos.txid);
     return psbt.toHex();
   } catch (error) {
     console.log(error);

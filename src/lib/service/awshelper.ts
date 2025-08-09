@@ -6,6 +6,9 @@ AWS.config.update({
   region: process.env.AWS_REGION,
 });
 
+/**
+ * This function is used to upload the file to s3 bucket
+ */
 export async function uploadToS3(tokenId: any, mintData: any) {
   try {
     const payload: any = {
@@ -31,6 +34,10 @@ export async function uploadToS3(tokenId: any, mintData: any) {
   }
 }
 
+/**
+ * This function is used to get the file from s3 bucket
+ */
+
 export async function getFileFromS3(tokenId: string) {
   try {
     const payload = {
@@ -41,7 +48,6 @@ export async function getFileFromS3(tokenId: string) {
     const s3 = new AWS.S3();
     const mintDataPromise = s3.getObject(payload).promise();
     const mintDataResponse = await mintDataPromise;
-    // console.log('mintDataResponse', mintDataResponse)
     const mintData = JSON.parse(mintDataResponse.Body.toString('utf-8'));
     return mintData;
   } catch (error) {

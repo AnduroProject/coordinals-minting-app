@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { NextApiRequest, NextApiResponse } from 'next';
 import { getFileFromS3 } from '@/lib/service/awshelper';
-const fs = require('fs');
 
-export async function GET(
-  req: Request,
-  { params }: { params: { mintId: string } },
-) {
+/**
+ * This function is used to get the metadata for asset
+ * @param params- params
+ */
+export async function GET({ params }: { params: { mintId: string } }) {
   try {
     const { mintId } = params;
 

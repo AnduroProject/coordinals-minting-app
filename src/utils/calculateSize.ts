@@ -1,28 +1,14 @@
-import { BIP32Interface } from 'bip32';
-import * as coordinate from 'chromajs-lib';
 import { Psbt } from 'chromajs-lib';
-import { inputSize, outputSize } from '@/lib/constants';
-import { tokenData, utxo } from '@/types';
+import { inputSize } from '@/lib/constants';
+import { tokenData } from '@/types';
 import * as chroma from 'chromajs-lib';
-// export async function calculateSize(
-//   psbt: Psbt,
-//   acc: BIP32Interface,
-//   inputs: utxo[],
-// ) {
-//   const instance = coordinate.Psbt.fromBuffer(psbt.toBuffer());
-//    console.log("====isntance",instance)
-//   for (let i = 0; i < instance.inputCount; i++) {
-//     const signer = acc.derive(0).derive(inputs[i].derviation_index);
-//     instance.signInput(i, signer);
-//   }
 
-//   instance.finalizeAllInputs();
-
-//   const vBytes = instance.extractTransaction(true).virtualSize();
-
-//   return vBytes + outputSize;
-// }
-
+/**
+ * This function is used to calculate the transaction size
+ * @param psbt -psbt
+ * @param outputs -outputs
+ * @param data -data
+ */
 export async function calculateSize(
   psbt: Psbt,
   outputs: Array<{ address: string; value: number }>,
@@ -36,7 +22,6 @@ export async function calculateSize(
   for (let index = 0; index < outputs.length; index++) {
     transactionSize += 31;
   }
-
   transactionSize += 2; // default size for asset type
   transactionSize += Buffer.from(data.headline, 'utf8').byteLength;
   transactionSize += Buffer.from(data.ticker, 'utf8').byteLength;
@@ -53,18 +38,28 @@ export async function calculateSize(
   }
   return transactionSize;
 }
-
+/**
+ * This function is used to convert  to satoshi
+ * @param value -value
+ */
 export const convertToSAT = (value: number): number => {
   return Math.round(value * 10 ** 8);
 };
 
+/**
+ * This function is used to convert  to satoshi
+ * @param value -value
+ */
 export const getChainInstance = (networkType: any) => {
   return chroma;
 };
 
+/**
+ * This function is used to convert  to satoshi
+ * @param networkMode -networkMode
+ * @param networkType -networkType
+ */
 export const getNetwork = (networkMode: string, networkType: string) => {
-  console.log('network mode -network type', networkMode, networkType);
-
   if (networkMode === 'test') {
     return getChainInstance(networkType).networks.testnet;
   }
@@ -73,3 +68,17 @@ export const getNetwork = (networkMode: string, networkType: string) => {
   }
   return getChainInstance(networkType).networks.regtest;
 };
+
+/**
+ * This function is used to generate the random string
+ * @param length -length
+ */
+export function generateRandomString(length: number) {
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}

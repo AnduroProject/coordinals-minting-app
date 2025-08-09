@@ -1,8 +1,11 @@
 import { getUtxos } from '@/utils/libs';
 import { NextResponse } from 'next/server';
 
+/**
+ * This function is used to get  unspents for the transaction
+ * @param req -req
+ */
 export async function POST(req: Request) {
-  console.log('=====utxo api');
   const { address } = await req.json();
   try {
     const response = await getUtxos(address);

@@ -1,44 +1,38 @@
 import { NextResponse } from 'next/server';
-import { getFileFromS3, uploadToS3 } from '@/lib/service/awshelper';
+import { getFileFromS3 } from '@/lib/service/awshelper';
 
-// return NextResponse.json(mintData);
-// if (!fs.existsSync(tokenFilePath)) {
-//   return NextResponse.json({ error: "File not found" }, { status: 404 });
-// }
-// const data = fs.readFileSync(tokenFilePath, "utf-8");
-// const jsonData = JSON.parse(data);
-
-// console.log("=====jsonData", jsonData);
-export async function GET(req: Request) {
+/**
+ * This function is used to get the token id of the asset
+ */
+export async function GET() {
   try {
     const mintData = await getFileFromS3('token_data');
     return NextResponse.json({ data: mintData }, { status: 200 });
   } catch (error: any) {
-    // console.error('Error reading token file:', error);
     return NextResponse.json(
       { error: 'Failed to read token file' },
       { status: 500 },
     );
   }
 }
-
+/**
+ * This function is used to upload the token id for asset
+ * @param req -req
+ */
 export async function POST(req: Request) {
   const { tokenId } = await req.json();
   try {
-    let uploadResponse = await uploadToS3('token_data', { tokenId });
-
-    // if (!fs.existsSync(tokenFilePath)) {
-    //   return NextResponse.json({ error: "File not found" }, { status: 404 });
-    // }
-
-    // fs.writeFileSync(tokenFilePath, JSON.stringify({ tokenId }, null, 2));
-
+    if (!tokenId) {
+      return NextResponse.json(
+        { error: 'tokenId is required' },
+        { status: 400 },
+      );
+    }
     return NextResponse.json(
       { message: 'Token id updated successfully' },
       { status: 200 },
     );
   } catch (error) {
-    //console.error("Error writing JSON file:", error);
     return NextResponse.json(
       { error: 'Failed to update token id' },
       { status: 500 },

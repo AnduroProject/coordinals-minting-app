@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
-import Header from '@/components/layout/header';
+import React, { useState } from 'react';
 import Banner from '@/components/section/banner';
 import ButtonLg from '@/components/ui/buttonLg';
 import Input from '@/components/ui/input';
 import ButtonOutline from '@/components/ui/buttonOutline';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { mintToken } from '@/utils/mint';
 import Layout from '@/components/layout/layout';
@@ -15,7 +13,6 @@ import { alysAssetData, tokenData } from '@/types';
 import useFormState from '@/lib/store/useFormStore';
 import { toast } from 'sonner';
 import { useConnector } from 'anduro-wallet-connector-react';
-import { nftAbi } from '@/utils/nftAbi';
 import {
   nftMintInfo,
   saveJsonData,
@@ -30,7 +27,7 @@ const stepperData = ['Upload', 'Confirm'];
 const SingleCollectible = () => {
   const router = useRouter();
   const [networkType, setnetworkType] = React.useState<string>('');
-  const { walletState, signAndSendTransaction, mintAlysAsset } =
+  const { walletState, signAndSendTransaction } =
     React.useContext<any>(useConnector);
 
   const {
@@ -38,10 +35,6 @@ const SingleCollectible = () => {
     setTicker,
     headline,
     setHeadline,
-    imageBase64,
-    setImageBase64,
-    imageMime,
-    setImageMime,
     imageUrl,
     setImageUrl,
     setTxUrl,
@@ -51,50 +44,25 @@ const SingleCollectible = () => {
 
   const [error, setError] = useState<string>('');
   const [step, setStep] = useState<number>(0);
-  const [response, setResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [toaddress, setToaddress] = useState<string>('');
-
   const [showImage, setShowImage] = React.useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [txid, setTxid] = useState<string>('');
   const [imgSrc, setImgSrc] = useState('');
-  const [csrfToken, setCsrfToken] = useState(null);
-  const fetchCalled = useRef(false);
+  const [, setCsrfToken] = useState(null);
 
   interface FormInputData {
     headline: string;
     ticker: string;
     imageUrl: string;
   }
-  const handleDelete = (): void => {
-    setImageUrl('');
-    setImgSrc('');
-    setShowImage(false);
-    setErrorMessage('');
-  };
 
-  const handleImageError = () => {
-    setImgSrc('/default_asset_image.png');
-    setShowImage(false);
-  };
-  const handleImageLoad = () => {
-    setShowImage(true);
-    setErrorMessage('');
-  };
   React.useEffect(() => {
     reset();
     setToaddress(localStorage.getItem('address') || '');
   }, [walletState, reset]);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(txid).then(() => {
-      setIsCopied(true);
-      toast.success('Copied!');
-      setTimeout(() => setIsCopied(false), 3000);
-    });
-  };
 
   React.useEffect(() => {
     const fetchCsrfToken = async () => {
@@ -108,15 +76,9 @@ const SingleCollectible = () => {
     if (networkType !== '') {
       fetchCsrfToken();
     }
-
-    // if (!fetchCalled.current && csrfToken === null) {
-    //   fetchCalled.current = true;
-
-    // }
   }, [networkType]);
 
   React.useEffect(() => {
-    console.log('======router check');
     if (walletState.connectionState == 'disconnected') {
       setError('Wallet is not connected.');
     } else {
@@ -140,6 +102,47 @@ const SingleCollectible = () => {
     }
   }, [walletState, step, router]);
 
+  /**
+   * This function is used to handle delete action
+   */
+  const handleDelete = (): void => {
+    setImageUrl('');
+    setImgSrc('');
+    setShowImage(false);
+    setErrorMessage('');
+  };
+
+  /**
+   * This function is used to handle error for image
+   */
+  const handleImageError = () => {
+    setImgSrc('/default_asset_image.png');
+    setShowImage(false);
+  };
+
+  /**
+   * This function is used to handle load the image
+   */
+  const handleImageLoad = () => {
+    setShowImage(true);
+    setErrorMessage('');
+  };
+
+  /**
+   * This function is used to handle the copy action
+   */
+  const handleCopy = () => {
+    navigator.clipboard.writeText(txid).then(() => {
+      setIsCopied(true);
+      toast.success('Copied!');
+      setTimeout(() => setIsCopied(false), 3000);
+    });
+  };
+
+  /**
+   * This function is used to validate the form inputs
+   * @param inputData -inputData
+   */
   const validateForm = (
     inputData: FormInputData,
   ): { isValid: boolean; error?: string } => {
@@ -177,6 +180,9 @@ const SingleCollectible = () => {
     return { isValid: true };
   };
 
+  /**
+   * This function is used to handle form submission
+   */
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
@@ -198,7 +204,6 @@ const SingleCollectible = () => {
     const opReturnValues = [
       {
         image_url: imageUrl,
-        //mime: imageMime,
       },
     ];
     const data: tokenData = {
@@ -221,14 +226,11 @@ const SingleCollectible = () => {
       if (networkType === 'Alys') {
         const token = await tokenId();
         mintId = token.tokenId + 1;
-        const response = await saveJsonData(alysData, mintId);
+        await saveJsonData(alysData, mintId);
         const nftMintDetails = await nftMintInfo(toaddress, mintId);
 
         try {
           if (nftMintDetails.data.hash) {
-            // console.log("Transaction is successful!!!" + '\n'
-            //   + "Transaction Hash:", nftMintDetails.data.hash + '\n'
-            // )
             const mintingId = await storeTokenId(mintId);
             if (mintingId.data.error) {
               setError(mintingId.data.error);
@@ -251,19 +253,14 @@ const SingleCollectible = () => {
         } catch (error: any) {
           setIsLoading(false);
           setError('Transaction Failed');
-          //console.error("Error decoding data:", error);
         }
       } else {
         const transactionResult = await mintToken(data, FEERATE);
-        //console.log("🚀 ~ transactionResult:", transactionResult);
         if (transactionResult) {
           const result = await signAndSendTransaction({
             hex: transactionResult,
             transactionType: 'normal',
           });
-          //console.log("🚀 ~ signAndSendTransaction  ~ res:", result);
-          // console.log("🚀 ~   ~ res:", result.result);
-
           if (result && result.error) {
             const errorMessage =
               typeof result.error === 'string'
@@ -284,18 +281,22 @@ const SingleCollectible = () => {
       }
     } catch (error: any) {
       setError(error.message || 'An error occurred');
-      //toast.error(error.message || "An error occurred");
       return setIsLoading(false);
     }
   };
 
+  /**
+   * This function is used to reset the page
+   */
   const triggerRefresh = () => {
     setStep(0);
-    //reset();
     router.push('/create/collectible');
     reset();
   };
 
+  /**
+   * This function is used to show the page title
+   */
   const getTitle = (step: any, networktype: any) => {
     if (step === 0) {
       if (networktype === 'Coordinate' || networktype === 'Alys')
@@ -320,17 +321,10 @@ const SingleCollectible = () => {
             <form onSubmit={handleSubmit}>
               <div className="w-[592px] items-start flex flex-col gap-16">
                 <div className="flex flex-col gap-8 w-full">
-                  {/* <p className="text-profileTitle text-neutral50 font-bold">
-                    Details 
-                  </p> */}
                   <div className="input_padd">
                     <p className="text-profileTitle text-white text-neutral20 font-bold">
                       {networkType} Collectible
                     </p>
-                    {/* <select className="px-5 py-3.5 bg-background border rounded-xl border-neutral50 text-lg2 placeholder-neutral200 text-neutral-50 w-full" onChange={(event) => setnetworkType(event.target.value)}>
-                      <option value="coordinate">Coordinate</option>
-                      <option value="alys">Alys</option>
-                    </select> */}
                   </div>
                   <div className="flex flex-col gap-6 w-full">
                     <Input
@@ -393,24 +387,7 @@ const SingleCollectible = () => {
                     </div>
                   </div>
                 </div>
-                {/* {networkType === "coordinate" &&
-                  <div className="w-full gap-8 flex flex-col">
-                    <p className="text-profileTitle text-neutral50 font-bold">
-                      Upload your Collectible
-                    </p>
-                    {imageBase64 ? (
-                      <UploadCardFit
-                        image={imageBase64}
-                        onDelete={handleDelete}
-                      />
-                    ) : (
-                      <UploadFile
-                        text="Accepted file types: WEBP (recommended), JPEG, PNG, SVG, and GIF."
-                        handleImageUpload={handleImageUpload}
-                      />
-                    )}
-                  </div>
-                } */}
+
                 {walletState.connectionState == 'connected' ? (
                   <div className="w-full flex flex-row gap-8">
                     <ButtonOutline
@@ -437,7 +414,6 @@ const SingleCollectible = () => {
           {step == 1 && (
             <div className="w-full max-w-[800px] flex flex-col gap-10 px-4">
               <div className="w-full flex flex-row items-center gap-8 justify-start">
-                {/* {networkType === "Coordinate" && */}
                 <img
                   src={imgSrc}
                   alt="background"

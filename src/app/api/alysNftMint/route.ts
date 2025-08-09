@@ -1,14 +1,12 @@
-import {
-  alysRPCUrl,
-  nftContractAddress,
-  privateKey,
-  tokenContractAddress,
-} from '@/lib/constants';
+import { alysRPCUrl, nftContractAddress, privateKey } from '@/lib/constants';
 import { nftAbi } from '@/utils/nftAbi';
-import { tokenAbi } from '@/utils/tokenAbi';
 import { ethers } from 'ethers';
 import { NextResponse } from 'next/server';
 
+/**
+ * This function is used to mint alys nft
+ * @param req - req
+ */
 export async function POST(req: Request) {
   const { mintId, toAddress } = await req.json();
   try {
@@ -19,12 +17,10 @@ export async function POST(req: Request) {
       'pending',
     );
     const contract = new ethers.Contract(nftContractAddress, nftAbi, signer);
-
     const gasPrice = (await provider.getFeeData()).gasPrice;
     const gethex = await contract.safeMint.populateTransaction(
       toAddress,
       mintId,
-      //appBaseUrl + 'api/metaUri/' + mintId,
       'https://maratech-sidechain-testnet-coordinate.s3.amazonaws.com/nft/' +
         mintId +
         '.json',
@@ -35,7 +31,6 @@ export async function POST(req: Request) {
       },
     );
     const signedTxn = await signer.sendTransaction(gethex);
-
     return NextResponse.json({ status: 200, data: signedTxn, message: null });
   } catch (error) {
     return NextResponse.json({

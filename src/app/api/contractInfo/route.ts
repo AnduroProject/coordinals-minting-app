@@ -1,18 +1,17 @@
 import { alysRPCUrl, ownerAddress, privateKey } from '@/lib/constants';
-import { tokenAbi } from '@/utils/tokenAbi';
 import { ethers } from 'ethers';
 import { NextResponse } from 'next/server';
 
+/**
+ * This function is used to get the contract details
+ * @param req- req
+ */
 export async function POST(req: Request) {
   const { tokenContractAddress, tokenAbi } = await req.json();
 
   try {
     const provider = new ethers.JsonRpcProvider(alysRPCUrl);
     const signer = new ethers.Wallet(privateKey, provider);
-    const nonces = await provider.getTransactionCount(
-      signer.address,
-      'pending',
-    );
     const contract = new ethers.Contract(
       tokenContractAddress,
       tokenAbi,

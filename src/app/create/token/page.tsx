@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useContext, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import Banner from '@/components/section/banner';
-import Header from '@/components/layout/header';
 import Input from '@/components/ui/input';
 import ButtonLg from '@/components/ui/buttonLg';
 import { useRouter } from 'next/navigation';
@@ -19,7 +18,6 @@ import {
 import useFormState from '@/lib/store/useFormStore';
 import { toast } from 'sonner';
 import { useConnector } from 'anduro-wallet-connector-react';
-import { ethers } from 'ethers';
 import { tokenAbi } from '@/utils/tokenAbi';
 import { CloseCircle, Copy } from 'iconsax-react';
 import { convertToSubstring } from '@/lib/utils';
@@ -46,7 +44,6 @@ const SingleToken = () => {
     reset,
   } = useFormState();
 
-  // const [ticker, setTicker] = useState<string>("");
   const [step, setStep] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -59,7 +56,7 @@ const SingleToken = () => {
   const [txid, setTxid] = useState<string>('');
   const [imgSrc, setImgSrc] = useState('');
   const [csrfToken, setCsrfToken] = useState(null);
-  const fetchCalled = useRef(false);
+
   interface FormInputData {
     headline: string;
     ticker: string;
@@ -69,18 +66,8 @@ const SingleToken = () => {
 
   React.useEffect(() => {
     reset();
-    console.log('======reset call', walletState);
-
     setToaddress(localStorage.getItem('address') || '');
   }, [walletState, reset]);
-
-  // React.useEffect(() => {
-  //   if (networkType === "Coordinate") {
-  //     setDecimal(8);
-  //   } else if (networkType === "Alys") {
-  //     setDecimal(18);
-  //   }
-  // }, [networkType]);
 
   React.useEffect(() => {
     if (walletState.connectionState == 'disconnected') {
@@ -115,11 +102,6 @@ const SingleToken = () => {
         console.error('Failed to fetch CSRF token:', error);
       }
     };
-
-    // if (!fetchCalled.current && csrfToken === null) {
-    //   fetchCalled.current = true;
-    //   fetchCsrfToken();
-    // }
     if (networkType !== '') {
       fetchCsrfToken();
     }
@@ -130,14 +112,10 @@ const SingleToken = () => {
       console.log('====check alys');
       contractInfo(tokenContractAddress, tokenAbi)
         .then((contractDetails) => {
-          // console.log("Contract details fetched ", contractDetails);
           const Data: TokenInfo = {
             name: contractDetails.data.name,
             symbol: contractDetails.data.symbol,
             total_supply: contractDetails.data.balance,
-            //ethers.parseUnits(contractDetails.data.balance.toString(),contractDetails.decimals),
-
-            //  total_supply: ethers.formatEther(contractDetails.data.balance),
             decimal: contractDetails.data.decimals,
           };
           setTokenData(Data);
@@ -148,6 +126,9 @@ const SingleToken = () => {
     }
   }, [tokenData?.total_supply, csrfToken, networkType]);
 
+  /**
+   * This function is used to handle delete action
+   */
   const handleDelete = (): void => {
     setImageUrl('');
     setImgSrc('');
@@ -155,12 +136,18 @@ const SingleToken = () => {
     setErrorMessage('');
   };
 
+  /**
+   * This function is used to handle error for image
+   */
   const handleImageError = () => {
     setImgSrc('/default_asset_image.png');
     setShowImage(false);
-    //setErrorMessage('Please provide a valid image URL.');
   };
 
+  /**
+   * This function is used to handle decimal changes
+   * @param value -value
+   */
   const handleTokenDecimalChange = (value: any) => {
     if (!/^\d+$/.test(value) && value.toString().trim() !== '') {
       return;
@@ -168,10 +155,17 @@ const SingleToken = () => {
     setDecimal(value.trim());
   };
 
+  /**
+   * This function is used to handle load the image
+   */
   const handleImageLoad = () => {
     setShowImage(true);
     setErrorMessage('');
   };
+
+  /**
+   * This function is used to handle the copy action
+   */
   const handleCopy = () => {
     navigator.clipboard.writeText(txid).then(() => {
       setIsCopied(true);
@@ -180,6 +174,10 @@ const SingleToken = () => {
     });
   };
 
+  /**
+   * This function is used to validate the form inputs
+   * @param inputData -inputData
+   */
   const validateForm = (
     inputData: FormInputData,
   ): { isValid: boolean; error?: string } => {
@@ -219,13 +217,6 @@ const SingleToken = () => {
         };
       }
     }
-
-    // if (networkType === "Alys") {
-    //   if (decimal < 0 || decimal >= 19) {
-    //     return { isValid: false,
-    //       error: "The token decimal should be greater than 0 and less than 19." }
-    //   }
-    // }
     if (supply <= 0) {
       return {
         isValid: false,
@@ -257,9 +248,6 @@ const SingleToken = () => {
           Number(supplyLimit),
       };
     }
-
-    //Number(tokenData?.total_supply));
-
     if (
       (supply * 10 ** tokenData?.decimal > Number(tokenData?.total_supply) &&
         networkType === 'Alys') ||
@@ -271,7 +259,6 @@ const SingleToken = () => {
           supply > 100
             ? 'Supply must be less than or equal to 100'
             : 'Provided supply is higher than available',
-        // : "Available supply" + Number(tokenData?.total_supply)
       };
     }
 
@@ -281,6 +268,9 @@ const SingleToken = () => {
     return { isValid: true };
   };
 
+  /**
+   * This function is used to handle form submission
+   */
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     setError('');
     event.preventDefault();
@@ -333,7 +323,6 @@ const SingleToken = () => {
             setIsLoading(false);
           } else {
             setError('Transaction Failed');
-            //toast.error(error)
             setStep(0);
             setIsLoading(false);
           }
@@ -348,7 +337,6 @@ const SingleToken = () => {
             hex: transactionResult,
             transactionType: 'normal',
           });
-          //console.log("🚀 ~ sendTransactionresult ~ res:", result);
 
           if (result && result.error) {
             const errorMessage =
@@ -370,24 +358,28 @@ const SingleToken = () => {
         }
       }
     } catch (error: any) {
-      // console.log("🚀 ~ handleSubmit ~ error:", error);
       if (error.message.includes('Insufficient funds')) {
         const err = 'Insufficient funds for this transaction';
         setError(err);
       } else {
         setError('Transaction Failed');
-        //toast.error(error.message || "An error occurred");
         setIsLoading(false);
       }
     }
   };
 
+  /**
+   * This function is used to reset the page
+   */
   const triggerRefresh = () => {
     setStep(0);
     reset();
     router.push('/create/token');
   };
 
+  /**
+   * This function is used to show the page title
+   */
   const getTitle = (step: any, networktype: any) => {
     if (step === 0) {
       if (networktype === 'Coordinate') return 'Create Token';
@@ -417,12 +409,7 @@ const SingleToken = () => {
                   <p className="text-profileTitle  text-white text-neutral20 font-bold">
                     {networkType} Token
                   </p>
-                  <div className="input_padd">
-                    {/* <select className="px-5 py-3.5 bg-background border rounded-xl border-neutral50 text-lg2 placeholder-neutral200 text-neutral-50 w-full" onChange={(event) => setnetworkType(event.target.value)}>
-                      <option value="coordinate">Coordinate</option>
-                      <option value="alys">Alys</option>
-                    </select> */}
-                  </div>
+                  <div className="input_padd"></div>
                   <div className="w-full gap-6 flex flex-col">
                     {(networkType === 'Coordinate' || networkType === '') && (
                       <>
@@ -481,7 +468,6 @@ const SingleToken = () => {
                                   maxWidth: '200px',
                                   maxHeight: '200px',
                                   objectFit: 'contain',
-                                  //display: showImage ? 'block' : 'none',
                                 }}
                                 onLoad={handleImageLoad}
                                 onError={handleImageError}
@@ -521,29 +507,10 @@ const SingleToken = () => {
                           }}
                           type="number"
                         />
-                        {/* <Input
-                        title="Decimal"
-                        text="Decimal"
-                        value={decimal}
-                        onChange={(event: any) => handleTokenDecimalChange(event.target.value)}
-                      /> */}
                       </>
                     )}
                   </div>
                 </div>
-                {/* <div className="flex flex-col gap-8 w-full">
-                  <p className="text-profileTitle text-neutral50 font-bold">
-                    Token logo (Optional)
-                  </p>
-                  {imageBase64 ? (
-                    <UploadFile image={imageBase64} onDelete={handleDelete} />
-                  ) : (
-                    <UploadFile
-                      text="Accepted file types: WEBP (recommended), JPEG, PNG, SVG, and GIF."
-                      handleImageUpload={handleImageUpload}
-                    />
-                  )}
-                </div> */}
                 {walletState.connectionState == 'connected' ? (
                   <div className="flex flex-row gap-8 justify-between w-full">
                     <ButtonOutline
@@ -557,7 +524,6 @@ const SingleToken = () => {
                       type="submit"
                       isSelected={true}
                       isLoading={isLoading}
-                      // disabled={isLoading}
                     >
                       {isLoading ? '...loading' : 'Continue'}
                     </ButtonLg>
@@ -671,7 +637,6 @@ const SingleToken = () => {
                   isLoading={isLoading}
                   disabled={isLoading}
                   onClick={() => triggerRefresh()}
-                  // onClick={() => router.reload()}
                 >
                   Create
                 </ButtonLg>

@@ -14,7 +14,6 @@ export type alysAssetData = {
   supply: number;
 };
 export type TokenInfo = {
-  //address: string;
   name: string;
   symbol: string;
   total_supply: any;
@@ -29,7 +28,6 @@ export type collectionData = {
   ticker: string;
   supply: number;
   traits: Attribute[];
-  //traits optional, logo optional
 };
 
 export type utxo = {

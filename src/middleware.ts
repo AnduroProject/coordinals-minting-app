@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-// import csrf from "csrf";
 
-// const tokens = new csrf();
-// const secret = process.env.CSRF_SECRET || tokens.secretSync();
+/**
+ * This function is act as middleware for the application
+ * @param request -request
+ */
 
 export function middleware(request: NextRequest) {
-  // console.log("===== MIDDLEWARE");
-  // console.log("Middleware executed for:", request.url);
   // Extract CSRF token from the cookie
   const userToken = request.cookies.get('XSRF-TOKEN')?.value;
 
@@ -18,12 +17,6 @@ export function middleware(request: NextRequest) {
       { status: 403 },
     );
   }
-
-  // // Verify the CSRF token
-  // if (!tokens.verify(secret, userToken)) {
-  //   return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
-  // }
-
   // Proceed with the request if the CSRF token is valid
   return NextResponse.next();
 }

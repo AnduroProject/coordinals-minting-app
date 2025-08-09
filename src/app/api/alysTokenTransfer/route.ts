@@ -3,6 +3,10 @@ import { tokenAbi } from '@/utils/tokenAbi';
 import { ethers } from 'ethers';
 import { NextResponse } from 'next/server';
 
+/**
+ * This function is used to transfer the alys tokens
+ * @param req - req
+ */
 export async function POST(req: Request) {
   const { toAddress, supply } = await req.json();
   try {
@@ -17,22 +21,13 @@ export async function POST(req: Request) {
       tokenAbi,
       signer,
     );
-
     const gasPrice = (await provider.getFeeData()).gasPrice;
-
     const value = ethers.parseUnits(supply.toString(), 8);
-
-    const gethex = await contract.transfer(
-      toAddress,
-      value,
-      //ethers.parseEther(supply.toString()),
-      {
-        chainId: '727272',
-        gasPrice: gasPrice,
-        nonce: nonces,
-      },
-    );
-
+    const gethex = await contract.transfer(toAddress, value, {
+      chainId: '727272',
+      gasPrice: gasPrice,
+      nonce: nonces,
+    });
     return NextResponse.json({ status: 200, data: gethex, message: null });
   } catch (error) {
     return NextResponse.json({

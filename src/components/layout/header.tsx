@@ -1,34 +1,28 @@
 'use client';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
-import HeaderItem from '../ui/headerItem';
 import { WALLET_URL } from '@/lib/constants';
 import { useConnector } from 'anduro-wallet-connector-react';
 import { toast } from 'sonner';
 import { disconnectCookie } from '@/lib/service/fetcher';
 
-const routesData = [
-  {
-    title: 'Create',
-    pageUrl: '/create',
-  },
-];
 export default function Header() {
-  const router = useRouter();
   const { networkState, walletState, connect, disconnect, networkInfo } =
     useContext<any>(useConnector);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [walletAddress, setWalletAddress] = useState<string>('');
-  const [isWalletConnected, setIsWalletConnected] =
-    React.useState<string>('false');
+  const [, setIsWalletConnected] = React.useState<string>('false');
   const [isOpenNetworkPopup, setIsOpenNetworkPopup] =
     React.useState<boolean>(false);
   const [chainId, setChainId] = React.useState<number>(0);
   const [error, setError] = useState<string>('');
 
+  /**
+   * This function is used to disconnect the wallet
+   */
   const handleDisconnectionAction = async () => {
     const result = await disconnect();
     if (result.status === true) {
@@ -43,6 +37,9 @@ export default function Header() {
     }
   };
 
+  /**
+   * This function is used to handle the network informations
+   */
   const handleNetworkInfo = React.useCallback(async () => {
     const result = await networkInfo();
     if (result.status === true) {
@@ -76,6 +73,9 @@ export default function Header() {
     }
   }, [walletState, networkState, handleNetworkInfo]);
 
+  /**
+   * This function is used to handle network selection popup
+   */
   const openNetworkPopup = async () => {
     try {
       if (Number(localStorage.getItem('chainId')) != 0) {
@@ -88,14 +88,15 @@ export default function Header() {
       toast.error(`Error when connecting wallet`);
       setIsConnecting(false);
       setWalletAddress('');
-      //console.log(error);
     }
   };
 
+  /**
+   * This function is used to handle login action
+   */
   const handleLogin = async () => {
     try {
       if (chainId > 0) {
-        //  setError("")
         const response = await connect({
           chainId: chainId,
           walletURL: WALLET_URL,
@@ -124,7 +125,6 @@ export default function Header() {
           setWalletAddress(walletAddress);
           setIsConnecting(true);
           toast.success(`Successfully connected`);
-          // }
         } else {
           setIsConnecting(false);
           toast.error(`Canceled`);
@@ -137,14 +137,13 @@ export default function Header() {
       toast.error(`Error when connecting wallet`);
       setIsConnecting(false);
       setWalletAddress('');
-      //console.log(error);
     }
   };
-
+  /**
+   * This function is used to handle logout action
+   */
   const handleLogout = async () => {
     await handleDisconnectionAction();
-    //  window.localStorage.removeItem("userProfile");
-    //router.push("/");
   };
 
   return (
@@ -163,15 +162,6 @@ export default function Header() {
               </Link>
             </h1>
             <div className="flex flex-row overflow-hidden items-center gap-4">
-              {/* <div className="flex flex-row gap-2 text-neutral00">
-                {routesData.map((item, index) => (
-                  <HeaderItem
-                    key={index}
-                    title={item.title}
-                    handleNav={() => router.push(item.pageUrl)}
-                  />
-                ))}
-              </div> */}
               {walletAddress === '' ? (
                 <Button
                   variant={'outline'}

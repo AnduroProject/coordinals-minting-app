@@ -1,6 +1,10 @@
 import { getTransactionHex } from '@/utils/libs';
 import { NextResponse } from 'next/server';
 
+/**
+ * This function is used to get the transaction hex
+ * @param req -req
+ */
 export async function POST(req: Request) {
   const { txId, verbose, blockHash } = await req.json();
   try {

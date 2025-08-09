@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import Stepper from '../ui/stepper';
 import { useStateStep } from '@/lib/store/stepStore';

@@ -2,7 +2,6 @@ import WalletConnecProvider from '@/components/provider/wallet-connect-provider'
 import type { Metadata } from 'next';
 import { Bai_Jamjuree } from 'next/font/google';
 import './globals.css';
-// import WalletConnecProvider from "@/components/layout/wallet-connect-provider";
 import { Toaster } from '@/components/ui/toaster';
 
 const bai_Jamjuree = Bai_Jamjuree({
