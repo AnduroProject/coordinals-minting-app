@@ -1,6 +1,6 @@
 // store.ts
-import { MergedObject } from "@/types";
-import { create } from "zustand";
+import { MergedObject } from '@/types';
+import { create } from 'zustand';
 
 interface FormState {
   ticker: string;
@@ -19,6 +19,8 @@ interface FormState {
   setCollectionId: (collectionId: string) => void;
   supply: number;
   setSupply: (supply: number) => void;
+  decimal: number;
+  setDecimal: (decimal: number) => void;
   imageUrl: string;
   setImageUrl: (imageUrl: string) => void;
   txUrl: string;
@@ -29,40 +31,42 @@ interface FormState {
 }
 
 const useFormState = create<FormState>((set) => ({
-  ticker: "",
+  ticker: '',
   setTicker: (ticker) => set({ ticker }),
-  headline: "",
+  headline: '',
   setHeadline: (headline) => set({ headline }),
-  imageBase64: "",
+  imageBase64: '',
   setImageBase64: (imageBase64) => set({ imageBase64 }),
-  imageMime: "",
+  imageMime: '',
   setImageMime: (imageMime) => set({ imageMime }),
   supply: 1,
   setSupply: (supply) => set({ supply }),
-  imageUrl: "",
+  decimal: 0,
+  setDecimal: (decimal) => set({ decimal }),
+  imageUrl: '',
   setImageUrl: (imageUrl) => set({ imageUrl }),
-  description: "",
+  description: '',
   setDescription: (description) => set({ description }),
   price: 0,
   setPrice: (price) => set({ price }),
-  collectionId: "",
+  collectionId: '',
   setCollectionId: (collectionId) => set({ collectionId }),
-  txUrl: "",
+  txUrl: '',
   setTxUrl: (txUrl) => set({ txUrl }),
   mergedArray: [],
   setMergedArray: (mergedArray) => set({ mergedArray }),
   reset: () =>
     set({
-      ticker: "",
-      headline: "",
-      imageBase64: "",
-      description: "",
+      ticker: '',
+      headline: '',
+      imageBase64: '',
+      description: '',
       price: 0,
-      imageMime: "",
-      collectionId: "",
+      imageMime: '',
+      collectionId: '',
       supply: 1,
-      imageUrl: "",
-      txUrl: "",
+      imageUrl: '',
+      txUrl: '',
       mergedArray: [],
     }),
 }));

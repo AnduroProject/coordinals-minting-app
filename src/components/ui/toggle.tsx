@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface ToggleProps {
   isChecked: boolean;
@@ -20,7 +20,7 @@ const Toggle: React.FC<ToggleProps> = ({ isChecked, onChange }) => {
                     peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full
                     after:content-[''] after:absolute after:top-[6px] after:start-[6px]
                     after:rounded-full after:h-6 after:w-6 peer-checked:bg-brand 
-                    ${isChecked ? "after:bg-neutral600" : "after:bg-white"}`}
+                    ${isChecked ? 'after:bg-neutral600' : 'after:bg-white'}`}
         />
       </label>
     </>
