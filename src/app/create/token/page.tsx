@@ -111,7 +111,6 @@ const SingleToken = () => {
 
   React.useEffect(() => {
     if (networkType === 'Alys') {
-      console.log('====check alys');
       contractInfo(tokenContractAddress, tokenAbi)
         .then((contractDetails) => {
           const Data: TokenInfo = {

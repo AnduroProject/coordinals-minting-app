@@ -29,7 +29,6 @@ export async function getBlockCount() {
     });
 
     const rpc = response.data;
-    console.log(rpc.result);
   } catch (e) {
     console.log(e);
   }
@@ -100,8 +99,6 @@ export async function getUtxos(address: string) {
     utxos.forEach((utxo) => {
       utxo.value = Number(utxo.value);
       utxo.height = Number(utxo.height);
-
-      console.log(utxo);
     });
     utxos.sort((a, b) => b.value - a.value);
 
@@ -144,6 +141,5 @@ export async function sendTransactionToRpc(transactionHex: string) {
     },
   });
 
-  console.log(response.data);
   return response.data;
 }
