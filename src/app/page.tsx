@@ -40,14 +40,14 @@ const Create = () => {
       id: 2,
       icon: Stop,
       title: 'Single Collectible',
-      text: 'Create a unique digital collectible or NFT with custom metadata, images, and attributes. Perfect for digital art, collectibles, and one-of-a-kind assets.',
+      text: 'Create a unique digital collectible or NFT with custom metadata, images, and attributes.',
       pageUrl: '/create/collectible',
     },
     {
       id: 3,
       icon: BuyCrypto,
       title: 'Token',
-      text: 'Mint fungible tokens with customizable supply, decimals, and metadata. Ideal for creating utility tokens, governance tokens, or any divisible digital asset.',
+      text: 'Mint fungible tokens with customizable supply, decimals, and metadata.',
       pageUrl: '/create/token',
     },
   ];
