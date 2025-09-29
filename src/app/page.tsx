@@ -40,14 +40,14 @@ const Create = () => {
       id: 2,
       icon: Stop,
       title: 'Single Collectible',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      text: 'Create a unique digital collectible or NFT with custom metadata, images, and attributes.',
       pageUrl: '/create/collectible',
     },
     {
       id: 3,
       icon: BuyCrypto,
       title: 'Token',
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      text: 'Mint fungible tokens with customizable supply, decimals, and metadata.',
       pageUrl: '/create/token',
     },
   ];

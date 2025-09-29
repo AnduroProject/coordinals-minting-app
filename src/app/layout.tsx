@@ -11,9 +11,9 @@ const bai_Jamjuree = Bai_Jamjuree({
 });
 
 export const metadata: Metadata = {
-  title: 'Coordinals',
+  title: 'BitAssets',
   description:
-    'Coordinals minting app - For creating coordinate and Alys assets',
+    'BitAssets - For creating coordinate and Alys assets',
 };
 
 export default function RootLayout({
