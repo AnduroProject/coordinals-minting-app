@@ -3,16 +3,16 @@ import { Tapleaf, Taptree } from '../types';
 export declare const LEAF_VERSION_TAPSCRIPT = 192;
 export declare const MAX_TAPTREE_DEPTH = 128;
 interface HashLeaf {
-    hash: Buffer;
+  hash: Buffer;
 }
 interface HashBranch {
-    hash: Buffer;
-    left: HashTree;
-    right: HashTree;
+  hash: Buffer;
+  left: HashTree;
+  right: HashTree;
 }
 interface TweakedPublicKey {
-    parity: number;
-    x: Buffer;
+  parity: number;
+  x: Buffer;
 }
 /**
  * Binary tree representing leaf, branch, and root node hashes of a Taptree.
@@ -21,7 +21,10 @@ interface TweakedPublicKey {
  * and calculating merkle inclusion proofs when constructing a control block.
  */
 export type HashTree = HashLeaf | HashBranch;
-export declare function rootHashFromPath(controlBlock: Buffer, leafHash: Buffer): Buffer;
+export declare function rootHashFromPath(
+  controlBlock: Buffer,
+  leafHash: Buffer,
+): Buffer;
 /**
  * Build a hash tree of merkle nodes from the scripts binary tree.
  * @param scriptTree - the tree of scripts to pairwise hash.
@@ -35,8 +38,17 @@ export declare function toHashTree(scriptTree: Taptree): HashTree;
  * (exclusive) needed to prove inclusion of the specified hash. undefined if no
  * path is found
  */
-export declare function findScriptPath(node: HashTree, hash: Buffer): Buffer[] | undefined;
+export declare function findScriptPath(
+  node: HashTree,
+  hash: Buffer,
+): Buffer[] | undefined;
 export declare function tapleafHash(leaf: Tapleaf): Buffer;
-export declare function tapTweakHash(pubKey: Buffer, h: Buffer | undefined): Buffer;
-export declare function tweakKey(pubKey: Buffer, h: Buffer | undefined): TweakedPublicKey | null;
+export declare function tapTweakHash(
+  pubKey: Buffer,
+  h: Buffer | undefined,
+): Buffer;
+export declare function tweakKey(
+  pubKey: Buffer,
+  h: Buffer | undefined,
+): TweakedPublicKey | null;
 export {};

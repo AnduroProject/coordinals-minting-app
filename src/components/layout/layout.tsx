@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useEffect } from "react";
-import { Bai_Jamjuree } from "next/font/google";
-import Header from "./header";
+import React, { useEffect } from 'react';
+import { Bai_Jamjuree } from 'next/font/google';
+import Header from './header';
 
 const bai_Jamjuree = Bai_Jamjuree({
-  weight: ["400", "700"],
-  style: "normal",
-  subsets: ["latin"],
+  weight: ['400', '700'],
+  style: 'normal',
+  subsets: ['latin'],
 });
 
 const Layout = ({ children }: { children: React.ReactNode }) => {

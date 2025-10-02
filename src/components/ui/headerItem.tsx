@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import Image from "next/image";
+import React, { useState } from 'react';
 
 interface itemProps {
   title: string;
@@ -20,7 +19,7 @@ const HeaderItem: React.FC<itemProps> = ({ title, handleNav }) => {
         onMouseEnter={() => setShowDiv(true)}
         onMouseLeave={() => setShowDiv(false)}
       >
-        <p className={"text-neutral00 hover:text-brand"}>{title}</p>
+        {/* <p className={"text-neutral00 hover:text-brand"}>{title}</p> */}
       </div>
       {showDiv && (
         <div

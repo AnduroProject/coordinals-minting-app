@@ -5,7 +5,9 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreBuildErrors: true,
   },
+
   reactStrictMode: true,
 };
 
 export default nextConfig;
+

@@ -1,29 +1,25 @@
-import { utxo } from "@/types";
-import { inputSize } from "@/lib/constants";
-import { getUtxos } from "./libs";
-import { fetchUtxos } from "@/lib/service/fetcher";
-import { toast } from "sonner";
-import { getUnspentsLsit } from "./calculateSize";
+import { utxo } from '@/types';
+import { inputSize } from '@/lib/constants';
 
+/**
+ * This function is used to prepare the inputs to make transaction
+ * @param utxos -utxos
+ * @param requiredAmount -requiredAmount
+ * @param feeRate -feeRate
+ */
 export async function prepareInputs(
-  address: string,
+  utxos: utxo[],
   requiredAmount: number,
   feeRate: number,
 ) {
-  const utxos: utxo[] = await fetchUtxos(address);
-
   const inputs: utxo[] = [];
   let totalAmount = 0,
     index = 0;
-
   while (totalAmount < requiredAmount) {
-
-    if (index > utxos.length -1) {
-      //throw new Error("Insufficient balance.");
-      toast.error("Insufficient balance.")
-      return
+    if (index > utxos.length - 1) {
+      throw new Error('Insufficient balance.');
+      return;
     }
-
     inputs.push(utxos[index]);
     totalAmount += utxos[index].value;
     index++;

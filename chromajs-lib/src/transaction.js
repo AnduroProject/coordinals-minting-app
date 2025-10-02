@@ -43,10 +43,10 @@ class Transaction {
     this.version = 1;
     this.assettype = 0;
     this.precision = 0;
-    this.ticker = Buffer.from("","hex");
-    this.headline = Buffer.from("","hex");
-    this.payload = Buffer.from("","hex");
-    this.payloaddata = Buffer.from("","hex");
+    this.ticker = Buffer.from('', 'hex');
+    this.headline = Buffer.from('', 'hex');
+    this.payload = Buffer.from('', 'hex');
+    this.payloaddata = Buffer.from('', 'hex');
     this.locktime = 0;
     this.ins = [];
     this.outs = [];
@@ -56,7 +56,7 @@ class Transaction {
     const tx = new Transaction();
     tx.version = bufferReader.readInt32();
 
-    if(tx.version == 10) {
+    if (tx.version == 10) {
       tx.assettype = bufferReader.readInt32();
       tx.precision = bufferReader.readInt32();
       tx.ticker = bufferReader.readVarSlice();
@@ -171,9 +171,17 @@ class Transaction {
   }
   byteLength(_ALLOW_WITNESS = true) {
     const hasWitnesses = _ALLOW_WITNESS && this.hasWitnesses();
-    const assetSize = this.version == 10 ? (8 + varSliceSize(this.ticker) + varSliceSize(this.headline) + 32 + varSliceSize(this.payloaddata)) : 0
+    const assetSize =
+      this.version == 10
+        ? 8 +
+          varSliceSize(this.ticker) +
+          varSliceSize(this.headline) +
+          32 +
+          varSliceSize(this.payloaddata)
+        : 0;
     return (
-      (hasWitnesses ? 10 : 8)  + assetSize +
+      (hasWitnesses ? 10 : 8) +
+      assetSize +
       bufferutils_1.varuint.encodingLength(this.ins.length) +
       bufferutils_1.varuint.encodingLength(this.outs.length) +
       this.ins.reduce((sum, input) => {
@@ -492,8 +500,8 @@ class Transaction {
     if (forWitness && this.isCoinbase()) return Buffer.alloc(32, 0);
     // removing payload data before hash
     const tx = this;
-    tx.payloaddata = Buffer.from("","hex");
-    
+    tx.payloaddata = Buffer.from('', 'hex');
+
     return bcrypto.hash256(this.__toBuffer(undefined, undefined, forWitness));
   }
   getId() {
@@ -523,7 +531,7 @@ class Transaction {
       initialOffset || 0,
     );
     bufferWriter.writeInt32(this.version);
-    if(this.version == 10) {
+    if (this.version == 10) {
       bufferWriter.writeInt32(this.assettype);
       bufferWriter.writeInt32(this.precision);
       bufferWriter.writeVarSlice(this.ticker);

@@ -1,64 +1,52 @@
-import * as coordinate from "chromajs-lib";
-
-import { rpcResponse, tokenData, utxo } from "@/types";
-
-const schnorr = require("bip-schnorr");
+import * as coordinate from 'chromajs-lib';
+import { tokenData, utxo } from '@/types';
+const schnorr = require('bip-schnorr');
 const convert = schnorr.convert;
-import ecc from "@bitcoinerlab/secp256k1";
-import * as bip39 from "bip39";
-import BIP32Factory from "bip32";
+import ecc from '@bitcoinerlab/secp256k1';
+import BIP32Factory from 'bip32';
 const bip32 = BIP32Factory(ecc);
-
-import { calculateSize, getUnspentsLsit } from "./calculateSize";
-import { prepareInputs } from "./prepareInputs";
 import {
-  fetchBlockHash,
-  fetchTransactionHex,
-  fetchUtxos,
-  sendTransactionHelper,
-} from "@/lib/service/fetcher";
-import {
-  checkUsedUtxo,
-  getSavedUtxo,
-  saveUsedUtxo,
-} from "./localStorageHelper";
-import { apiurl, maraUrl } from "@/lib/constants";
-import { toast } from "sonner";
+  calculateSize,
+  convertToSAT,
+  getChainInstance,
+  getNetwork,
+} from './calculateSize';
+import { fetchUtxos } from '@/lib/service/fetcher';
 
+/**
+ * This function is used to convert given data to hex format
+ * @param value -value
+ */
 export const convertDataToSha256Hex = (value: any) => {
-  return convert.hash(Buffer.from(value, "utf8")).toString("hex");
+  return convert.hash(Buffer.from(value, 'utf8')).toString('hex');
 };
 
+/**
+ * This function is used to convert given string to hex format
+ * @param value -value
+ */
 export const stringtoHex = (value: any) => {
-  const buffer = Buffer.from(value, "utf8");
-  const hexString = buffer.toString("hex");
+  const buffer = Buffer.from(value, 'utf8');
+  const hexString = buffer.toString('hex');
   return hexString;
 };
 
-export async function mintToken(
-  data: tokenData,
-  feeRate: number,
-) {
-  console.log("=====minting token====")
-  console.log("=====minting token data====", data)
-
-
-  const walletxpub = localStorage.getItem("xpubkey") || "";
-  console.log("===walletxpub", walletxpub)
+/**
+ * This function is used to handle the token minting
+ * @param data -data
+ * @param feeRate -feeRate
+ */
+export async function mintToken(data: tokenData, feeRate: number) {
+  const walletxpub = localStorage.getItem('xpubkey') || '';
   const acc = bip32.fromBase58(walletxpub, coordinate.networks.testnet);
-  const node = acc.derive(0)
+  const node = acc.derive(0);
   const destNode = acc.derive(2);
-  let blockHash, txHex;
-
 
   const opreturnData = JSON.stringify(data.opReturnValues);
-
   const payloadHex = convertDataToSha256Hex(opreturnData);
   const psbt = new coordinate.Psbt({
     network: coordinate.networks.testnet,
   });
-
-
   // Set transaction version and asset-specific data
   psbt.setVersion(10);
   psbt.assettype = data.assetType;
@@ -66,114 +54,119 @@ export async function mintToken(
   psbt.ticker = stringtoHex(data.ticker);
   psbt.payload = payloadHex;
   psbt.payloaddata = stringtoHex(opreturnData);
+  if (data.assetType === 0) psbt.setPrecisionType(Number(data?.precision) || 8);
 
-  if (data.assetType === 0) psbt.setPrecisionType(8);
+  const result = await fetchUtxos(walletxpub);
+  let unspents: utxo[] = [];
 
-
-  // Fetch available UTXOs for the given xpub
-  let utxos: utxo[] = await fetchUtxos(walletxpub);
-  utxos.sort((a, b) => b.value - a.value);
-
-  console.log("🚀 ~ utxos:", utxos);
-  if (utxos.length == 0) {
-    throw { message: "UTXO not found" };
-  } let utxo = utxos[0];
-
-
-  if (utxo.confirmations !== 0) {
-    // Confirmed UTXO
-    blockHash = await fetchBlockHash(utxo.height);
-    let hexResponse = await fetchTransactionHex(
-      utxo.txid,
-      true,
-      blockHash.result,
-    );
-    console.log("===hexResponse=", hexResponse)
-
-    txHex = hexResponse.result.hex;
-    console.log("===txHex=", txHex)
-
+  if (result.success) {
+    unspents = result.data;
   } else {
-    throw { message: "UTXO not have enough confirmation" };
+    throw { message: result.error };
+  }
+  unspents.sort((a, b) => b.value - a.value);
+  const utxos: utxo[] = [];
+  for (let i = 0; i < unspents.length; i++) {
+    const unspent = unspents[i];
+    if (!unspent.coinbase) utxos.push(unspent);
+    if (unspent.coinbase && unspent.confirmations >= 10) {
+      utxos.push(unspent);
+    }
   }
 
+  if (utxos.length === 0) {
+    throw { message: 'Insufficient funds' };
+  }
+  const outputs: Array<{ address: string; value: number }> = [];
 
-  // Add input UTXO to the transaction
-  psbt.addInput({
-    hash: utxo.txid,
-    index: utxo.vout,
-    nonWitnessUtxo: Buffer.from(txHex, "hex"),
-  });
-
+  // Calculate the required amount for the transaction
+  let requiredAmount = 0;
+  let selectedUtxos: utxo[] = [];
+  let totalInputValue = 0;
+  let changeAmount = 0;
   const controllerAddress = coordinate.payments.p2wpkh({
     pubkey: node.publicKey,
     network: coordinate.networks.testnet,
   }).address;
 
-  console.log("===controllerAddress=", controllerAddress)
-
-
   const toAddress = coordinate.payments.p2wpkh({
     pubkey: destNode.publicKey,
     network: coordinate.networks.testnet,
   }).address;
-  console.log("===toAddress=", toAddress)
 
   if (!controllerAddress || !toAddress)
-    throw new Error("Controller or change address does not exists.");
+    throw new Error('Address does not exists.');
 
-  // Add outputs to the transaction
-  psbt.addOutput({ address: controllerAddress, value: 10 ** 8 });
-  psbt.addOutput({ address: toAddress, value: data.supply });
+  let supplyValue = data.supply * 10 ** Number(data?.precision) || 8;
 
-
-
-
-  //  Calculate transaction size and required fee
-  const vbytes = await calculateSize(psbt, acc, utxos, data);
-  const requiredAmount = vbytes * feeRate;
-
-  let inputs: utxo[] = [],
-    changeAmount = utxo.value - requiredAmount;
-
-
-  // If the current UTXO is insufficient, prepare additional inputs
-
-  if (utxo.value < requiredAmount) {
-    let result = await prepareInputs(walletxpub, requiredAmount, feeRate);
-    if (result != undefined) {
-      inputs = result.inputs;
-      changeAmount = result.changeAmount;
-
-    }
+  outputs.push({ address: controllerAddress, value: 10 ** 8 });
+  if (data.assetType === 0) {
+    outputs.push({ address: toAddress, value: supplyValue });
+  } else {
+    outputs.push({ address: toAddress, value: data.supply });
   }
 
-
-  // Add additional inputs if necessary
-  if (inputs.length !== 0) {
-    for (let i = 0; i < inputs.length; i++) {
-      let hash = await fetchBlockHash(inputs[i].height);
-      let hex = await fetchTransactionHex(inputs[i].txid, true, hash.result);
-
-      psbt.addInput({
-        hash: inputs[i].txid,
-        index: inputs[i].vout,
-        nonWitnessUtxo: Buffer.from(hex.result.hex, "hex"),
-      });
-    }
-  }
-
-  //Add change output
-  psbt.addOutput({
-    address: controllerAddress,
-    value: changeAmount,
+  outputs.forEach((output) => {
+    psbt.addOutput(output);
   });
 
+  for (let i = 0; i < utxos.length; i++) {
+    const currentUtxo = utxos[i];
+
+    // Add the UTXO to selected inputs
+    selectedUtxos.push(currentUtxo);
+    totalInputValue += currentUtxo.value;
+
+    // Add the input to the PSBT
+    const network = getNetwork('test', 'sidechain');
+
+    psbt.addInput({
+      hash: currentUtxo.txid,
+      index: currentUtxo.vout,
+    });
+    const testNode = acc.derive(currentUtxo.derviation_index);
+    const address = coordinate.payments.p2wpkh({
+      pubkey: testNode.publicKey,
+      network: coordinate.networks.testnet,
+    }).address;
+
+    psbt.updateInput(i, {
+      witnessUtxo: {
+        script: getChainInstance('sidechain').address.toOutputScript(
+          address || '',
+          network,
+        ),
+        value: currentUtxo.value,
+      },
+    });
+    // Calculate the size and fee
+    const vbytes = await calculateSize(psbt, outputs, data);
+    requiredAmount = vbytes * feeRate;
+
+    if (totalInputValue >= requiredAmount) {
+      changeAmount = totalInputValue - requiredAmount;
+
+      if (changeAmount > convertToSAT(0.00001)) {
+        outputs.push({ address: toAddress, value: changeAmount });
+
+        //Recalculate size and fee after adding the change output
+        const updatedVbytes = await calculateSize(psbt, outputs, data);
+        const updatedRequiredAmount = updatedVbytes * feeRate;
+
+        changeAmount = totalInputValue - updatedRequiredAmount;
+        if (changeAmount > convertToSAT(0.00001)) {
+          psbt.addOutput({ address: toAddress || '', value: changeAmount });
+        }
+      }
+      break;
+    }
+
+    if (i === utxos.length - 1 && totalInputValue < requiredAmount) {
+      throw { message: "Insufficient funds: You don't have enough funds" };
+    }
+  }
 
   try {
-
-    saveUsedUtxo(utxo.txid);
-
     return psbt.toHex();
   } catch (error) {
     console.log(error);

@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Header from "@/components/layout/header";
-import Image from "next/image";
-import Options from "@/components/section/options";
-import { Gallery, Stop, BuyCrypto } from "iconsax-react";
-import ButtonLg from "@/components/ui/buttonLg";
-import Layout from "@/components/layout/layout";
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import Header from '@/components/layout/header';
+import Image from 'next/image';
+import Options from '@/components/section/options';
+import { Gallery, Stop, BuyCrypto } from 'iconsax-react';
+import ButtonLg from '@/components/ui/buttonLg';
+import Layout from '@/components/layout/layout';
+import { Button } from '@/components/ui/button';
 
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
 const Create = () => {
   const router = useRouter();
@@ -38,16 +39,16 @@ const Create = () => {
     {
       id: 2,
       icon: Stop,
-      title: "Single Collectible",
-      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      pageUrl: "/create/collectible",
+      title: 'Single Collectible',
+      text: 'Create a unique digital collectible or NFT with custom metadata, images, and attributes.',
+      pageUrl: '/create/collectible',
     },
     {
       id: 3,
       icon: BuyCrypto,
-      title: "Token",
-      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      pageUrl: "/create/token",
+      title: 'Token',
+      text: 'Mint fungible tokens with customizable supply, decimals, and metadata.',
+      pageUrl: '/create/token',
     },
   ];
 
@@ -57,7 +58,7 @@ const Create = () => {
         <div className="flex flex-col items-center w-full gap-12 mt-[42.5px] z-50">
           <div className="relative w-full h-40 flex justify-center max-w-[1216px]">
             <Image
-              src={"/background.png"}
+              src={'/background.png'}
               alt="background"
               width={0}
               height={160}
@@ -88,7 +89,11 @@ const Create = () => {
               />
             ))}
           </div>
-          <ButtonLg type="button" isSelected={selectedOption !== null} onClick={handleNav}>
+          <ButtonLg
+            type="button"
+            isSelected={selectedOption !== null}
+            onClick={handleNav}
+          >
             Continue
           </ButtonLg>
         </div>

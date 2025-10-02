@@ -223,35 +223,33 @@ class Psbt {
     return this;
   }
 
-
   setTicker(ticker) {
     const c = this.__CACHE;
-    c.__TX.ticker = Buffer.from(ticker,"hex");
+    c.__TX.ticker = Buffer.from(ticker, 'hex');
     c.__EXTRACTED_TX = undefined;
     return this;
   }
 
   setHeadline(headline) {
     const c = this.__CACHE;
-    c.__TX.headline = Buffer.from(headline,"hex");
+    c.__TX.headline = Buffer.from(headline, 'hex');
     c.__EXTRACTED_TX = undefined;
     return this;
   }
 
   setPayload(payload) {
     const c = this.__CACHE;
-    c.__TX.payload = Buffer.from(payload,"hex");
+    c.__TX.payload = Buffer.from(payload, 'hex');
     c.__EXTRACTED_TX = undefined;
     return this;
   }
 
   setPayloadData(payloaddata) {
     const c = this.__CACHE;
-    c.__TX.payloaddata = Buffer.from(payloaddata,"hex");
+    c.__TX.payloaddata = Buffer.from(payloaddata, 'hex');
     c.__EXTRACTED_TX = undefined;
     return this;
   }
-
 
   setLocktime(locktime) {
     check32Bit(locktime);
@@ -1793,10 +1791,10 @@ function getMeaningfulScript(
     type: isP2SHP2WSH
       ? 'p2sh-p2wsh'
       : isP2SH
-      ? 'p2sh'
-      : isP2WSH
-      ? 'p2wsh'
-      : 'raw',
+        ? 'p2sh'
+        : isP2WSH
+          ? 'p2wsh'
+          : 'raw',
   };
 }
 function checkInvalidP2WSH(script) {
